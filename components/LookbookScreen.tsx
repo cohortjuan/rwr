@@ -30,8 +30,24 @@ export default function LookbookScreen() {
         {categories.map((category) => (
           <section key={category} className={styles.group}>
             <h2 className={styles.subheading}>{lines.wardrobe.categories[category]}</h2>
+            {/* Pieces with no colour options of their own (the furs) share one row. */}
+            {accessories.some((item) => item.category === category && !item.variants && !item.mane) && (
+              <div className={styles.piece}>
+                <ul className={styles.tiles}>
+                  {accessories
+                    .filter((item) => item.category === category && !item.variants && !item.mane)
+                    .map((item) => (
+                      <li key={item.id}>
+                        <LionAvatar className={styles.lion} wearing={[item.id]} />
+                        <span>{itemName(item)}</span>
+                        <span className={styles.cost}>{cost(item)}</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
             {accessories
-              .filter((item) => item.category === category)
+              .filter((item) => item.category === category && (item.variants || item.mane))
               .map((item) => (
                 <div key={item.id} className={styles.piece}>
                   <p className={styles.pieceName}>

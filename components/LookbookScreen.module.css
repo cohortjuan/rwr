@@ -37,6 +37,7 @@
 
 .cost {
   margin-left: 8px;
+  text-transform: none;
   font-family: var(--font-pixel), monospace;
   font-size: 0.5rem;
   font-weight: 400;
@@ -50,6 +51,10 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 12px;
+}
+
+.tiles li .cost {
+  margin-left: 0;
 }
 
 .tiles li {
