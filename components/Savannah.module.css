@@ -1,0 +1,151 @@
+.horizon,
+.flock {
+  /* One "pixel" of the far-away art. */
+  --px: clamp(1.5px, 0.3vw, 4px);
+
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+/* Feet on the horizon line (the ground starts 44% up from the bottom). */
+.horizon {
+  bottom: 44%;
+  height: calc(var(--px) * 22);
+  color: #7a4a1e;
+  overflow: hidden;
+}
+
+.tree {
+  position: absolute;
+  left: 13%;
+  bottom: 0;
+}
+
+/* The herd starts off-screen to the left, so it stays hidden when motion is off. */
+.herd {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: calc(var(--px) * 9);
+  transform: translateX(-120%);
+  animation: cross 48s linear 6s infinite;
+}
+
+@keyframes cross {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+/* A two-step bob stands in for a walk cycle at this distance. */
+.walker,
+.walkerLate,
+.calf {
+  animation: bob 0.7s steps(2, jump-none) infinite;
+}
+
+.walkerLate {
+  animation-delay: 0.35s;
+}
+
+.calf {
+  --px: clamp(1px, 0.19vw, 2.5px);
+  animation-duration: 0.5s;
+}
+
+@keyframes bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(var(--px) * -1));
+  }
+}
+
+/* Birds: high in the sky, behind the logo. */
+.flock {
+  top: 0;
+  height: 44%;
+  color: #5a2a1c;
+  opacity: 0.85;
+  overflow: hidden;
+}
+
+.bird {
+  position: absolute;
+  left: 0;
+  display: block;
+  transform: translateX(-10vw);
+  animation: fly 26s linear infinite;
+}
+
+.bird svg {
+  display: block;
+}
+
+.wingsDown {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.wingsUp {
+  animation: flapUp 0.5s steps(2, jump-none) infinite;
+}
+
+.wingsDown {
+  animation: flapDown 0.5s steps(2, jump-none) infinite;
+}
+
+@keyframes flapUp {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes flapDown {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.birdOne {
+  top: 20%;
+  animation-delay: 3s;
+}
+
+.birdTwo {
+  top: 29%;
+  animation-delay: 4.4s;
+}
+
+.birdThree {
+  top: 14%;
+  animation-delay: 5.6s;
+  --px: clamp(1px, 0.22vw, 3px);
+}
+
+@keyframes fly {
+  from {
+    transform: translate(-10vw, 0);
+  }
+  50% {
+    transform: translate(50vw, calc(var(--px) * -6));
+  }
+  to {
+    transform: translate(110vw, 0);
+  }
+}

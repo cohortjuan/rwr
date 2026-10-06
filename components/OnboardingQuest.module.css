@@ -104,22 +104,6 @@
   color: var(--gold-bright);
 }
 
-.thinking {
-  font-family: var(--font-pixel), monospace;
-  font-size: 0.7rem;
-  color: var(--gold-bright);
-  animation: pulse 1s steps(2, jump-none) infinite;
-}
-
-@keyframes pulse {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0.4;
-  }
-}
-
 .notice {
   min-height: 1.5em;
   margin: 14px 0 0;

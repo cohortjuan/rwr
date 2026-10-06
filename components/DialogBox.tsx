@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react'
 import { useReducedMotion } from '@/lib/settings'
 import styles from './DialogBox.module.css'
 
+// neutral: blinks, and his mouth moves while the line types out.
+// happy: smiling eyes, for wins. thinking: head tilts, and the line appears at once.
+export type Mood = 'neutral' | 'happy' | 'thinking'
+
 type Props = {
   text: string
   speaker?: string
+  mood?: Mood
   children?: React.ReactNode
 }
 
@@ -19,10 +24,10 @@ export default function DialogBox(props: Props) {
   return <TypedBox key={props.text} {...props} />
 }
 
-function TypedBox({ text, speaker = 'TODAH', children }: Props) {
+function TypedBox({ text, speaker = 'TODAH', mood = 'neutral', children }: Props) {
   const reducedMotion = useReducedMotion()
   const [count, setCount] = useState(0)
-  const done = reducedMotion || count >= text.length
+  const done = reducedMotion || mood === 'thinking' || count >= text.length
 
   useEffect(() => {
     if (done) return
@@ -38,7 +43,8 @@ function TypedBox({ text, speaker = 'TODAH', children }: Props) {
 
   return (
     <section className={styles.box} onClick={finish}>
-      <div className={styles.portrait} aria-hidden="true">
+      <div className={`${styles.portrait} ${styles[mood]}`} aria-hidden="true">
+        {mood !== 'happy' && <div className={styles.blink} />}
         {/* Mouth-open frame, flapped on and off while the line types out. */}
         {!done && <div className={styles.mouth} />}
       </div>

@@ -85,7 +85,9 @@ export default function UpgradesScreen() {
 
         <div className={styles.top}>
           <section className={`panel ${styles.todah}`} aria-label="Todah">
-            <div className={styles.portrait} aria-hidden="true" />
+            <div className={leveledUp ? styles.portraitHappy : styles.portrait} aria-hidden="true">
+              {!leveledUp && <div className={styles.blink} />}
+            </div>
             <div>
               <p className={styles.formName}>{lines.upgrades.todahLabel(formLabel[form])}</p>
               <p className={styles.power}>{lines.upgrades.power(totalLevel, totalMax)}</p>

@@ -272,7 +272,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
               </ol>
             )}
 
-            {pending && <p className={styles.thinking}>{lines.onboarding.thinking}</p>}
+            {pending && <DialogBox text={lines.onboarding.thinking} mood="thinking" />}
 
             {!pending && awaitingAnswer && lastTodah && (
               <DialogBox text={withName(lastTodah.text, name)}>
@@ -312,7 +312,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
         {step === 'done' && (
           <>
             <p className={styles.banner}>{lines.onboarding.completeBanner}</p>
-            <DialogBox text={lines.onboarding.complete(name)}>
+            <DialogBox text={lines.onboarding.complete(name)} mood="happy">
               <Link className="btn" href="/upgrades">
                 {lines.onboarding.toUpgrades}
               </Link>

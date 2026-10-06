@@ -226,6 +226,27 @@
   image-rendering: pixelated;
 }
 
+/* Eyes-closed frame, shown for a moment every few seconds. */
+.blink {
+  position: absolute;
+  inset: 0;
+  background: url('/sprites/todah-sit-blink.png') 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+  animation: blinkEyes 4.6s steps(1) 2s infinite;
+}
+
+@keyframes blinkEyes {
+  0%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Placeholder pose until the seated front-facing sprite is approved. */
 .spriteStill {
   background-position-x: 0%;

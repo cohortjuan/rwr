@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
+import { Birds, Horizon } from '@/components/Savannah'
 import { logOut, useAccountEmail } from '@/lib/account'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
@@ -90,8 +91,10 @@ export default function TitleScreen() {
     <>
       <main className={poweredOn ? styles.stagePoweringOn : styles.stage} onClick={advance}>
         <div className={styles.sky} aria-hidden="true" />
+        {started && <Birds />}
         <div className={styles.sun} aria-hidden="true" />
         <div className={styles.hills} aria-hidden="true" />
+        {started && <Horizon />}
         <div className={styles.ground} aria-hidden="true" />
 
         {/* The title drops in once the cub has arrived. */}
@@ -108,7 +111,9 @@ export default function TitleScreen() {
             style={{ backgroundImage: `url(${SEATED_SPRITE})` }}
             role="img"
             aria-label="Todah, a lion cub, sitting and facing you"
-          />
+          >
+            <div className={styles.blink} />
+          </div>
         ) : (
           <div
             className={seated ? styles.cubSeated : styles.cubWalking}
