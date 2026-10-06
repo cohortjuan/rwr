@@ -6,6 +6,8 @@ at, what the world needs, and what they can be paid for) and turn it into a care
 Built for the 2026 Good Soil Fall Code Jam. Theme: **Season of Change**. A career transition is
 the change RWR helps people navigate.
 
+**Play it:** https://rwr-sigma.vercel.app
+
 Status: first playable scaffold (work in progress for the jam). See "What works today" below.
 
 ## Problem
