@@ -40,7 +40,8 @@ PDF export, saving account progress to the database.
 
 - Next.js 16 (App Router) and React 19, TypeScript
 - Supabase Auth and Postgres (free tier)
-- Google Gemini API (free tier) with automatic fallback to Groq (free tier)
+- Groq API (free tier, Zero Data Retention on) for Todah's replies, with Google Gemini as an
+  optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
 - Hosting: Vercel
 

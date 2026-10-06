@@ -5,8 +5,8 @@ Single Next.js (TypeScript, App Router) app. No separate backend service.
 ```mermaid
 flowchart LR
   Browser[Browser: title, quest, upgrades, roar] -->|POST /api/todah| Route[Next.js server route]
-  Route -->|primary| Gemini[Google Gemini API]
-  Route -->|on 429, 5xx, timeout| Groq[Groq API]
+  Route -->|primary| Groq[Groq API]
+  Route -.->|only if GEMINI_FALLBACK=on| Gemini[Google Gemini API]
   Browser -->|guest progress| LocalStorage[(localStorage)]
   Browser -->|log in, sign up| SupabaseAuth[Supabase Auth]
   SupabaseAuth --- Postgres[(Supabase Postgres)]

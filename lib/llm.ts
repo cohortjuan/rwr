@@ -1,6 +1,8 @@
 // Server-side LLM access. Import this only from server routes: it reads secret keys.
-// Primary: Google Gemini (AI Studio key). Fallback: Groq, used when Gemini is rate limited
-// (HTTP 429), down (5xx), unreachable, or has no key set.
+// Primary: Groq. Its terms bar training on inputs, and Zero Data Retention can be switched on.
+// Optional fallback: Google Gemini, used only when GEMINI_FALLBACK=on and Groq is rate limited
+// (HTTP 429), down (5xx), or unreachable. It is off by default because Google's free tier
+// terms say not to submit personal information and allow human review of prompts.
 
 export type LlmMessage = { role: 'user' | 'assistant', text: string }
 
@@ -29,7 +31,7 @@ const TEMPERATURE = 0.7
 
 // Model names change. Set GEMINI_MODEL and GROQ_MODEL in .env.local to whatever your own
 // AI Studio and Groq consoles list as free-tier models today.
-const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash'
+const DEFAULT_GEMINI_MODEL = 'gemini-flash-latest'
 const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b'
 
 async function callGemini(system: string, messages: LlmMessage[], apiKey: string): Promise<string> {
@@ -79,7 +81,7 @@ async function callGroq(system: string, messages: LlmMessage[], apiKey: string):
   return text
 }
 
-// A Gemini failure is worth retrying on Groq when it is a rate limit, a server error,
+// A Groq failure is worth retrying on Gemini when it is a rate limit, a server error,
 // or a network problem or timeout. Bad requests (4xx) are our bug and should surface.
 function shouldFallBack(error: unknown): boolean {
   if (error instanceof ProviderError) return error.status === 429 || error.status >= 500
@@ -94,24 +96,24 @@ function readKey(name: string): string | undefined {
 }
 
 export async function generateReply(system: string, messages: LlmMessage[]): Promise<LlmResult> {
-  const geminiKey = readKey('GEMINI_API_KEY')
   const groqKey = readKey('GROQ_API_KEY')
-  if (!geminiKey && !groqKey) throw new LlmUnavailableError('No LLM API key is set')
+  const geminiKey = process.env.GEMINI_FALLBACK === 'on' ? readKey('GEMINI_API_KEY') : undefined
+  if (!groqKey && !geminiKey) throw new LlmUnavailableError('No LLM API key is set')
 
-  if (geminiKey) {
+  if (groqKey) {
     try {
-      return { text: await callGemini(system, messages, geminiKey), provider: 'gemini' }
+      return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
     } catch (error) {
       // Log the status only. Never log keys, prompts, or player answers.
-      console.warn('[llm] Gemini failed:', error instanceof Error ? error.message : 'unknown error')
-      if (!groqKey || !shouldFallBack(error)) throw new LlmUnavailableError('Gemini failed and no fallback applied')
+      console.warn('[llm] Groq failed:', error instanceof Error ? error.message : 'unknown error')
+      if (!geminiKey || !shouldFallBack(error)) throw new LlmUnavailableError('Groq failed and no fallback applied')
     }
   }
 
   try {
-    return { text: await callGroq(system, messages, groqKey as string), provider: 'groq' }
+    return { text: await callGemini(system, messages, geminiKey as string), provider: 'gemini' }
   } catch (error) {
-    console.warn('[llm] Groq failed:', error instanceof Error ? error.message : 'unknown error')
+    console.warn('[llm] Gemini failed:', error instanceof Error ? error.message : 'unknown error')
     throw new LlmUnavailableError('All LLM providers failed')
   }
 }
