@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Press_Start_2P } from 'next/font/google'
+import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
 import './globals.css'
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={pixel.variable}>
       <body>
         {children}
+        <MusicPlayer />
         <SettingsToggles />
       </body>
     </html>

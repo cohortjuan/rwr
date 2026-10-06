@@ -43,6 +43,9 @@ export const lines = {
   },
 
   onboarding: {
+    questName: 'QUEST 1: THE LAY OF THE LAND',
+    next: 'NEXT',
+    completeBanner: 'QUEST COMPLETE',
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     questIntro: 'Quest 1: The Lay of the Land. No wrong answers, no timer.',
     startQuest: 'START QUEST',

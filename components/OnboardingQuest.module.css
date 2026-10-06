@@ -1,0 +1,148 @@
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.questName {
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+}
+
+.pips {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pip,
+.pipOn {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--gold);
+  background: transparent;
+}
+
+.pipOn {
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold-bright);
+  animation: pipPop 0.3s steps(3) both;
+}
+
+@keyframes pipPop {
+  from {
+    transform: scale(1.8);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.answerForm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  background: var(--cream);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  padding: 10px;
+  resize: vertical;
+}
+
+.log {
+  list-style: none;
+  margin: 0 0 20px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logUser,
+.logTodah {
+  max-width: 85%;
+  padding: 10px 12px;
+  border: 2px solid var(--teal);
+  background: rgba(31, 91, 87, 0.35);
+  overflow-wrap: anywhere;
+}
+
+.logUser {
+  align-self: flex-end;
+  border-color: var(--purple);
+  background: rgba(123, 63, 228, 0.2);
+}
+
+.logWho {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.55rem;
+  color: var(--gold-bright);
+}
+
+.thinking {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem;
+  color: var(--gold-bright);
+  animation: pulse 1s steps(2, jump-none) infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.4;
+  }
+}
+
+.notice {
+  min-height: 1.5em;
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  color: var(--gold-bright);
+}
+
+.banner {
+  margin: 0 0 20px;
+  text-align: center;
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(1rem, 4vw, 1.8rem);
+  color: var(--gold-bright);
+  text-shadow:
+    0 0.12em 0 var(--crimson),
+    0 0 18px var(--gold);
+  animation: bannerIn 0.6s steps(6) both;
+}
+
+@keyframes bannerIn {
+  from {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

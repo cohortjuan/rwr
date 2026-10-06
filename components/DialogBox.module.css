@@ -1,0 +1,99 @@
+.box {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: var(--teal-deep);
+  border: 4px solid var(--gold);
+  box-shadow:
+    0 0 0 4px var(--ink),
+    0 8px 0 4px rgba(0, 0, 0, 0.35);
+  padding: 18px;
+  animation: popIn 0.25s steps(4) both;
+}
+
+@keyframes popIn {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.portrait {
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  background-color: var(--teal);
+  background-image: url('/sprites/todah-sit.png');
+  /* Zoom in on the face. */
+  background-size: 118% auto;
+  background-position: 50% 8%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  border: 3px solid var(--gold);
+  animation: bob 1.6s steps(2) infinite;
+}
+
+@keyframes bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.speaker {
+  margin: 0 0 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.65rem;
+  color: var(--gold-bright);
+}
+
+.text {
+  margin: 0;
+  min-height: 3em;
+  font-size: 1.1rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.caret {
+  animation: caret 0.6s steps(2, jump-none) infinite;
+}
+
+@keyframes caret {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  animation: popIn 0.2s steps(3) both;
+}
+
+@media (max-width: 520px) {
+  .box {
+    flex-direction: column;
+  }
+
+  .portrait {
+    width: 64px;
+    height: 64px;
+  }
+}
