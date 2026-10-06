@@ -83,7 +83,23 @@
   align-items: center;
   justify-content: center;
   gap: 18px;
-  background: radial-gradient(ellipse at center, #1c1a26 0%, #07060b 75%);
+  background: #07060b;
+}
+
+/* Sits over the snow: darkens the middle so the words stay easy to read. */
+.powerOff::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(ellipse at center, rgba(7, 6, 11, 0.82) 0%, rgba(7, 6, 11, 0.35) 70%);
+  pointer-events: none;
+}
+
+.powerOn,
+.powerHint {
+  position: relative;
+  z-index: 2;
 }
 
 .powerOn {

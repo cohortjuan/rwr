@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
+import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
@@ -154,6 +155,7 @@ export default function TitleScreen() {
 
         {needsPowerOn && (
           <div className={styles.powerOff}>
+            <TvStatic />
             <button type="button" className={styles.powerOn} onClick={() => setPoweredOn(true)}>
               {lines.title.powerOn}
             </button>
