@@ -49,6 +49,18 @@
   pointer-events: none;
 }
 
+/* Labels are centred on their point with a transform, so their pop-in has to keep it. */
+@keyframes labelPop {
+  from {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
 .label,
 .labelMissing {
   font-size: clamp(0.42rem, 1.9vw, 0.6rem);
@@ -59,10 +71,12 @@
     0 1px 0 var(--ink),
     0 -1px 0 var(--ink),
     2px 2px 0 var(--ink);
-  animation: popIn 0.25s steps(3) both;
+  animation: labelPop 0.25s steps(3) both;
 }
 
 .labelMissing {
+  /* No pop-in here: its end state would override the faded look. */
+  animation: none;
   opacity: 0.45;
 }
 
@@ -74,7 +88,7 @@
   background: var(--cream);
   border: 2px solid var(--ink);
   padding: 1px 4px;
-  animation: popIn 0.25s steps(3) both;
+  animation: labelPop 0.25s steps(3) both;
 }
 
 .center {
