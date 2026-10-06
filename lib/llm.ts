@@ -30,7 +30,7 @@ const TEMPERATURE = 0.7
 // Model names change. Set GEMINI_MODEL and GROQ_MODEL in .env.local to whatever your own
 // AI Studio and Groq consoles list as free-tier models today.
 const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash'
-const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile'
+const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b'
 
 async function callGemini(system: string, messages: LlmMessage[], apiKey: string): Promise<string> {
   const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL
