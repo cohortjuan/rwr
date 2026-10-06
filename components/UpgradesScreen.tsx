@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { lines } from '@/lib/lines'
 import { saveProgress, todahForm, useProgress, type TodahForm } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
-import { playSfx } from '@/lib/sfx'
+import { playSfx, preloadSfx } from '@/lib/sfx'
 import { MAX_LEVEL, slotLevel, slots, type Slot, type SlotId } from '@/lib/upgrades'
 import styles from './UpgradesScreen.module.css'
 
@@ -41,6 +41,10 @@ export default function UpgradesScreen() {
   const totalLevel = liveSlots.reduce((sum, slot) => sum + slotLevel(slot, progress.upgrades[slot.id] ?? ''), 0)
   const totalMax = liveSlots.length * MAX_LEVEL
   const form = todahForm(progress)
+
+  useEffect(() => {
+    preloadSfx()
+  }, [])
 
   useEffect(() => {
     const sheet = sheetRef.current

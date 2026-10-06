@@ -103,6 +103,9 @@ To be completed before submission. Running notes:
   Tunetank, from Pixabay, used under the Pixabay Content License.
 - Background music (`public/audio/background-loop.mp3`): a 67-second loop cut from "Lofi Mood" by
   Pulsebox, from Pixabay, used under the Pixabay Content License.
+- Level-up sound (`public/audio/level-up.mp3`): "Achievement Unlock" by Universfield, from
+  Pixabay, used under the Pixabay Content License.
+- All audio is re-encoded as mono MP3 at 48 to 96 kbps with LAME to keep downloads small.
 - Fonts: Press Start 2P, Pixelify Sans, and Atkinson Hyperlegible, all under the SIL Open Font
   License, loaded through `next/font`.
 
