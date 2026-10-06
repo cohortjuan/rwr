@@ -19,7 +19,7 @@ import {
 import { saveProgress, slotContent, useLionText, useProgress, type PrideCard, type TodahForm } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
-import { MAX_LEVEL, slotLevel, slots } from '@/lib/upgrades'
+import { MAX_LEVEL, PRIDE_LEVELS, slotLevel, slots } from '@/lib/upgrades'
 import styles from './PrideScreen.module.css'
 
 const formLabel: Record<TodahForm, string> = {
@@ -109,7 +109,7 @@ export default function PrideScreen() {
   if (!hydrated) return <main className="screen" />
 
   const level = prideSlot ? slotLevel(prideSlot, slotContent(progress, prideSlot)) : 0
-  const nextAt = prideSlot?.thresholds[level]
+  const nextAt = PRIDE_LEVELS[level]
   const myCard = buildCard(progress, openedAt)
   const myLink = progress.cardId ? cardLink(window.location.origin, myCard) : ''
   const canShare = typeof navigator.share === 'function'

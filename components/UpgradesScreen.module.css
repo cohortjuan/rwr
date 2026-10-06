@@ -279,6 +279,60 @@
   font-weight: 600;
 }
 
+/* A second list (the player's own words) sits under the first. */
+.suggestions ul + .suggestionsHeading {
+  margin-top: 12px;
+}
+
+/* What each level of a slot asks for, ticked off as the entry earns it. */
+.checks {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.check,
+.checkMet {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  opacity: 0.8;
+}
+
+.checkMet {
+  opacity: 1;
+}
+
+.checkLevel {
+  padding: 3px 5px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  color: var(--cream);
+  border: 2px solid var(--cream);
+}
+
+.checkMet .checkLevel {
+  color: var(--ink);
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.mapTitle {
+  font-size: 0.8rem;
+  color: var(--gold-bright);
+  margin-bottom: 8px;
+}
+
+.mapScore {
+  margin: 0 0 10px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+}
+
 .sheetButtons {
   display: flex;
   flex-wrap: wrap;

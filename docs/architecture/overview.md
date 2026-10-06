@@ -16,6 +16,39 @@ flowchart LR
 - The browser never calls an LLM directly.
 - With no key set, or when both providers fail, the quest uses scripted lines from `lib/lines.ts`.
 
+## Progression
+
+- **Trail map** (`/map`, `lib/compass.ts`): each Ikigai circle is scored 0 to 3. The player
+  writes a claim and ticks the evidence that is true of it; a claim with no evidence scores 0.
+  The map shows the strongest and thinnest circle and one real-world step for the thinnest. It
+  never ranks careers.
+- **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
+  level, that look at what the entry says (a second sentence, a result with a number, proof in
+  brackets) and not at its length.
+- **Pride Power** is the slot levels plus one for each real-world trail step done.
+- **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
+
+## My Pride (friends without a backend)
+
+```mermaid
+sequenceDiagram
+  participant A as Player A's browser
+  participant B as Player B's browser
+  A->>A: Pack card (name, lion, form, Pride Power, goal) into a link
+  A-->>B: Link or QR code, sent by the players themselves
+  B->>B: Unpack, check every field, run the name filter
+  B->>B: Save A's card in localStorage
+  B-->>A: Cheer link (a preset cheer plus B's latest card)
+  A->>A: Show the cheer, refresh B's card
+```
+
+- The card sits after the `#` in the link, which browsers do not send to any server, so the
+  RWR server never sees it. Nothing about friends is stored in the database.
+- Cheers are a fixed list in `lib/lines.ts`, so a link cannot carry a custom message.
+- Links are untrusted input: `lib/pride.ts` validates types and lengths and drops anything the
+  name filter refuses.
+- Trade-off: a friend's card is a snapshot. It refreshes when they share again or send a cheer.
+
 ## Privacy by design
 
 - Todah asks for consent before the first AI call. Without it, the quest runs from scripted

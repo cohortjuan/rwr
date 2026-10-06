@@ -29,8 +29,15 @@ prophet: nothing in the game promises a job or an outcome.
 - Login box: log in / sign up (Supabase Auth) or play as guest
 - Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback ("trail
   notes"). Todah's text types out and his mouth moves while he talks
-- Lion upgrades: four live resume slots with levels, three shown as coming soon, with helpful
-  tips that can be switched off
+- Trail map: the four Ikigai circles scored 0 to 3 on evidence the player ticks, not on
+  confidence. It names the strongest and thinnest circle and one small real-world step, and
+  never names a "best career". For "what the world needs" the player picks from the UN's 17
+  Sustainable Development Goals and is pointed to public job-outlook data to check it
+- Lion upgrades: five live resume slots, two shown as coming soon. Levels are earned by what an
+  entry says (what you did, a result with a number), not by its length. Real-world trail steps
+  add Pride Power. Helpful tips can be switched off
+- My Pride: add friends by QR code or link with no account, follow their lions, and send preset
+  cheers. Friends level up the Pride slot
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
@@ -39,8 +46,9 @@ prophet: nothing in the game promises a job or an outcome.
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
-Not built yet: interview levels 1 to 4, crossroads, profile card, quest log, Talk to Todah chat,
-PDF export, saving account progress to the database.
+Not built yet: the AI interviews for levels 1 to 4 (the trail map is their scripted first
+version), crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
+the database.
 
 ## Technologies
 
@@ -49,7 +57,7 @@ PDF export, saving account progress to the database.
 - Groq API (free tier, Zero Data Retention on) for Todah's replies, with Google Gemini as an
   optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
-- obscenity (MIT) for the name filter
+- obscenity (MIT) for the name filter, qrcode-generator (MIT) for My Pride's QR codes
 - Hosting: Vercel
 
 Everything used is free or open source.
@@ -85,6 +93,10 @@ Some answers in RWR are personal, so the game is built to collect as little as p
   from answers before they are sent to the AI provider.
 - The server does not log or store what you type, and there is no transcript table in the
   database. An account stores only your email (with Supabase Auth).
+- My Pride needs no account and no database. Your pride card (first name, lion, Pride Power,
+  and your main goal if you leave that on) travels inside the link or QR code you share, in the
+  part of the link that browsers never send to a server. Anyone you give the link to can read
+  it.
 - Your game is saved in your browser (localStorage). The in-game Privacy page lets you turn
   that off on a shared computer and delete all of your data.
 - AI providers have their own data terms. **While RWR is in testing, please leave out real

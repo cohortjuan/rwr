@@ -1,0 +1,256 @@
+.header {
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* The diagram is a picture here, so it sits smaller than in Todah's explanation. */
+.wheel :global(figure) {
+  width: min(240px, 70vw);
+  margin-bottom: 0;
+}
+
+.total {
+  margin: 0 0 12px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem;
+  color: var(--gold-bright);
+}
+
+.scores {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.scores li {
+  display: grid;
+  grid-template-columns: 5.5em auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.scoreName,
+.scoreNumber {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+}
+
+.pips {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pip,
+.pipOn {
+  width: 14px;
+  height: 14px;
+  background: var(--ink);
+  border: 2px solid var(--gold);
+}
+
+.pipOn {
+  background: var(--gold-bright);
+}
+
+.read {
+  margin: 0 0 6px;
+}
+
+.next {
+  margin-top: 14px;
+  padding: 12px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 4px solid var(--ink);
+}
+
+.nextLabel {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 4px 6px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+  background: var(--ink);
+}
+
+.nextText {
+  margin: 0 0 12px;
+}
+
+.circles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.circleHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--gold-bright);
+  margin-bottom: 6px;
+}
+
+.circleMeaning {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.small {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+}
+
+.fine {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.quotes,
+.needs,
+.sources {
+  margin-bottom: 14px;
+}
+
+.sources {
+  margin-top: 14px;
+  margin-bottom: 0;
+}
+
+.quotes ul,
+.sources ul {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.9rem;
+}
+
+.sources a {
+  color: var(--gold-bright);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip,
+.chipOn {
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--cream);
+  background: transparent;
+  border: 2px solid var(--cream);
+  cursor: pointer;
+}
+
+.chipOn {
+  color: var(--ink);
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ticks,
+.stepList {
+  display: grid;
+  gap: 8px;
+}
+
+.tick,
+.tickOn {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  text-align: left;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.45);
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tick:hover,
+.tickOn:hover {
+  border-color: var(--gold);
+}
+
+.tickOn {
+  border-color: var(--gold);
+}
+
+.tick:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--ink);
+  border: 2px solid var(--gold);
+}
+
+.tickOn .box {
+  background: var(--gold-bright);
+}
+
+.steps {
+  margin-bottom: 24px;
+}
+
+.stepList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stepList li .fine {
+  display: block;
+  margin: 2px 0 6px 38px;
+}
+
+.footer {
+  margin: 0;
+}

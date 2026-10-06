@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { lines } from '@/lib/lines'
+import { circles, compassTotal } from '@/lib/compass'
 import {
+  pridePower,
   saveProgress,
   slotContent,
   todahForm,
@@ -36,6 +38,7 @@ function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalM
     phrase: totalLevel < totalMax,
     unpaid: !progress.upgrades.paws,
     pride: progress.pride.length === 0,
+    map: compassTotal(progress).score === 0,
     goal: !progress.goalText,
     device: true,
   }
@@ -68,9 +71,13 @@ export default function UpgradesScreen() {
   const [leveledUp, setLeveledUp] = useState<SlotId | null>(null)
 
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
-  const liveSlots = slots.filter((slot) => !slot.locked)
-  const totalLevel = liveSlots.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot)), 0)
-  const totalMax = liveSlots.length * MAX_LEVEL
+  const { level: totalLevel, max: totalMax } = pridePower(progress)
+  const evidence = compassTotal(progress)
+  // What the player has already said on the trail, offered back as wording to reuse.
+  const trailWords = [
+    ...circles.map((circle) => progress.compass[circle].claim.trim()),
+    ...progress.onboardingChat.filter((message) => message.role === 'user').map((message) => message.text),
+  ].filter(Boolean)
   const form = todahForm(progress)
   const tipId = tips && !tipsQuiet ? pickTip(progress, form, totalLevel, totalMax) : null
 
@@ -172,6 +179,15 @@ export default function UpgradesScreen() {
               {lines.upgrades.toRoar}
             </Link>
           </section>
+
+          <section className="panel">
+            <h2 className={styles.mapTitle}>{lines.upgrades.mapTitle}</h2>
+            <p className={styles.mapScore}>{lines.upgrades.mapScore(evidence.score, evidence.max)}</p>
+            <p className={styles.leaderBody}>{lines.upgrades.mapBody}</p>
+            <Link className="btn" href="/map">
+              {lines.upgrades.toMap}
+            </Link>
+          </section>
         </div>
 
         <ul className={styles.grid}>
@@ -254,7 +270,20 @@ export default function UpgradesScreen() {
               <LevelBar level={slotLevel(openSlot, draft)} />
               <span>{lines.upgrades.level(slotLevel(openSlot, draft), MAX_LEVEL)}</span>
             </p>
-            <p className="note">{openSlot.levelRule}</p>
+            <ol className={styles.checks}>
+              {openSlot.checks.map((check, index) => {
+                const met = slotLevel(openSlot, draft) > index
+                return (
+                  <li key={check.rule} className={met ? styles.checkMet : styles.check}>
+                    <span className={styles.checkLevel}>{lines.upgrades.checkLevel(index + 1)}</span>
+                    <span>
+                      {check.rule}
+                      <span className="sr-only"> ({met ? lines.upgrades.checkMet : lines.upgrades.checkOpen})</span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
 
             {showSuggestions && (
               <div className={styles.suggestions}>
@@ -264,6 +293,16 @@ export default function UpgradesScreen() {
                     <li key={suggestion}>{suggestion}</li>
                   ))}
                 </ul>
+                {trailWords.length > 0 && (
+                  <>
+                    <p className={styles.suggestionsHeading}>{lines.upgrades.trailHeading}</p>
+                    <ul>
+                      {trailWords.map((words, index) => (
+                        <li key={index}>{words}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </div>
             )}
 

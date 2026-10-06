@@ -1,6 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { stepsDone, trailSteps } from '@/lib/compass'
 import type { EntryChoice } from '@/lib/lines'
 import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
@@ -30,6 +31,12 @@ export type PrideCard = {
   at: string
 }
 
+// The four Ikigai circles, in the order of the levels: Heart, Craft, Cause, Coin.
+export type Circle = 'heart' | 'craft' | 'cause' | 'coin'
+
+// One circle on the trail map: what the player claims, and which evidence they ticked.
+export type CircleEntry = { claim: string, evidence: string[] }
+
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
 export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
@@ -54,6 +61,11 @@ export type Progress = {
   pride: PrideCard[]
   cheersReceived: CheerReceived[]
   cheersSent: number
+  // The trail map (see lib/compass.ts): a claim and its evidence for each circle, the needs
+  // the player picked for Cause, and the real-world steps they have done.
+  compass: Record<Circle, CircleEntry>
+  needs: string[]
+  stepsDone: string[]
 }
 
 // A game that was set aside when the player started a new lion.
@@ -78,6 +90,14 @@ export const emptyProgress: Progress = {
   pride: [],
   cheersReceived: [],
   cheersSent: 0,
+  compass: {
+    heart: { claim: '', evidence: [] },
+    craft: { claim: '', evidence: [] },
+    cause: { claim: '', evidence: [] },
+    coin: { claim: '', evidence: [] },
+  },
+  needs: [],
+  stepsDone: [],
 }
 
 const listeners = new Set<() => void>()
@@ -273,11 +293,12 @@ export function slotContent(progress: Progress, slot: Slot): string {
   return progress.upgrades[slot.id] ?? ''
 }
 
-// Levels earned across the live upgrade slots, and the most that can be earned.
+// Pride Power: levels earned across the live upgrade slots, plus one for each real-world
+// trail step done. Also returns the most that can be earned.
 export function pridePower(progress: Progress): { level: number, max: number } {
   const live = slots.filter((slot) => !slot.locked)
   const level = live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot)), 0)
-  return { level, max: live.length * MAX_LEVEL }
+  return { level: level + stepsDone(progress), max: live.length * MAX_LEVEL + trailSteps.length }
 }
 
 export function hasSavedGame(progress: Progress): boolean {
