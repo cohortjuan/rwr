@@ -84,6 +84,9 @@
   padding: 10px 12px;
   border: 2px solid var(--teal);
   background: rgba(31, 91, 87, 0.35);
+  font-family: var(--font-talk), var(--font-body);
+  font-size: 1.15rem;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 

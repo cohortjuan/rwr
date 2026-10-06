@@ -24,8 +24,8 @@
 
 .portrait {
   flex: 0 0 auto;
-  width: 84px;
-  height: 84px;
+  width: 100px;
+  height: 100px;
   background-color: var(--teal);
   background-image: url('/sprites/todah-sit.png');
   /* Zoom in on the face. */
@@ -74,8 +74,10 @@
 .text {
   margin: 0;
   min-height: 3em;
-  font-size: 1.1rem;
-  line-height: 1.55;
+  font-family: var(--font-talk), var(--font-body);
+  font-size: 1.3rem;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
   overflow-wrap: anywhere;
 }
 
@@ -106,7 +108,7 @@
   }
 
   .portrait {
-    width: 64px;
-    height: 64px;
+    width: 76px;
+    height: 76px;
   }
 }

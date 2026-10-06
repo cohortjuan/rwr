@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Press_Start_2P } from 'next/font/google'
+import { Pixelify_Sans, Press_Start_2P } from 'next/font/google'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
 import TvFrame from '@/components/TvFrame'
@@ -10,6 +10,12 @@ const pixel = Press_Start_2P({
   weight: '400',
   subsets: ['latin'],
   variable: '--font-pixel',
+})
+
+// Readable pixel font for what Todah says.
+const talk = Pixelify_Sans({
+  subsets: ['latin'],
+  variable: '--font-talk',
 })
 
 export const metadata: Metadata = {
@@ -27,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={pixel.variable}>
+    <html lang="en" className={`${pixel.variable} ${talk.variable}`}>
       <body>
         {children}
         <TvFrame />
