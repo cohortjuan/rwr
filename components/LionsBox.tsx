@@ -45,6 +45,11 @@ export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
                 <p className={styles.lionDetail}>
                   {lines.lions.summary(formLabel[todahForm(lion.progress)], power.level, power.max)}
                 </p>
+                {lion.progress.goalText && (
+                  <p className={styles.lionDetail}>
+                    {lines.lions.goal} <strong>{lion.progress.goalText}</strong>
+                  </p>
+                )}
                 {lion.progress.playerName && (
                   <p className={styles.lionDetail}>{lines.lions.walkingWith(lion.progress.playerName)}</p>
                 )}
