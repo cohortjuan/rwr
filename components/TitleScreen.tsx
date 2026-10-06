@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LoginBox from '@/components/LoginBox'
+import { SEATED_SPRITE } from '@/lib/assets'
 import { lines } from '@/lib/lines'
 import { clearProgress, hasSavedGame, useProgress } from '@/lib/progress'
 import { useHydrated, useReducedMotion } from '@/lib/settings'
@@ -77,21 +78,33 @@ export default function TitleScreen() {
         <div className={styles.hills} aria-hidden="true" />
         <div className={styles.ground} aria-hidden="true" />
 
-        <div className={styles.logo}>
-          <h1 className={styles.name}>{lines.title.name}</h1>
-          <p className={styles.subtitle}>{lines.title.subtitle}</p>
-        </div>
+        {/* The title drops in once the cub has arrived. */}
+        {seated && (
+          <div className={styles.logo}>
+            <h1 className={styles.name}>{lines.title.name}</h1>
+            <p className={styles.subtitle}>{lines.title.subtitle}</p>
+          </div>
+        )}
 
-        <div
-          className={seated ? styles.cubSeated : styles.cubWalking}
-          onAnimationEnd={(event) => {
-            if (event.target === event.currentTarget) setWalkDone(true)
-          }}
-          role="img"
-          aria-label="Todah, a lion cub"
-        >
-          <div className={seated ? styles.spriteStill : styles.spriteWalk} />
-        </div>
+        {seated && SEATED_SPRITE ? (
+          <div
+            className={styles.cubFacing}
+            style={{ backgroundImage: `url(${SEATED_SPRITE})` }}
+            role="img"
+            aria-label="Todah, a lion cub, sitting and facing you"
+          />
+        ) : (
+          <div
+            className={seated ? styles.cubSeated : styles.cubWalking}
+            onAnimationEnd={(event) => {
+              if (event.target === event.currentTarget) setWalkDone(true)
+            }}
+            role="img"
+            aria-label="Todah, a lion cub"
+          >
+            <div className={seated ? styles.spriteStill : styles.spriteWalk} />
+          </div>
+        )}
 
         <div className={styles.prompt} onClick={(event) => event.stopPropagation()}>
           {!seated && <p className={styles.hint}>{lines.title.skipHint}</p>}
