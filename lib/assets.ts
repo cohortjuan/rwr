@@ -13,6 +13,8 @@ export const MUSIC_BACKGROUND_TRACK: string | null = '/audio/background-loop.mp3
 export const MUSIC_VOLUME = 0.25
 export const MUSIC_BACKGROUND_VOLUME = 0.12
 export const MUSIC_FADE_SECONDS = 1.5
+// The music drops out this fast when Todah roars, so the roar is the only sound.
+export const MUSIC_CUT_SECONDS = 0.15
 
 // Played when a lion upgrade gains a level. Set to null to use the built-in chime instead.
 export const LEVEL_UP_SOUND: string | null = '/audio/level-up.mp3'

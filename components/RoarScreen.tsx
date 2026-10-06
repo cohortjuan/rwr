@@ -17,6 +17,7 @@ export default function RoarScreen() {
   const progress = useProgress()
   const { sound } = useSettings()
   const confirmRef = useRef<HTMLDialogElement>(null)
+  const roarRef = useRef<HTMLAudioElement>(null)
   const [goalDraft, setGoalDraft] = useState('')
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -33,8 +34,9 @@ export default function RoarScreen() {
   }, [confirming])
 
   function playRoar() {
-    if (!sound) return
-    const audio = new Audio(ROAR_SOUND)
+    const audio = roarRef.current
+    if (!sound || !audio) return
+    audio.currentTime = 0
     audio.play().catch(() => {})
   }
 
@@ -58,6 +60,8 @@ export default function RoarScreen() {
 
   return (
     <main className={`screen ${justRoared ? styles.shake : ''}`}>
+      {/* Loaded with the screen, so the roar starts the moment the goal is confirmed. */}
+      <audio ref={roarRef} src={ROAR_SOUND} preload="auto" />
       <div className="screen-inner">
         <h1 className={achieved ? styles.logoLit : styles.logo}>{lines.title.name}</h1>
 
