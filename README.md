@@ -29,7 +29,10 @@ prophet: nothing in the game promises a job or an outcome.
 - Login box: log in / sign up (Supabase Auth) or play as guest
 - Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback ("trail
   notes"). Todah's text types out and his mouth moves while he talks
-- Lion upgrades: four live resume slots with levels, three shown as coming soon
+- Lion upgrades: four live resume slots with levels, three shown as coming soon, with helpful
+  tips that can be switched off
+- Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
+  player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
 - Looping music, sound effects, and an old-school TV frame around every screen, with TV static
   behind POWER ON
@@ -46,6 +49,7 @@ PDF export, saving account progress to the database.
 - Groq API (free tier, Zero Data Retention on) for Todah's replies, with Google Gemini as an
   optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
+- obscenity (MIT) for the name filter
 - Hosting: Vercel
 
 Everything used is free or open source.
