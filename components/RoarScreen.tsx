@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { lines } from '@/lib/lines'
-import { saveProgress, useProgress } from '@/lib/progress'
+import { saveProgress, useLionText, useProgress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './RoarScreen.module.css'
@@ -15,6 +15,7 @@ const ROAR_SOUND = '/audio/roar-reward.mp3'
 export default function RoarScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
+  const lion = useLionText()
   const { sound } = useSettings()
   const confirmRef = useRef<HTMLDialogElement>(null)
   const roarRef = useRef<HTMLAudioElement>(null)
@@ -70,7 +71,7 @@ export default function RoarScreen() {
             <Image
               className={styles.still}
               src="/images/reward-roar.jpg"
-              alt={lines.roar.rewardAlt}
+              alt={lion(lines.roar.rewardAlt)}
               width={1408}
               height={768}
               priority
@@ -125,7 +126,7 @@ export default function RoarScreen() {
             <p className={styles.goal}>
               {lines.roar.goalShown} <strong>{progress.goalText}</strong>
             </p>
-            <p>{lines.upgrades.leaderLockedBody}</p>
+            <p>{lion(lines.upgrades.leaderLockedBody)}</p>
             <div className={styles.buttons}>
               <button type="button" className="btn" onClick={() => setConfirming(true)}>
                 {lines.roar.reachedQuestion}
@@ -155,7 +156,7 @@ export default function RoarScreen() {
         onClose={() => setConfirming(false)}
       >
         <h2 id="roar-confirm" className={styles.heading}>
-          {lines.roar.confirm}
+          {lion(lines.roar.confirm)}
         </h2>
         <div className={styles.buttons}>
           <button type="button" className="btn" onClick={letHimRoar}>

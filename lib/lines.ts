@@ -17,9 +17,26 @@ export const lines = {
     continuePrompt: 'CONTINUE?',
     continueYes: 'CONTINUE',
     continueNew: 'NEW GAME',
-    newGameConfirm: 'Start over? This clears the progress saved in this browser.',
-    newGameYes: 'YES, START OVER',
-    newGameNo: 'KEEP MY GAME',
+    continueLions: 'MY LIONS',
+    newGameConfirm: (lion: string) =>
+      `Start fresh with a new lion? ${lion} is kept safe under MY LIONS, and you can come back any time.`,
+    newGameYes: 'YES, START FRESH',
+    newGameNo: 'KEEP PLAYING',
+  },
+
+  // Naming the lion for a new game, and the list of lions set aside from earlier games.
+  lions: {
+    nameQuestion: 'Do you want to rename your new lion?',
+    nameLabel: "New lion's name",
+    nameUse: 'USE THIS NAME',
+    nameKeep: (lion: string) => `KEEP ${lion.toUpperCase()}`,
+    nameCancel: 'CANCEL',
+    listHeading: 'MY LIONS',
+    listIntro: 'Each lion keeps its own trail. Pick one to carry on with it. The one you are playing now is kept too.',
+    summary: (form: string, power: number, max: number) => `${form} · PRIDE POWER ${power}/${max}`,
+    walkingWith: (player: string) => `Walking with ${player}`,
+    play: 'PLAY',
+    close: 'CLOSE',
   },
 
   account: {
@@ -127,13 +144,14 @@ export const lines = {
     aiUnavailable: 'My voice is a little faint right now, so I will stick to my trail notes.',
     aiCap: 'We have talked a lot this session. Let us rest here and pick the trail back up later.',
     emptyAnswer: 'Type something first. A few words are plenty.',
+    nameBlocked: 'That name is not welcome on this trail. Please pick another one.',
   },
 
   privacy: {
     heading: 'YOUR DATA',
     intro: 'Some answers in RWR are personal. Here is exactly where they go, and how to remove them.',
     points: [
-      { title: 'On this device', body: 'Your name, answers, upgrades, and goal are saved in this browser so you can come back. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
+      { title: 'On this device', body: 'Your name, answers, upgrades, and goal are saved in this browser so you can come back, for the lion you are playing and any you have kept. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
       { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
       { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
@@ -143,8 +161,10 @@ export const lines = {
     saveOffNote: 'Saving is off. Your game lasts until you close or reload this tab.',
     aiOn: 'AI REPLIES: ON',
     aiOff: 'AI REPLIES: OFF',
+    tipsOn: 'TIPS: ON',
+    tipsOff: 'TIPS: OFF',
     deleteButton: 'DELETE MY DATA',
-    deleteConfirm: 'Delete your game from this device? If you are signed in, your account is deleted too. This cannot be undone.',
+    deleteConfirm: 'Delete your game and every kept lion from this device? If you are signed in, your account is deleted too. This cannot be undone.',
     deleteYes: 'YES, DELETE IT',
     deleteNo: 'KEEP MY DATA',
     deleted: 'Done. Your game data is gone from this device.',
@@ -187,6 +207,22 @@ export const lines = {
       'Todah roars only when you say your main goal is reached. No one else gets to decide that.',
     toRoar: 'GO TO MY GOAL',
     back: 'BACK TO TITLE',
+    // Helpful tips on the upgrades screen. One shows per visit, the first that fits the game
+    // so far (see pickTip in UpgradesScreen). Players can switch them off, and back on under
+    // PRIVACY.
+    tipLabel: 'TIP',
+    tipGotIt: 'GOT IT',
+    tipTurnOff: 'TURN TIPS OFF',
+    tips: {
+      start: 'Tap MANE to begin. One sentence about who you are at work earns the first level.',
+      quest: 'Todah stays a cub until Quest 1 is finished. You can pick it up from the title screen.',
+      nomad: 'Start two parts and Todah grows from Cub to Nomad.',
+      levels: 'Every part has three levels. Open one to see what the next level needs.',
+      phrase: 'Stuck on wording? Open a part and tap ASK TODAH TO PHRASE THIS for starting points you can edit.',
+      unpaid: 'Unpaid and volunteer work counts under PAWS. So does caring for family.',
+      goal: 'Set your main goal under GO TO MY GOAL. Only you decide when it is reached.',
+      device: 'Everything here is saved in this browser only. On a shared computer, PRIVACY has a switch to turn saving off.',
+    },
   },
 
   roar: {

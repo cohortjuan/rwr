@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useLionText } from '@/lib/progress'
 import { useReducedMotion } from '@/lib/settings'
 import styles from './DialogBox.module.css'
 
@@ -19,12 +20,15 @@ const CHAR_MS = 22
 
 // Todah's speech box. Text types out like a 16-bit RPG while his mouth moves; click to finish it.
 // The choices (children) appear once the line is fully shown.
-export default function DialogBox(props: Props) {
+export default function DialogBox({ text, speaker = 'TODAH', ...rest }: Props) {
+  // A renamed lion speaks under its own name.
+  const lion = useLionText()
+  const line = lion(text)
   // Keying on the text restarts the typewriter for every new line.
-  return <TypedBox key={props.text} {...props} />
+  return <TypedBox key={line} text={line} speaker={lion(speaker)} {...rest} />
 }
 
-function TypedBox({ text, speaker = 'TODAH', mood = 'neutral', children }: Props) {
+function TypedBox({ text, speaker, mood = 'neutral', children }: Props) {
   const reducedMotion = useReducedMotion()
   const [count, setCount] = useState(0)
   const done = reducedMotion || mood === 'thinking' || count >= text.length

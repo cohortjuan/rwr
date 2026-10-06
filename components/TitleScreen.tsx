@@ -3,14 +3,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
+import LionsBox from '@/components/LionsBox'
 import LoginBox from '@/components/LoginBox'
+import NameLionBox from '@/components/NameLionBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
 import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
-import { clearProgress, hasSavedGame, useProgress } from '@/lib/progress'
+import { hasSavedGame, startNewLion, switchToLion, useKeptLions, useProgress } from '@/lib/progress'
 import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import styles from './TitleScreen.module.css'
 
@@ -29,7 +31,10 @@ export default function TitleScreen() {
   const [boxOpen, setBoxOpen] = useState(false)
   const email = useAccountEmail()
   const signedIn = Boolean(email)
+  const keptLions = useKeptLions()
   const [confirmingNew, setConfirmingNew] = useState(false)
+  const [namingLion, setNamingLion] = useState(false)
+  const [lionsOpen, setLionsOpen] = useState(false)
   const { sound } = useSettings()
   const audioGate = useAudioGate()
   const [poweredOn, setPoweredOn] = useState(false)
@@ -49,7 +54,7 @@ export default function TitleScreen() {
 
   // Reduced motion: the cub starts seated and never walks.
   const seated = walkDone || reducedMotion
-  const returning = hydrated && (signedIn || hasSavedGame(progress))
+  const returning = hydrated && (signedIn || hasSavedGame(progress) || keptLions.length > 0)
 
   const enterGame = useCallback(() => {
     router.push(progress.onboardingDone ? '/upgrades' : '/quest')
@@ -72,20 +77,32 @@ export default function TitleScreen() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (boxOpen || confirmingNew || ignoredKeys.has(event.key)) return
+      if (boxOpen || confirmingNew || namingLion || lionsOpen || ignoredKeys.has(event.key)) return
       const target = event.target as HTMLElement | null
       if (target && target.closest('button, a, input, textarea, dialog')) return
       advance()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [advance, boxOpen, confirmingNew])
+  }, [advance, boxOpen, confirmingNew, namingLion, lionsOpen])
 
-  function newGame() {
-    setConfirmingNew(false)
-    clearProgress()
+  // A new game never erases the one in play: that lion is kept and a fresh one starts.
+  // With nothing to keep, there is nothing to confirm, so it goes straight to the name.
+  function askNewGame() {
+    if (hasSavedGame(progress)) setConfirmingNew(true)
+    else setNamingLion(true)
+  }
+
+  function newGame(lionName: string) {
+    setNamingLion(false)
+    startNewLion(lionName)
     if (signedIn) router.push('/quest')
     else setBoxOpen(true)
+  }
+
+  function playLion(id: string) {
+    switchToLion(id)
+    setLionsOpen(false)
   }
 
   return (
@@ -145,9 +162,14 @@ export default function TitleScreen() {
                 <button type="button" className="btn" onClick={enterGame}>
                   {lines.title.continueYes}
                 </button>
-                <button type="button" className="btn btn-quiet" onClick={() => setConfirmingNew(true)}>
+                <button type="button" className="btn btn-quiet" onClick={askNewGame}>
                   {lines.title.continueNew}
                 </button>
+                {keptLions.length > 0 && (
+                  <button type="button" className="btn btn-quiet" onClick={() => setLionsOpen(true)}>
+                    {lines.title.continueLions}
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -166,12 +188,19 @@ export default function TitleScreen() {
 
       <ConfirmBox
         open={confirmingNew}
-        text={lines.title.newGameConfirm}
+        text={lines.title.newGameConfirm(progress.lionName)}
         yes={lines.title.newGameYes}
         no={lines.title.newGameNo}
-        onYes={newGame}
+        onYes={() => {
+          setConfirmingNew(false)
+          setNamingLion(true)
+        }}
         onNo={() => setConfirmingNew(false)}
       />
+
+      <NameLionBox open={namingLion} onName={newGame} onCancel={() => setNamingLion(false)} />
+
+      <LionsBox open={lionsOpen} lions={keptLions} onPlay={playLion} onClose={() => setLionsOpen(false)} />
 
       <LoginBox open={boxOpen} onClose={() => setBoxOpen(false)} onEnter={enterGame} />
     </>

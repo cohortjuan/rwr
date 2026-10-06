@@ -5,6 +5,7 @@ import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import IkigaiWheel, { type WheelFocus } from '@/components/IkigaiWheel'
 import { lines, type EntryChoice } from '@/lib/lines'
+import { isNameAllowed, PLAYER_NAME_MAX, withLionName } from '@/lib/names'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
 import { NAME_TOKEN } from '@/lib/tokens'
 import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
@@ -140,8 +141,13 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
 
   function submitName(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const name = nameDraft.trim().slice(0, 40)
+    const name = nameDraft.trim().slice(0, PLAYER_NAME_MAX)
     if (!name) return
+    if (!isNameAllowed(name)) {
+      setNotice(lines.errors.nameBlocked)
+      return
+    }
+    setNotice('')
     saveProgress({ playerName: name })
     go('entry')
   }
@@ -169,6 +175,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   }
 
   const name = progress.playerName || 'traveler'
+  const lion = (text: string) => withLionName(text, progress.lionName)
 
   return (
     <main className="screen">
@@ -266,16 +273,22 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
                 id="player-name"
                 className={styles.input}
                 autoFocus
-                maxLength={40}
+                maxLength={PLAYER_NAME_MAX}
                 autoComplete="nickname"
                 placeholder={lines.onboarding.namePlaceholder}
                 value={nameDraft}
-                onChange={(event) => setNameDraft(event.target.value)}
+                onChange={(event) => {
+                  setNameDraft(event.target.value)
+                  setNotice('')
+                }}
               />
               <button type="submit" className="btn" disabled={!nameDraft.trim()}>
                 {lines.onboarding.nameSubmit}
               </button>
             </form>
+            <p className={styles.notice} role="alert">
+              {notice}
+            </p>
           </DialogBox>
         )}
 
@@ -322,8 +335,8 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
               <ol className={styles.log} aria-label="Earlier in this quest">
                 {chat.slice(0, lastTodah && awaitingAnswer ? -1 : undefined).map((message, index) => (
                   <li key={index} className={message.role === 'user' ? styles.logUser : styles.logTodah}>
-                    <span className={styles.logWho}>{message.role === 'user' ? name : 'TODAH'}</span>
-                    {withName(message.text, name)}
+                    <span className={styles.logWho}>{message.role === 'user' ? name : lion('TODAH')}</span>
+                    {message.role === 'user' ? message.text : lion(withName(message.text, name))}
                   </li>
                 ))}
               </ol>

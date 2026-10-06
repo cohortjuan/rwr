@@ -2,15 +2,21 @@
 
 import { useSyncExternalStore } from 'react'
 import type { EntryChoice } from '@/lib/lines'
+import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
-import { slots, slotLevel, type SlotId } from '@/lib/upgrades'
+import { MAX_LEVEL, slots, slotLevel, type SlotId } from '@/lib/upgrades'
 
 // Progress lives in this browser's localStorage, or in memory only when the player turns
 // "save on this device" off. Account sync to the database comes later.
+//
+// One game is in play at a time. Starting a new one does not erase the old one: it is set
+// aside as a kept lion, and the player can switch back to it from the title screen.
 
 export type ChatMessage = { role: 'user' | 'todah', text: string }
 
 export type Progress = {
+  // The guide's name in this game. Todah unless the player renamed their lion.
+  lionName: string
   playerName: string
   entryChoice: EntryChoice | null
   onboardingDone: boolean
@@ -20,13 +26,20 @@ export type Progress = {
   upgrades: Partial<Record<SlotId, string>>
   goalText: string
   goalAchievedAt: string | null
+  // Tips on the upgrades screen that the player has already dismissed in this game.
+  tipsSeen: string[]
 }
+
+// A game that was set aside when the player started a new lion.
+export type KeptLion = { id: string, keptAt: string, progress: Progress }
 
 export type TodahForm = 'cub' | 'nomad' | 'leader'
 
 const KEY = 'rwr.progress.v1'
+const LIONS_KEY = 'rwr.lions.v1'
 
 export const emptyProgress: Progress = {
+  lionName: DEFAULT_LION_NAME,
   playerName: '',
   entryChoice: null,
   onboardingDone: false,
@@ -35,15 +48,16 @@ export const emptyProgress: Progress = {
   upgrades: {},
   goalText: '',
   goalAchievedAt: null,
+  tipsSeen: [],
 }
 
 const listeners = new Set<() => void>()
 let cachedRaw: string | null = null
 let cached: Progress = emptyProgress
 
-function readRaw(): string | null {
+function readRaw(key = KEY): string | null {
   try {
-    return window.localStorage.getItem(KEY)
+    return window.localStorage.getItem(key)
   } catch {
     return null
   }
@@ -51,6 +65,7 @@ function readRaw(): string | null {
 
 // Memory-only mode: nothing about the game is written to this device.
 let memory: Progress = emptyProgress
+let memoryLions: KeptLion[] = []
 
 function memoryOnly(): boolean {
   try {
@@ -107,29 +122,99 @@ export function saveProgress(patch: Partial<Progress>) {
   emit()
 }
 
+const noLions: KeptLion[] = []
+let lionsRaw: string | null = null
+let lionsCached: KeptLion[] = noLions
+
+function getLions(): KeptLion[] {
+  if (memoryOnly()) return memoryLions
+  const raw = readRaw(LIONS_KEY)
+  if (raw === lionsRaw) return lionsCached
+  lionsRaw = raw
+  try {
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    lionsCached = Array.isArray(parsed)
+      ? (parsed as KeptLion[]).map((lion) => ({ ...lion, progress: { ...emptyProgress, ...lion.progress } }))
+      : noLions
+  } catch {
+    lionsCached = noLions
+  }
+  return lionsCached
+}
+
+function saveLions(next: KeptLion[]) {
+  if (memoryOnly()) {
+    memoryLions = next
+    return
+  }
+  try {
+    window.localStorage.setItem(LIONS_KEY, JSON.stringify(next))
+  } catch {
+    lionsRaw = null
+    lionsCached = next
+  }
+}
+
+function keep(progress: Progress): KeptLion {
+  const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+  return { id, keptAt: new Date().toISOString(), progress }
+}
+
+// A game is worth keeping once the player has given a name, to themselves or to the lion.
+function worthKeeping(progress: Progress): boolean {
+  return hasSavedGame(progress) || progress.lionName !== DEFAULT_LION_NAME
+}
+
+// Starts a fresh game with a new lion. The game in play is kept, not erased.
+export function startNewLion(lionName: string) {
+  const current = getSnapshot()
+  if (worthKeeping(current)) saveLions([...getLions(), keep(current)])
+  saveProgress({ ...emptyProgress, lionName })
+}
+
+// Swaps a kept lion back into play, and keeps the game that was in play.
+export function switchToLion(id: string) {
+  const lions = getLions()
+  const chosen = lions.find((lion) => lion.id === id)
+  if (!chosen) return
+  const current = getSnapshot()
+  const others = lions.filter((lion) => lion.id !== id)
+  saveLions(worthKeeping(current) ? [...others, keep(current)] : others)
+  saveProgress(chosen.progress)
+}
+
+// Removes the game in play and every kept lion from this device.
 export function clearProgress() {
   memory = emptyProgress
+  memoryLions = []
   try {
     window.localStorage.removeItem(KEY)
+    window.localStorage.removeItem(LIONS_KEY)
   } catch {
     cachedRaw = null
     cached = emptyProgress
+    lionsRaw = null
+    lionsCached = noLions
   }
   emit()
 }
 
-// Turning saving off moves the current game into memory and wipes the saved copy.
-// Turning it back on writes the current game to this device again.
+// Turning saving off moves the current game and the kept lions into memory and wipes the
+// saved copies. Turning it back on writes them to this device again.
 export function setSaveOnDevice(on: boolean) {
   const current = getSnapshot()
+  const lions = getLions()
   if (on) {
     saveSettings({ saveOnDevice: true })
+    saveLions(lions)
     saveProgress(current)
     return
   }
   memory = current
+  memoryLions = lions
   try {
     window.localStorage.removeItem(KEY)
+    window.localStorage.removeItem(LIONS_KEY)
   } catch {
     // Nothing was saved, so there is nothing to remove.
   }
@@ -139,6 +224,23 @@ export function setSaveOnDevice(on: boolean) {
 
 export function useProgress(): Progress {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+}
+
+export function useKeptLions(): KeptLion[] {
+  return useSyncExternalStore(subscribe, getLions, () => noLions)
+}
+
+// Rewrites a canned line so it uses the name of the lion in play.
+export function useLionText(): (text: string) => string {
+  const { lionName } = useProgress()
+  return (text) => withLionName(text, lionName)
+}
+
+// Levels earned across the live upgrade slots, and the most that can be earned.
+export function pridePower(progress: Progress): { level: number, max: number } {
+  const live = slots.filter((slot) => !slot.locked)
+  const level = live.reduce((sum, slot) => sum + slotLevel(slot, progress.upgrades[slot.id] ?? ''), 0)
+  return { level, max: live.length * MAX_LEVEL }
 }
 
 export function hasSavedGame(progress: Progress): boolean {

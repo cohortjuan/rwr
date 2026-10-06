@@ -2,13 +2,13 @@
 
 import { useSyncExternalStore } from 'react'
 
-// Sound, motion, saving, and day/night preferences, kept per browser.
+// Sound, motion, saving, tips, and day/night preferences, kept per browser.
 
-export type Settings = { sound: boolean, motionOff: boolean, saveOnDevice: boolean, night: boolean }
+export type Settings = { sound: boolean, motionOff: boolean, saveOnDevice: boolean, night: boolean, tips: boolean }
 
 export const SETTINGS_KEY = 'rwr.settings.v1'
 const KEY = SETTINGS_KEY
-const defaults: Settings = { sound: true, motionOff: false, saveOnDevice: true, night: false }
+const defaults: Settings = { sound: true, motionOff: false, saveOnDevice: true, night: false, tips: true }
 
 const listeners = new Set<() => void>()
 let cachedRaw: string | null = null
