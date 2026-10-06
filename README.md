@@ -31,7 +31,8 @@ prophet: nothing in the game promises a job or an outcome.
   notes"). Todah's text types out and his mouth moves while he talks
 - Lion upgrades: four live resume slots with levels, three shown as coming soon
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
-- Looping music, sound effects, and an old-school TV frame around every screen
+- Looping music, sound effects, and an old-school TV frame around every screen, with TV static
+  behind POWER ON
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
@@ -102,6 +103,8 @@ To be completed before submission. Running notes:
   Tunetank, from Pixabay, used under the Pixabay Content License.
 - Background music (`public/audio/background-loop.mp3`): a 67-second loop cut from "Lofi Mood" by
   Pulsebox, from Pixabay, used under the Pixabay Content License.
+- Fonts: Press Start 2P, Pixelify Sans, and Atkinson Hyperlegible, all under the SIL Open Font
+  License, loaded through `next/font`.
 
 ## Design and architecture
 
