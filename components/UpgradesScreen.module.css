@@ -22,8 +22,15 @@
 
 .todah {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
+}
+
+/* The name, power bar and breakdown. In a narrow panel they drop below the portrait. */
+.todah > div:last-child {
+  flex: 1 1 170px;
+  min-width: 0;
 }
 
 .portrait,
@@ -87,6 +94,34 @@
   height: 100%;
   background: var(--gold);
   transition: width 0.4s steps(6);
+}
+
+/* A fold-out list of what Pride Power is made of. */
+.powerFrom {
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+
+.powerFrom summary {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  color: var(--gold-bright);
+  cursor: pointer;
+}
+
+.powerFrom ul {
+  margin: 8px 0 0;
+  padding-left: 1.1em;
+}
+
+.powerFrom ul ul {
+  margin-top: 4px;
+  opacity: 0.85;
+}
+
+.milestoneMet {
+  color: var(--gold-bright);
+  list-style-type: '\2713  ';
 }
 
 .leader {

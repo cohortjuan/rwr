@@ -1,7 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
-import { compassTotal, stepsDone, trailSteps } from '@/lib/compass'
+import { circles, compassTotal, stepsDone, trailSteps } from '@/lib/compass'
 import type { EntryChoice } from '@/lib/lines'
 import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
@@ -336,12 +336,42 @@ export function slotContent(progress: Progress, slot: Slot, others: Progress[] =
   return progress.upgrades[slot.id] ?? ''
 }
 
-// Pride Power: levels earned across the live upgrade slots, plus one for each real-world
-// trail step done. Also returns the most that can be earned.
-export function pridePower(progress: Progress, others: Progress[] = []): { level: number, max: number } {
+// One-off milestones, each worth one Pride Power. The last is the roar itself.
+export const milestones = [
+  { id: 'quest', met: (progress: Progress) => progress.onboardingDone },
+  { id: 'goal', met: (progress: Progress) => progress.goalText.trim().length > 0 },
+  { id: 'claims', met: (progress: Progress) => circles.every((circle) => progress.compass[circle].claim.trim().length > 0) },
+  { id: 'cheer', met: (progress: Progress) => progress.cheersSent > 0 },
+  { id: 'roar', met: (progress: Progress) => Boolean(progress.goalAchievedAt) },
+] as const
+
+export type PowerPart = { id: 'slots' | 'map' | 'steps' | 'milestones', level: number, max: number }
+
+// Where Pride Power comes from. With six live slots it adds up to 40:
+// 18 from upgrade levels, 12 from trail map evidence, 5 from real-world steps, 5 from milestones.
+// Unlocking another slot later adds 3 to the total.
+export function powerParts(progress: Progress, others: Progress[] = []): PowerPart[] {
   const live = slots.filter((slot) => !slot.locked)
-  const level = live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot, others)), 0)
-  return { level: level + stepsDone(progress), max: live.length * MAX_LEVEL + trailSteps.length }
+  const map = compassTotal(progress)
+  return [
+    {
+      id: 'slots',
+      level: live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot, others)), 0),
+      max: live.length * MAX_LEVEL,
+    },
+    { id: 'map', level: map.score, max: map.max },
+    { id: 'steps', level: stepsDone(progress), max: trailSteps.length },
+    { id: 'milestones', level: milestones.filter((milestone) => milestone.met(progress)).length, max: milestones.length },
+  ]
+}
+
+// Pride Power, and the most that can be earned.
+export function pridePower(progress: Progress, others: Progress[] = []): { level: number, max: number } {
+  const parts = powerParts(progress, others)
+  return {
+    level: parts.reduce((sum, part) => sum + part.level, 0),
+    max: parts.reduce((sum, part) => sum + part.max, 0),
+  }
 }
 
 export function hasSavedGame(progress: Progress): boolean {

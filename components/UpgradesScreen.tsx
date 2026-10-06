@@ -6,8 +6,9 @@ import { lines } from '@/lib/lines'
 import { circles, compassTotal } from '@/lib/compass'
 import {
   isPath,
+  milestones,
   PATH_EVIDENCE,
-  pridePower,
+  powerParts,
   saveProgress,
   slotContent,
   todahForm,
@@ -78,7 +79,9 @@ export default function UpgradesScreen() {
   // Den counts paths across every lion, so the other lions' games are needed too.
   const keptLions = useKeptLions()
   const others = keptLions.map((kept) => kept.progress)
-  const { level: totalLevel, max: totalMax } = pridePower(progress, others)
+  const parts = powerParts(progress, others)
+  const totalLevel = parts.reduce((sum, part) => sum + part.level, 0)
+  const totalMax = parts.reduce((sum, part) => sum + part.max, 0)
   const evidence = compassTotal(progress)
   // What the player has already said on the trail, offered back as wording to reuse.
   const trailWords = [
@@ -174,6 +177,29 @@ export default function UpgradesScreen() {
               >
                 <div className={styles.powerFill} style={{ width: `${(totalLevel / totalMax) * 100}%` }} />
               </div>
+              <details className={styles.powerFrom}>
+                <summary>{lines.upgrades.powerFrom}</summary>
+                <ul>
+                  {parts.map((part) => (
+                    <li key={part.id}>
+                      {lines.upgrades.powerPart(lines.upgrades.powerParts[part.id], part.level, part.max)}
+                      {part.id === 'milestones' && (
+                        <ul>
+                          {milestones.map((milestone) => (
+                            <li key={milestone.id} className={milestone.met(progress) ? styles.milestoneMet : undefined}>
+                              {lion(lines.upgrades.milestones[milestone.id])}
+                              <span className="sr-only">
+                                {' '}
+                                ({milestone.met(progress) ? lines.upgrades.checkMet : lines.upgrades.checkOpen})
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </details>
             </div>
           </section>
 

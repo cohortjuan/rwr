@@ -36,6 +36,8 @@ prophet: nothing in the game promises a job or an outcome.
 - Lion upgrades: six live slots, one shown as coming soon. Levels are earned by what an entry
   says (what you did, a result with a number), not by its length. Real-world trail steps add
   Pride Power. Helpful tips can be switched off
+- Pride Power runs to 40: 18 from upgrade levels, 12 from trail map evidence, 5 from real-world
+  steps, and 5 from milestones, the last of which is the roar
 - Den: levels up with each career path explored, meaning a lion with a main goal and evidence
   on its trail map, so starting a new game is not enough
 - My Pride: add friends by QR code or link with no account, follow their lions, and send preset
