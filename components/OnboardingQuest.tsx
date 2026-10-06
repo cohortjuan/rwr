@@ -15,7 +15,7 @@ type Step = 'hello' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'con
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
 
-type TodahReply = { reply: string, complete: boolean, scripted: boolean, capped: boolean }
+type TodahReply = { reply: string, complete: boolean, scripted: boolean }
 
 function initialStep(progress: Progress): Step {
   if (progress.onboardingDone) return 'done'
@@ -28,7 +28,7 @@ function initialStep(progress: Progress): Step {
 function scriptedReply(history: ChatMessage[]): TodahReply {
   const asked = history.filter((message) => message.role === 'todah').length
   const line = lines.scriptedFollowUps[asked]
-  return { reply: line ?? '', complete: !line, scripted: true, capped: false }
+  return { reply: line ?? '', complete: !line, scripted: true }
 }
 
 // Todah writes a token instead of the player's name, so the name never leaves this device.
@@ -49,10 +49,10 @@ async function askTodah(progress: Progress, history: ChatMessage[], demo: boolea
         messages: history,
       }),
     })
-    if (response.status === 429) return { reply: lines.errors.aiCap, complete: true, scripted: false, capped: true }
+    if (response.status === 429) return { reply: lines.errors.aiCap, complete: true, scripted: false }
     if (!response.ok) return scriptedReply(history)
     const data = await response.json()
-    return { reply: String(data.reply ?? ''), complete: Boolean(data.complete), scripted: false, capped: false }
+    return { reply: String(data.reply ?? ''), complete: Boolean(data.complete), scripted: false }
   } catch {
     return scriptedReply(history)
   }
@@ -74,7 +74,8 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   const [pending, setPending] = useState(false)
   const [usedScript, setUsedScript] = useState(false)
   const [notice, setNotice] = useState('')
-  const requestedFirst = useRef(false)
+  // Length of the chat we last asked Todah to reply to, so each turn is requested once.
+  const requestedFor = useRef(-1)
 
   const chat = progress.onboardingChat
   const answers = chat.filter((message) => message.role === 'user').length
@@ -105,12 +106,13 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     [progress, demo, sound],
   )
 
-  // Entering the chat with an empty log: ask Todah for the warm-up question once.
+  // Todah owes a reply when the chat is empty (the warm-up question) or ends on the player's
+  // answer. Driving this from the saved chat also resumes cleanly after a reload mid-reply.
   useEffect(() => {
-    if (step !== 'chat' || chat.length > 0 || requestedFirst.current) return
-    requestedFirst.current = true
-    void requestReply([])
-  }, [step, chat.length, requestReply])
+    if (step !== 'chat' || awaitingAnswer || requestedFor.current === chat.length) return
+    requestedFor.current = chat.length
+    void requestReply(chat)
+  }, [step, awaitingAnswer, chat, requestReply])
 
   function submitName(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -139,9 +141,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     }
     playSfx('select', sound)
     setAnswerDraft('')
-    const history: ChatMessage[] = [...chat, { role: 'user', text }]
-    saveProgress({ onboardingChat: history })
-    void requestReply(history)
+    saveProgress({ onboardingChat: [...chat, { role: 'user', text }] })
   }
 
   const name = progress.playerName || 'traveler'

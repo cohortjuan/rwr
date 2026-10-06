@@ -100,7 +100,6 @@ export const lines = {
   errors: {
     aiUnavailable: 'My voice is a little faint right now, so I will stick to my trail notes.',
     aiCap: 'We have talked a lot this session. Let us rest here and pick the trail back up later.',
-    network: 'I lost the trail for a second. Please try again.',
     emptyAnswer: 'Type something first. A few words are plenty.',
   },
 
@@ -130,6 +129,7 @@ export const lines = {
     link: 'PRIVACY',
   },
 
+  // For the Talk to Todah help chat (not built yet).
   help: {
     menuHeading: 'TALK TO TODAH',
     menu: [

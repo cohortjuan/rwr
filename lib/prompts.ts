@@ -21,6 +21,7 @@ export const COMPLETE_TOKENS = ['QUEST_COMPLETE', 'PHASE_COMPLETE']
 const guardrails = `Guardrails that always apply:
 - You do not know the player's name. If you address them, write ${NAME_TOKEN} exactly like
   that and the game fills it in. Never ask for their full name, employer, address, or contacts.
+- Plain text only: no emoji, no markdown, no lists. This is a 16-bit game.
 - Never diagnose, label, or tell them what they should do.
 - Never claim any job or outcome is promised to them. You are a guide, not a prophet.
 - If they express hopelessness or distress, pause the game talk, respond with care, and

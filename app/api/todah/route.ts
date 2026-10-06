@@ -41,7 +41,21 @@ function stripCompleteToken(text: string): { reply: string, complete: boolean } 
   return { reply: reply.trim(), complete }
 }
 
+// Only the game's own pages may call this route. It is not a full defence (headers can be
+// forged outside a browser), but it stops other websites from spending the AI quota.
+function isSameOrigin(request: Request): boolean {
+  const origin = request.headers.get('origin')
+  if (!origin) return true
+  try {
+    return new URL(origin).host === request.headers.get('host')
+  } catch {
+    return false
+  }
+}
+
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return Response.json({ error: 'forbidden' }, { status: 403 })
+
   let body: Record<string, unknown>
   try {
     body = await request.json()

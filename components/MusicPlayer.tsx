@@ -4,8 +4,13 @@ import { useEffect, useRef } from 'react'
 import { MUSIC_TRACK, MUSIC_VOLUME } from '@/lib/assets'
 import { useSettings } from '@/lib/settings'
 
+// Taps, clicks, and key presses that browsers accept as permission to start audio.
+const gestures = ['pointerup', 'touchend', 'click', 'keydown']
+
 // Loops the background track while sound is on. Browsers block audio until the player
-// interacts with the page, so playback starts on the first click or key press.
+// interacts with the page, and phones can refuse the first attempt, so every interaction
+// tries again until the music is actually playing. That also brings it back after the
+// phone pauses it (a call, a locked screen).
 export default function MusicPlayer() {
   const { sound } = useSettings()
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -18,18 +23,16 @@ export default function MusicPlayer() {
       audio.pause()
       return
     }
-    function start() {
-      audio?.play().catch(() => {})
+    function tryPlay() {
+      if (audio?.paused) audio.play().catch(() => {})
     }
-    start()
-    // Phones only allow audio to start from a tap, so listen for touch and click too.
-    const gestures = ['pointerdown', 'touchend', 'click', 'keydown']
-    gestures.forEach((gesture) => window.addEventListener(gesture, start, { once: true }))
+    tryPlay()
+    gestures.forEach((gesture) => window.addEventListener(gesture, tryPlay))
     return () => {
-      gestures.forEach((gesture) => window.removeEventListener(gesture, start))
+      gestures.forEach((gesture) => window.removeEventListener(gesture, tryPlay))
     }
   }, [sound])
 
   if (!MUSIC_TRACK) return null
-  return <audio ref={audioRef} src={MUSIC_TRACK} loop preload="auto" />
+  return <audio ref={audioRef} src={MUSIC_TRACK} loop playsInline preload="auto" />
 }

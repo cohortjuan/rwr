@@ -131,7 +131,6 @@ export default function TitleScreen() {
             </div>
           )}
         </div>
-
       </main>
 
       <ConfirmBox
