@@ -240,3 +240,10 @@
   justify-content: center;
   gap: 12px;
 }
+
+/* Phones: lift the prompt above the settings bar. */
+@media (max-width: 640px) {
+  .prompt {
+    bottom: calc(7% + 44px);
+  }
+}

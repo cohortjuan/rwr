@@ -21,3 +21,19 @@
 .toggle:hover {
   background: var(--indigo);
 }
+
+/* Phones: center the bar along the bottom edge so it clears the on-screen prompts. */
+@media (max-width: 640px) {
+  .bar {
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .toggle {
+    font-size: 0.5rem;
+    padding: 7px 6px;
+  }
+}

@@ -9,7 +9,7 @@ export const lines = {
     name: 'RWR',
     subtitle: '16-BIT CAREER ADVENTURE',
     pressStart: 'PRESS START',
-    skipHint: 'Press any key or click to skip',
+    skipHint: 'Tap or press any key to skip',
     continuePrompt: 'CONTINUE?',
     continueYes: 'CONTINUE',
     continueNew: 'NEW GAME',
