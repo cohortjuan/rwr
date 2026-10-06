@@ -14,6 +14,8 @@ export const lines = {
     continueYes: 'CONTINUE',
     continueNew: 'NEW GAME',
     newGameConfirm: 'Start over? This clears the progress saved in this browser.',
+    newGameYes: 'YES, START OVER',
+    newGameNo: 'KEEP MY GAME',
   },
 
   settings: {
@@ -118,6 +120,8 @@ export const lines = {
     aiOff: 'AI REPLIES: OFF',
     deleteButton: 'DELETE MY DATA',
     deleteConfirm: 'Delete your game from this device, and from your account if you are signed in? This cannot be undone.',
+    deleteYes: 'YES, DELETE IT',
+    deleteNo: 'KEEP MY DATA',
     deleted: 'Done. Your game data is gone from this device.',
     deletedAccount: 'Done. Your game data is gone from this device and from your account, and you are signed out.',
     deleteFailed: 'Your device copy is deleted, but the account copy could not be reached. Please try again.',

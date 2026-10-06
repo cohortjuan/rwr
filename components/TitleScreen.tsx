@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
 import { SEATED_SPRITE } from '@/lib/assets'
 import { lines } from '@/lib/lines'
@@ -21,6 +22,7 @@ export default function TitleScreen() {
   const [walkDone, setWalkDone] = useState(false)
   const [boxOpen, setBoxOpen] = useState(false)
   const [signedIn, setSignedIn] = useState(false)
+  const [confirmingNew, setConfirmingNew] = useState(false)
 
   // Reduced motion: the cub starts seated and never walks.
   const seated = walkDone || reducedMotion
@@ -54,17 +56,17 @@ export default function TitleScreen() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (boxOpen || ignoredKeys.has(event.key)) return
+      if (boxOpen || confirmingNew || ignoredKeys.has(event.key)) return
       const target = event.target as HTMLElement | null
       if (target && target.closest('button, a, input, textarea, dialog')) return
       advance()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [advance, boxOpen])
+  }, [advance, boxOpen, confirmingNew])
 
   function newGame() {
-    if (!window.confirm(lines.title.newGameConfirm)) return
+    setConfirmingNew(false)
     clearProgress()
     if (signedIn) router.push('/quest')
     else setBoxOpen(true)
@@ -122,7 +124,7 @@ export default function TitleScreen() {
                 <button type="button" className="btn" onClick={enterGame}>
                   {lines.title.continueYes}
                 </button>
-                <button type="button" className="btn btn-quiet" onClick={newGame}>
+                <button type="button" className="btn btn-quiet" onClick={() => setConfirmingNew(true)}>
                   {lines.title.continueNew}
                 </button>
               </div>
@@ -131,6 +133,15 @@ export default function TitleScreen() {
         </div>
 
       </main>
+
+      <ConfirmBox
+        open={confirmingNew}
+        text={lines.title.newGameConfirm}
+        yes={lines.title.newGameYes}
+        no={lines.title.newGameNo}
+        onYes={newGame}
+        onNo={() => setConfirmingNew(false)}
+      />
 
       <LoginBox open={boxOpen} onClose={() => setBoxOpen(false)} onEnter={enterGame} />
     </>

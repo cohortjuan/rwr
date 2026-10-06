@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import ConfirmBox from '@/components/ConfirmBox'
 import { lines } from '@/lib/lines'
 import { clearProgress, saveProgress, setSaveOnDevice, useProgress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -26,9 +27,10 @@ export default function PrivacyScreen() {
   const progress = useProgress()
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   async function deleteEverything() {
-    if (!window.confirm(lines.privacy.deleteConfirm)) return
+    setConfirming(false)
     setBusy(true)
     clearProgress()
     const supabase = getSupabase()
@@ -86,7 +88,7 @@ export default function PrivacyScreen() {
             >
               {progress.aiConsent === 'yes' ? lines.privacy.aiOn : lines.privacy.aiOff}
             </button>
-            <button type="button" className={`btn ${styles.danger}`} disabled={busy} onClick={deleteEverything}>
+            <button type="button" className={`btn ${styles.danger}`} disabled={busy} onClick={() => setConfirming(true)}>
               {lines.privacy.deleteButton}
             </button>
           </div>
@@ -102,6 +104,15 @@ export default function PrivacyScreen() {
           </Link>
         </p>
       </div>
+
+      <ConfirmBox
+        open={confirming}
+        text={lines.privacy.deleteConfirm}
+        yes={lines.privacy.deleteYes}
+        no={lines.privacy.deleteNo}
+        onYes={deleteEverything}
+        onNo={() => setConfirming(false)}
+      />
     </main>
   )
 }
