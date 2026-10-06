@@ -36,7 +36,8 @@ export const lines = {
     close: 'CLOSE',
     working: 'One moment...',
     privacy:
-      'Guest progress stays in this browser only. With an account, your email and your game progress are stored in our database so you can pick up on another device. Answers you type to Todah are sent to an AI service to write his replies, so please use made-up details while RWR is in testing.',
+      'Your game is saved in this browser only. An account stores your email with our login provider. Todah asks before any answer is sent to an AI service, and you can delete everything at any time.',
+    privacyLink: 'How RWR handles your data',
     notConfigured: 'Accounts are not switched on yet. Guest mode works right now.',
     signupCheckEmail: 'Almost there. Check your email for a confirmation link, then log in.',
     genericError: 'That did not work. Check your email and password and try again.',
@@ -71,6 +72,11 @@ export const lines = {
       curious: 'Curious is the best reason there is. Let us wander a little and see what turns up.',
     } as Record<EntryChoice, string>,
     reactionContinue: 'KEEP GOING',
+    consent:
+      'One thing before we go on. To answer you in my own words, what you type next is sent to an AI service. Your name stays here with me. Leave out anything you would not tell a stranger, like full names, employers, or addresses. Or I can stick to my trail notes, and nothing you type leaves this device.',
+    consentYes: 'USE AI REPLIES',
+    consentNo: 'USE TRAIL NOTES ONLY',
+    consentMore: 'PRIVACY DETAILS',
     thinking: 'Todah is thinking...',
     answerLabel: 'Your answer',
     answerPlaceholder: 'Type your answer',
@@ -94,6 +100,30 @@ export const lines = {
     aiCap: 'We have talked a lot this session. Let us rest here and pick the trail back up later.',
     network: 'I lost the trail for a second. Please try again.',
     emptyAnswer: 'Type something first. A few words are plenty.',
+  },
+
+  privacy: {
+    heading: 'YOUR DATA',
+    intro: 'Some answers in RWR are personal. Here is exactly where they go, and how to remove them.',
+    points: [
+      { title: 'On this device', body: 'Your name, answers, upgrades, and goal are saved in this browser so you can come back. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
+      { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
+      { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database.' },
+      { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
+    ],
+    saveOn: 'SAVE ON THIS DEVICE: ON',
+    saveOff: 'SAVE ON THIS DEVICE: OFF',
+    saveOffNote: 'Saving is off. Your game lasts until you close or reload this tab.',
+    aiOn: 'AI REPLIES: ON',
+    aiOff: 'AI REPLIES: OFF',
+    deleteButton: 'DELETE MY DATA',
+    deleteConfirm: 'Delete your game from this device, and from your account if you are signed in? This cannot be undone.',
+    deleted: 'Done. Your game data is gone from this device.',
+    deletedAccount: 'Done. Your game data is gone from this device and from your account, and you are signed out.',
+    deleteFailed: 'Your device copy is deleted, but the account copy could not be reached. Please try again.',
+    accountNote: 'To remove the login email itself, contact the person who runs this copy of RWR.',
+    back: 'BACK TO TITLE',
+    link: 'PRIVACY',
   },
 
   help: {

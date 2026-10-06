@@ -29,6 +29,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Lion upgrades: four live resume slots with levels, three shown as coming soon
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
 - Sound and motion toggles, reduced-motion support
+- Privacy page: AI consent, save-on-device switch, delete my data
 
 Not built yet: interview levels 1 to 4, crossroads, profile card, quest log, Talk to Todah chat,
 PDF export, saving account progress to the database.
@@ -66,10 +67,18 @@ Open http://localhost:3000. Add `?demo=1` to `/quest` to play the quest with zer
 
 ## Privacy
 
-- Guest progress stays in your browser (localStorage).
-- With an account, your email is stored by Supabase Auth.
-- Answers typed to Todah are sent to Google Gemini or Groq to write his replies. Free AI tiers
-  may use prompts to improve their products. **Please use made-up answers while testing.**
+Some answers in RWR are personal, so the game is built to collect as little as possible:
+
+- Todah asks before any answer is sent to an AI service. Say no and the quest runs from
+  scripted lines, entirely in your browser.
+- Your name never leaves your device. Email addresses, links, and phone numbers are removed
+  from answers before they are sent to the AI provider.
+- The server does not log or store what you type, and there is no transcript table in the
+  database. An account stores only your email (with Supabase Auth).
+- Your game is saved in your browser (localStorage). The in-game Privacy page lets you turn
+  that off on a shared computer and delete all of your data.
+- AI providers have their own data terms. **While RWR is in testing, please leave out real
+  names, employers, and anything you would not tell a stranger.**
 
 ## How AI was used
 

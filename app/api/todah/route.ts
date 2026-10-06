@@ -1,12 +1,14 @@
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { buildSystemPrompt, COMPLETE_TOKENS, type Phase, type TodahMode } from '@/lib/prompts'
+import { scrub } from '@/lib/scrub'
 
 // The only place the app talks to an LLM. Keys stay on the server.
+// Privacy: the player's name is never accepted here, contact details are scrubbed from
+// answers before they are sent on, and nothing a player types is logged or stored.
 
 const SESSION_MESSAGE_CAP = 30
 const MAX_TEXT_LENGTH = 1000
-const MAX_NAME_LENGTH = 40
 // Onboarding is a warm-up question plus two follow-ups, so three answers end it.
 const ONBOARDING_ANSWERS = 3
 
@@ -25,13 +27,6 @@ function isIncomingMessage(value: unknown): value is IncomingMessage {
     message.text.trim().length > 0 &&
     message.text.length <= MAX_TEXT_LENGTH
   )
-}
-
-// Names go into the system prompt, so keep them short and free of quotes and line breaks.
-function cleanName(value: unknown): string {
-  if (typeof value !== 'string') return 'traveler'
-  const name = value.replace(/["\n\r\\]/g, ' ').trim().slice(0, MAX_NAME_LENGTH)
-  return name || 'traveler'
 }
 
 function stripCompleteToken(text: string): { reply: string, complete: boolean } {
@@ -63,14 +58,13 @@ export async function POST(request: Request) {
 
   const system = buildSystemPrompt({
     mode,
-    playerName: cleanName(body.playerName),
     entryChoice: entryChoices.includes(body.entryChoice as EntryChoice) ? (body.entryChoice as EntryChoice) : null,
     phase: phases.includes(body.phase as Phase) ? (body.phase as Phase) : undefined,
   })
 
   const messages: LlmMessage[] = (incoming as IncomingMessage[]).map((message) => ({
     role: message.role === 'todah' ? 'assistant' : 'user',
-    text: message.text,
+    text: message.role === 'user' ? scrub(message.text) : message.text,
   }))
   // Providers expect the conversation to open with a user turn.
   if (messages.length === 0 || messages[0].role !== 'user') {

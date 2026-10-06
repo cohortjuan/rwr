@@ -2,9 +2,11 @@
 
 import { useSyncExternalStore } from 'react'
 import type { EntryChoice } from '@/lib/lines'
+import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
 import { slots, slotLevel, type SlotId } from '@/lib/upgrades'
 
-// Guest progress lives in this browser's localStorage. Account sync to the database comes later.
+// Progress lives in this browser's localStorage, or in memory only when the player turns
+// "save on this device" off. Account sync to the database comes later.
 
 export type ChatMessage = { role: 'user' | 'todah', text: string }
 
@@ -12,6 +14,8 @@ export type Progress = {
   playerName: string
   entryChoice: EntryChoice | null
   onboardingDone: boolean
+  // null until the player answers the consent question before the first AI reply.
+  aiConsent: 'yes' | 'no' | null
   onboardingChat: ChatMessage[]
   upgrades: Partial<Record<SlotId, string>>
   goalText: string
@@ -26,6 +30,7 @@ export const emptyProgress: Progress = {
   playerName: '',
   entryChoice: null,
   onboardingDone: false,
+  aiConsent: null,
   onboardingChat: [],
   upgrades: {},
   goalText: '',
@@ -44,7 +49,19 @@ function readRaw(): string | null {
   }
 }
 
+// Memory-only mode: nothing about the game is written to this device.
+let memory: Progress = emptyProgress
+
+function memoryOnly(): boolean {
+  try {
+    return JSON.parse(window.localStorage.getItem(SETTINGS_KEY) ?? '{}').saveOnDevice === false
+  } catch {
+    return false
+  }
+}
+
 function getSnapshot(): Progress {
+  if (memoryOnly()) return memory
   const raw = readRaw()
   if (raw === cachedRaw) return cached
   cachedRaw = raw
@@ -75,6 +92,11 @@ function emit() {
 
 export function saveProgress(patch: Partial<Progress>) {
   const next = { ...getSnapshot(), ...patch }
+  if (memoryOnly()) {
+    memory = next
+    emit()
+    return
+  }
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next))
   } catch {
@@ -86,12 +108,32 @@ export function saveProgress(patch: Partial<Progress>) {
 }
 
 export function clearProgress() {
+  memory = emptyProgress
   try {
     window.localStorage.removeItem(KEY)
   } catch {
     cachedRaw = null
     cached = emptyProgress
   }
+  emit()
+}
+
+// Turning saving off moves the current game into memory and wipes the saved copy.
+// Turning it back on writes the current game to this device again.
+export function setSaveOnDevice(on: boolean) {
+  const current = getSnapshot()
+  if (on) {
+    saveSettings({ saveOnDevice: true })
+    saveProgress(current)
+    return
+  }
+  memory = current
+  try {
+    window.localStorage.removeItem(KEY)
+  } catch {
+    // Nothing was saved, so there is nothing to remove.
+  }
+  saveSettings({ saveOnDevice: false })
   emit()
 }
 

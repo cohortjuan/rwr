@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { lines } from '@/lib/lines'
 import { getSupabase } from '@/lib/supabase'
 import styles from './LoginBox.module.css'
@@ -157,7 +158,9 @@ export default function LoginBox({ open, onClose, onEnter }: Props) {
         </button>
       </div>
 
-      <p className="note">{lines.login.privacy}</p>
+      <p className="note">
+        {lines.login.privacy} <Link href="/privacy">{lines.login.privacyLink}</Link>
+      </p>
     </dialog>
   )
 }

@@ -1,4 +1,5 @@
 import type { EntryChoice } from '@/lib/lines'
+import { NAME_TOKEN } from '@/lib/tokens'
 
 // System prompts for Todah. Server-side only.
 // Every prompt carries the same guardrails: no promised outcomes, and a distress pause.
@@ -9,7 +10,6 @@ export type Phase = 'Passion' | 'Vocation' | 'Mission' | 'Profession' | 'Crossro
 
 export type PromptContext = {
   mode: TodahMode
-  playerName: string
   entryChoice: EntryChoice | null
   phase?: Phase
   claimsJson?: string
@@ -19,6 +19,8 @@ export type PromptContext = {
 export const COMPLETE_TOKENS = ['QUEST_COMPLETE', 'PHASE_COMPLETE']
 
 const guardrails = `Guardrails that always apply:
+- You do not know the player's name. If you address them, write ${NAME_TOKEN} exactly like
+  that and the game fills it in. Never ask for their full name, employer, address, or contacts.
 - Never diagnose, label, or tell them what they should do.
 - Never claim any job or outcome is promised to them. You are a guide, not a prophet.
 - If they express hopelessness or distress, pause the game talk, respond with care, and
@@ -37,7 +39,7 @@ const entryText: Record<EntryChoice, string> = {
 function onboardingPrompt(context: PromptContext): string {
   const entry = context.entryChoice ? entryText[context.entryChoice] : 'not said'
   return `You are Todah, a warm, curious lion cub who guides career exploration in a retro 16-bit game.
-The player is called "${context.playerName}". What brought them here: ${entry}.
+What brought the player here: ${entry}.
 
 This is the warm-up quest. Rules:
 - Ask exactly ONE question per message. Keep messages under 60 words.
@@ -54,7 +56,6 @@ ${guardrails}`
 function interviewPrompt(context: PromptContext): string {
   return `You are Todah, a warm, curious career-exploration guide in a retro 16-bit game. You help one person
 explore what they truly love, are good at, what the world needs, and what they can be paid for.
-The player is called "${context.playerName}".
 
 Rules:
 - Ask exactly ONE question per message. Keep messages under 80 words.
@@ -76,7 +77,7 @@ function helpPrompt(context: PromptContext): string {
     ? `What you know about them so far: ${context.profileSummary}`
     : 'They have not finished the interview yet, so you know little about them.'
   return `You are Todah, a warm, curious lion who guides career exploration in a retro 16-bit game.
-This is the "Talk to Todah" help chat with the player called "${context.playerName}". ${summary}
+This is the "Talk to Todah" help chat. ${summary}
 
 Rules:
 - Keep every reply under 80 words.

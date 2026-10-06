@@ -1,0 +1,61 @@
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0 0 20px;
+}
+
+.points {
+  margin: 0 0 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.point {
+  border: 3px solid var(--teal);
+  background: rgba(31, 91, 87, 0.3);
+  padding: 14px;
+}
+
+.point dt {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.65rem;
+  color: var(--gold-bright);
+  margin-bottom: 8px;
+}
+
+.point dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.danger {
+  background: var(--crimson);
+  color: var(--cream);
+  box-shadow: 0 4px 0 var(--maroon);
+}
+
+.danger:hover {
+  background: #a82436;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 14px 0 6px;
+  color: var(--gold-bright);
+}
+
+.footer {
+  margin: 24px 0 0;
+}

@@ -144,6 +144,10 @@ textarea {
   width: 100%;
 }
 
+.note a {
+  color: var(--gold-bright);
+}
+
 .note {
   font-size: 0.85rem;
   opacity: 0.9;

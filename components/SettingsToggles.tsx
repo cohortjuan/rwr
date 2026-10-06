@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { lines } from '@/lib/lines'
 import { saveSettings, useSettings } from '@/lib/settings'
 import styles from './SettingsToggles.module.css'
@@ -13,7 +14,10 @@ export default function SettingsToggles() {
   }, [settings.motionOff])
 
   return (
-    <div className={styles.bar} data-no-advance>
+    <div className={styles.bar}>
+      <Link className={styles.toggle} href="/privacy">
+        {lines.privacy.link}
+      </Link>
       <button
         type="button"
         className={styles.toggle}

@@ -5,11 +5,12 @@ import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import { lines, type EntryChoice } from '@/lib/lines'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
+import { NAME_TOKEN } from '@/lib/tokens'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './OnboardingQuest.module.css'
 
-type Step = 'hello' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'chat' | 'done'
+type Step = 'hello' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
 
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
@@ -30,15 +31,20 @@ function scriptedReply(history: ChatMessage[]): TodahReply {
   return { reply: line ?? '', complete: !line, scripted: true, capped: false }
 }
 
+// Todah writes a token instead of the player's name, so the name never leaves this device.
+function withName(text: string, name: string): string {
+  return text.split(NAME_TOKEN).join(name)
+}
+
 async function askTodah(progress: Progress, history: ChatMessage[], demo: boolean): Promise<TodahReply> {
-  if (demo) return scriptedReply(history)
+  // No consent, no AI call: the scripted trail notes run entirely in the browser.
+  if (demo || progress.aiConsent !== 'yes') return scriptedReply(history)
   try {
     const response = await fetch('/api/todah', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode: 'onboarding',
-        playerName: progress.playerName,
         entryChoice: progress.entryChoice,
         messages: history,
       }),
@@ -112,6 +118,11 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     if (!name) return
     saveProgress({ playerName: name })
     go('entry')
+  }
+
+  function chooseConsent(choice: 'yes' | 'no') {
+    saveProgress({ aiConsent: choice })
+    go('chat')
   }
 
   function chooseEntry(choice: EntryChoice) {
@@ -209,9 +220,28 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
 
         {step === 'reaction' && progress.entryChoice && (
           <DialogBox text={lines.onboarding.reactions[progress.entryChoice]}>
-            <button type="button" className="btn" autoFocus onClick={() => go('chat')}>
+            <button
+              type="button"
+              className="btn"
+              autoFocus
+              onClick={() => go(demo || progress.aiConsent ? 'chat' : 'consent')}
+            >
               {lines.onboarding.reactionContinue}
             </button>
+          </DialogBox>
+        )}
+
+        {step === 'consent' && (
+          <DialogBox text={lines.onboarding.consent}>
+            <button type="button" className="btn" onClick={() => chooseConsent('yes')}>
+              {lines.onboarding.consentYes}
+            </button>
+            <button type="button" className="btn" onClick={() => chooseConsent('no')}>
+              {lines.onboarding.consentNo}
+            </button>
+            <Link className="btn btn-quiet" href="/privacy">
+              {lines.onboarding.consentMore}
+            </Link>
           </DialogBox>
         )}
 
@@ -222,7 +252,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
                 {chat.slice(0, lastTodah && awaitingAnswer ? -1 : undefined).map((message, index) => (
                   <li key={index} className={message.role === 'user' ? styles.logUser : styles.logTodah}>
                     <span className={styles.logWho}>{message.role === 'user' ? name : 'TODAH'}</span>
-                    {message.text}
+                    {withName(message.text, name)}
                   </li>
                 ))}
               </ol>
@@ -231,7 +261,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             {pending && <p className={styles.thinking}>{lines.onboarding.thinking}</p>}
 
             {!pending && awaitingAnswer && lastTodah && (
-              <DialogBox text={lastTodah.text}>
+              <DialogBox text={withName(lastTodah.text, name)}>
                 <form className={styles.answerForm} onSubmit={submitAnswer}>
                   <label className="sr-only" htmlFor="answer">
                     {lines.onboarding.answerLabel}
@@ -260,7 +290,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             )}
 
             <p className={styles.notice} role="status">
-              {notice || (usedScript && !demo ? lines.errors.aiUnavailable : '')}
+              {notice || (usedScript && !demo && progress.aiConsent === 'yes' ? lines.errors.aiUnavailable : '')}
             </p>
           </>
         )}

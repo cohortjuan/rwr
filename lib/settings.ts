@@ -4,10 +4,11 @@ import { useSyncExternalStore } from 'react'
 
 // Sound and motion preferences, kept per browser.
 
-export type Settings = { sound: boolean, motionOff: boolean }
+export type Settings = { sound: boolean, motionOff: boolean, saveOnDevice: boolean }
 
-const KEY = 'rwr.settings.v1'
-const defaults: Settings = { sound: true, motionOff: false }
+export const SETTINGS_KEY = 'rwr.settings.v1'
+const KEY = SETTINGS_KEY
+const defaults: Settings = { sound: true, motionOff: false, saveOnDevice: true }
 
 const listeners = new Set<() => void>()
 let cachedRaw: string | null = null
