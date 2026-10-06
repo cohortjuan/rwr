@@ -1,0 +1,7 @@
+HANDOFF.md
+node_modules/
+.next/
+.env
+.env.local
+.env*.local
+CLAUDE.md
