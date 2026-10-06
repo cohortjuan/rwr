@@ -6,7 +6,7 @@ import { MUSIC_BACKGROUND_VOLUME, MUSIC_FADE_SECONDS, MUSIC_TRACK, MUSIC_VOLUME 
 import { useSettings } from '@/lib/settings'
 
 // Taps, clicks, and key presses that browsers accept as permission to start audio.
-const gestures = ['pointerup', 'touchend', 'click', 'keydown']
+const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
 
 // Loops the theme while sound is on: full volume on the title screen, then it fades down to
 // background level for the rest of the game.
@@ -64,20 +64,35 @@ export default function MusicPlayer() {
       }
     }
 
+    // Trust the element's own events over its `paused` flag, which some phones leave
+    // false after a blocked attempt.
+    let playing = false
+    const onPlaying = () => {
+      playing = true
+    }
+    const onStopped = () => {
+      playing = false
+    }
+
     function tryPlay(event?: Event) {
       if (!audio) return
       // Only build the audio graph from a real interaction, or the browser keeps it suspended.
       if (event) connect(audio)
       const context = contextRef.current
-      if (context?.state === 'suspended') void context.resume()
-      if (audio.paused) audio.play().catch(() => {})
+      if (context && context.state !== 'running') void context.resume()
+      if (!playing) audio.play().catch(() => {})
     }
 
     audio.volume = contextRef.current ? 1 : levelRef.current
+    audio.addEventListener('playing', onPlaying)
+    audio.addEventListener('pause', onStopped)
     tryPlay()
-    gestures.forEach((gesture) => window.addEventListener(gesture, tryPlay))
+    // Capture phase: buttons that stop the event from bubbling (PRESS START does) still count.
+    gestures.forEach((gesture) => window.addEventListener(gesture, tryPlay, { capture: true }))
     return () => {
-      gestures.forEach((gesture) => window.removeEventListener(gesture, tryPlay))
+      audio.removeEventListener('playing', onPlaying)
+      audio.removeEventListener('pause', onStopped)
+      gestures.forEach((gesture) => window.removeEventListener(gesture, tryPlay, { capture: true }))
     }
   }, [sound])
 
