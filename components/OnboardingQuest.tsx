@@ -89,6 +89,9 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   const answers = chat.filter((message) => message.role === 'user').length
   const lastTodah = [...chat].reverse().find((message) => message.role === 'todah')
   const awaitingAnswer = chat.length > 0 && chat[chat.length - 1].role === 'todah'
+  // When the quest ends on Todah's reply to the last answer, the finish screen leads with it.
+  // (Scripted runs end on the player's answer, so they have no closing line.)
+  const closingLine = awaitingAnswer && lastTodah ? lastTodah.text : ''
 
   function go(next: Step) {
     playSfx('select', sound)
@@ -366,7 +369,10 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
         {step === 'done' && (
           <>
             <p className={styles.banner}>{lines.onboarding.completeBanner}</p>
-            <DialogBox text={lines.onboarding.complete(name)} mood="happy">
+            <DialogBox
+              text={[withName(closingLine, name), lines.onboarding.complete(name)].filter(Boolean).join(' ')}
+              mood="happy"
+            >
               <Link className="btn" href="/upgrades">
                 {lines.onboarding.toUpgrades}
               </Link>
