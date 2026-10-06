@@ -73,7 +73,7 @@ export const lines = {
     } as Record<EntryChoice, string>,
     reactionContinue: 'KEEP GOING',
     consent:
-      'One thing before we go on. To answer you in my own words, what you type next is sent to an AI service. Your name stays here with me. Leave out anything you would not tell a stranger, like full names, employers, or addresses. Or I can stick to my trail notes, and nothing you type leaves this device.',
+      'Quick heads-up: to answer in my own words, I send what you type to an AI helper. Your name stays with me. Skip anything private, or pick trail notes and nothing leaves this device.',
     consentYes: 'USE AI REPLIES',
     consentNo: 'USE TRAIL NOTES ONLY',
     consentMore: 'PRIVACY DETAILS',

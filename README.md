@@ -6,7 +6,7 @@ at, what the world needs, and what they can be paid for) and turn it into a care
 Built for the 2026 Good Soil Fall Code Jam. Theme: **Season of Change**. A career transition is
 the change RWR helps people navigate.
 
-Status: early scaffold. See "What works today" below.
+Status: first playable scaffold (work in progress for the jam). See "What works today" below.
 
 ## Problem
 
@@ -25,9 +25,11 @@ prophet: nothing in the game promises a job or an outcome.
 
 - Title screen: cub walks in, sits facing the player, title drops in, PRESS START
 - Login box: log in / sign up (Supabase Auth) or play as guest
-- Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback
+- Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback ("trail
+  notes"). Todah's text types out and his mouth moves while he talks
 - Lion upgrades: four live resume slots with levels, three shown as coming soon
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
+- Looping music, sound effects, and an old-school TV frame around every screen
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
