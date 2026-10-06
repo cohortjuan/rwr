@@ -1,7 +1,7 @@
 .bar {
   position: fixed;
-  right: 12px;
-  bottom: 12px;
+  right: clamp(20px, 3vw, 40px);
+  bottom: clamp(18px, 2.6vw, 34px);
   z-index: 20;
   display: flex;
   gap: 8px;

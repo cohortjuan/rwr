@@ -3,8 +3,9 @@
 
 const EMAIL = /[\w.+-]+@[\w-]+(\.[\w-]+)+/g
 const URL = /\bhttps?:\/\/\S+/gi
-// Seven or more digits, allowing spaces, dots, dashes, and brackets between them.
-const PHONE = /(?:\+?\d[\s().-]?){7,}\d/g
+// North American style numbers such as (555) 123-4567, and international ones that start with +.
+// Year ranges like 2019-2024 are left alone.
+const PHONE = /(?:\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b|\+\d[\d\s().-]{7,}\d/g
 
 export function scrub(text: string): string {
   return text.replace(EMAIL, '[email removed]').replace(URL, '[link removed]').replace(PHONE, '[number removed]')

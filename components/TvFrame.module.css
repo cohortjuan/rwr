@@ -1,0 +1,49 @@
+.frame {
+  --bezel: clamp(8px, 1.4vw, 18px);
+  --curve: clamp(18px, 3.2vw, 44px);
+
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  border: var(--bezel) solid #2b2a30;
+  border-radius: calc(var(--curve) + var(--bezel));
+  /* Fills the square corners outside the rounded bezel, plus a lit inner edge. */
+  box-shadow:
+    0 0 0 60px #17161b,
+    inset 0 0 0 2px #5d5b66,
+    inset 0 0 0 5px #121116;
+}
+
+.glass {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--curve);
+  background:
+    /* scanlines */
+    repeating-linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.13) 0,
+      rgba(0, 0, 0, 0.13) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    /* glare */
+    linear-gradient(155deg, rgba(255, 255, 255, 0.07) 0%, transparent 22%),
+    /* vignette */
+    radial-gradient(ellipse at center, transparent 60%, rgba(10, 6, 20, 0.5) 100%);
+  animation: flicker 5s steps(1) infinite;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  48% {
+    opacity: 0.94;
+  }
+  50% {
+    opacity: 1;
+  }
+}

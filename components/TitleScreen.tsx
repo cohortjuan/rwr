@@ -130,7 +130,6 @@ export default function TitleScreen() {
           )}
         </div>
 
-        <div className={styles.crt} aria-hidden="true" />
       </main>
 
       <LoginBox open={boxOpen} onClose={() => setBoxOpen(false)} onEnter={enterGame} />

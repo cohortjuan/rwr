@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Press_Start_2P } from 'next/font/google'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
+import TvFrame from '@/components/TvFrame'
 import './globals.css'
 
 // Pixel font for headings and Todah's box. Long text uses a plain system font.
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={pixel.variable}>
       <body>
         {children}
+        <TvFrame />
         <MusicPlayer />
         <SettingsToggles />
       </body>
