@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { lines } from '@/lib/lines'
-import { saveProgress, todahForm, useProgress, type TodahForm } from '@/lib/progress'
-import { useHydrated, useSettings } from '@/lib/settings'
+import { saveProgress, todahForm, useLionText, useProgress, type Progress, type TodahForm } from '@/lib/progress'
+import { saveSettings, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx, preloadSfx } from '@/lib/sfx'
 import { MAX_LEVEL, slotLevel, slots, type Slot, type SlotId } from '@/lib/upgrades'
 import styles from './UpgradesScreen.module.css'
@@ -13,6 +13,25 @@ const formLabel: Record<TodahForm, string> = {
   cub: lines.upgrades.formCub,
   nomad: lines.upgrades.formNomad,
   leader: lines.upgrades.formLeader,
+}
+
+type TipId = keyof typeof lines.upgrades.tips
+
+// The first tip that fits the game so far and has not been dismissed. Tips about what to do
+// next come before general ones.
+function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalMax: number): TipId | null {
+  const fits: Record<TipId, boolean> = {
+    start: totalLevel === 0,
+    quest: !progress.onboardingDone,
+    nomad: progress.onboardingDone && form === 'cub',
+    levels: totalLevel > 0 && totalLevel < totalMax,
+    phrase: totalLevel < totalMax,
+    unpaid: !progress.upgrades.paws,
+    goal: !progress.goalText,
+    device: true,
+  }
+  const order = Object.keys(lines.upgrades.tips) as TipId[]
+  return order.find((id) => fits[id] && !progress.tipsSeen.includes(id)) ?? null
 }
 
 function LevelBar({ level }: { level: number }) {
@@ -29,8 +48,11 @@ function LevelBar({ level }: { level: number }) {
 export default function UpgradesScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
-  const { sound } = useSettings()
+  const { sound, tips } = useSettings()
+  const lion = useLionText()
   const sheetRef = useRef<HTMLDialogElement>(null)
+  // One tip per visit: after GOT IT, the next one waits for the next time this screen opens.
+  const [tipsQuiet, setTipsQuiet] = useState(false)
   const [openId, setOpenId] = useState<SlotId | null>(null)
   const [draft, setDraft] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -41,6 +63,13 @@ export default function UpgradesScreen() {
   const totalLevel = liveSlots.reduce((sum, slot) => sum + slotLevel(slot, progress.upgrades[slot.id] ?? ''), 0)
   const totalMax = liveSlots.length * MAX_LEVEL
   const form = todahForm(progress)
+  const tipId = tips && !tipsQuiet ? pickTip(progress, form, totalLevel, totalMax) : null
+
+  function dismissTip(id: TipId) {
+    playSfx('select', sound)
+    saveProgress({ tipsSeen: [...progress.tipsSeen, id] })
+    setTipsQuiet(true)
+  }
 
   useEffect(() => {
     preloadSfx()
@@ -84,16 +113,33 @@ export default function UpgradesScreen() {
       <div className="screen-inner">
         <header className={styles.header}>
           <h1 className={styles.heading}>{lines.upgrades.heading}</h1>
-          <p className={styles.intro}>{lines.upgrades.intro}</p>
+          <p className={styles.intro}>{lion(lines.upgrades.intro)}</p>
         </header>
 
+        {tipId && (
+          <aside className={styles.tip} aria-label={lines.upgrades.tipLabel}>
+            <p className={styles.tipLabel} aria-hidden="true">
+              {lines.upgrades.tipLabel}
+            </p>
+            <p className={styles.tipText}>{lion(lines.upgrades.tips[tipId])}</p>
+            <div className={styles.tipButtons}>
+              <button type="button" className="btn" onClick={() => dismissTip(tipId)}>
+                {lines.upgrades.tipGotIt}
+              </button>
+              <button type="button" className="btn btn-quiet" onClick={() => saveSettings({ tips: false })}>
+                {lines.upgrades.tipTurnOff}
+              </button>
+            </div>
+          </aside>
+        )}
+
         <div className={styles.top}>
-          <section className={`panel ${styles.todah}`} aria-label="Todah">
+          <section className={`panel ${styles.todah}`} aria-label={lion('Todah')}>
             <div className={leveledUp ? styles.portraitHappy : styles.portrait} aria-hidden="true">
               {!leveledUp && <div className={styles.blink} />}
             </div>
             <div>
-              <p className={styles.formName}>{lines.upgrades.todahLabel(formLabel[form])}</p>
+              <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[form]))}</p>
               <p className={styles.power}>{lines.upgrades.power(totalLevel, totalMax)}</p>
               <div
                 className={styles.powerBar}
@@ -112,7 +158,7 @@ export default function UpgradesScreen() {
             <h2 className={styles.leaderTitle}>
               {form === 'leader' ? lines.upgrades.formLeader : lines.upgrades.leaderLocked}
             </h2>
-            <p className={styles.leaderBody}>{lines.upgrades.leaderLockedBody}</p>
+            <p className={styles.leaderBody}>{lion(lines.upgrades.leaderLockedBody)}</p>
             <Link className="btn" href="/roar">
               {lines.upgrades.toRoar}
             </Link>
@@ -205,7 +251,7 @@ export default function UpgradesScreen() {
                 {lines.upgrades.save}
               </button>
               <button type="button" className="btn btn-quiet" onClick={() => setShowSuggestions(true)}>
-                {lines.upgrades.askTodah}
+                {lion(lines.upgrades.askTodah)}
               </button>
               <button type="button" className="btn btn-quiet" onClick={() => setOpenId(null)}>
                 {lines.upgrades.cancel}

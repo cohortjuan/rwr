@@ -5,8 +5,8 @@ import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
 import { deleteAccount, logOut, useAccountEmail } from '@/lib/account'
 import { lines } from '@/lib/lines'
-import { clearProgress, saveProgress, setSaveOnDevice, useProgress } from '@/lib/progress'
-import { useHydrated, useSettings } from '@/lib/settings'
+import { clearProgress, saveProgress, setSaveOnDevice, useLionText, useProgress } from '@/lib/progress'
+import { saveSettings, useHydrated, useSettings } from '@/lib/settings'
 import styles from './PrivacyScreen.module.css'
 
 // Plain-language account of where a player's answers go, with the controls to stop or undo it.
@@ -14,6 +14,7 @@ export default function PrivacyScreen() {
   const hydrated = useHydrated()
   const settings = useSettings()
   const progress = useProgress()
+  const lion = useLionText()
   const email = useAccountEmail()
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
@@ -43,7 +44,7 @@ export default function PrivacyScreen() {
           {lines.privacy.points.map((point) => (
             <div key={point.title} className={styles.point}>
               <dt>{point.title}</dt>
-              <dd>{point.body}</dd>
+              <dd>{lion(point.body)}</dd>
             </div>
           ))}
         </dl>
@@ -65,6 +66,18 @@ export default function PrivacyScreen() {
               onClick={() => saveProgress({ aiConsent: progress.aiConsent === 'yes' ? 'no' : 'yes' })}
             >
               {progress.aiConsent === 'yes' ? lines.privacy.aiOn : lines.privacy.aiOff}
+            </button>
+            <button
+              type="button"
+              className="btn"
+              aria-pressed={settings.tips}
+              onClick={() => {
+                // Switching tips back on also brings back the ones already dismissed.
+                if (!settings.tips) saveProgress({ tipsSeen: [] })
+                saveSettings({ tips: !settings.tips })
+              }}
+            >
+              {settings.tips ? lines.privacy.tipsOn : lines.privacy.tipsOff}
             </button>
             <button type="button" className={`btn ${styles.danger}`} disabled={busy} onClick={() => setConfirming(true)}>
               {lines.privacy.deleteButton}

@@ -303,3 +303,55 @@
     margin-top: 10px;
   }
 }
+
+/* A helpful tip that pops in under the heading. */
+.tip {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 14px;
+  align-items: start;
+  margin-bottom: 24px;
+  padding: 14px 16px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 4px solid var(--ink);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+  animation: tipPop 0.3s steps(4) both;
+}
+
+@keyframes tipPop {
+  from {
+    transform: translateY(-10px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.tipLabel {
+  margin: 2px 0 0;
+  padding: 4px 6px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+  background: var(--ink);
+}
+
+.tipText {
+  margin: 0;
+}
+
+.tipButtons {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* The quiet button is drawn for dark panels, so it is re-inked for the pale tip. */
+.tipButtons :global(.btn-quiet) {
+  color: var(--ink);
+  border-color: var(--ink);
+}
