@@ -1,0 +1,22 @@
+.bar {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
+
+.toggle {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.55rem;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.85);
+  border: 2px solid var(--cream);
+  padding: 8px;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--indigo);
+}
