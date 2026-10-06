@@ -24,6 +24,12 @@ export const metadata: Metadata = {
     'A retro 16-bit game that helps you explore what you love, what you are good at, what the world needs, and what you can be paid for.',
 }
 
+// Runs before the page paints, so a saved night mode or motion choice applies from the very
+// first frame instead of flashing the default first. Keep the key in step with lib/settings.ts.
+const applySavedSettings =
+  'try{var s=JSON.parse(localStorage.getItem("rwr.settings.v1")||"{}"),d=document.documentElement;' +
+  'd.dataset.theme=s.night?"night":"day";d.dataset.reduceMotion=s.motionOff?"true":"false"}catch(e){}'
+
 // Phones: fit the screen width and tint the browser bar to match the TV bezel.
 export const viewport: Viewport = {
   width: 'device-width',
@@ -33,7 +39,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${pixel.variable} ${talk.variable}`}>
+    <html lang="en" className={`${pixel.variable} ${talk.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: applySavedSettings }} />
+      </head>
       <body>
         {children}
         <TvFrame />

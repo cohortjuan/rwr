@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
-import { Birds, Horizon } from '@/components/Savannah'
+import { Birds, Horizon, Stars } from '@/components/Savannah'
 import { logOut, useAccountEmail } from '@/lib/account'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
@@ -91,6 +91,7 @@ export default function TitleScreen() {
     <>
       <main className={poweredOn ? styles.stagePoweringOn : styles.stage} onClick={advance}>
         <div className={styles.sky} aria-hidden="true" />
+        <Stars />
         {started && <Birds />}
         <div className={styles.sun} aria-hidden="true" />
         <div className={styles.hills} aria-hidden="true" />

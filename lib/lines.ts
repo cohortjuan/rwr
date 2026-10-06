@@ -30,6 +30,8 @@ export const lines = {
     soundOff: 'SOUND: OFF',
     motionOn: 'MOTION: ON',
     motionOff: 'MOTION: OFF',
+    toNight: 'Switch to night mode',
+    toDay: 'Switch to day mode',
   },
 
   login: {
@@ -57,11 +59,26 @@ export const lines = {
     next: 'NEXT',
     completeBanner: 'QUEST COMPLETE',
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
+    // Shown to every player before the first quest.
+    ikigaiBrief:
+      'This trail follows Ikigai, a Japanese idea of what makes life feel worth living. For work, it sits where four things meet: what you love, what you are good at, what the world needs, and what you can be paid for.',
+    ikigaiGotIt: 'GOT IT',
+    ikigaiMore: 'TELL ME MORE',
+    // The optional deeper explanation, one page per entry.
+    ikigaiDeep: [
+      'Ikigai (say ee-kee-guy) joins two Japanese words: iki, life, and gai, worth. In Japan it can be anything that makes a day worth getting up for, big or small. A craft, a garden, a grandchild.',
+      'The four-circle picture is a newer, Western way to draw it for careers. Where two circles overlap you get a name: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession.',
+      'Miss a circle and something feels off. Paid and skilled but not in love? Comfortable, yet empty. Loving it but unpaid? Joyful, yet broke. The middle, where all four meet, is the sweet spot people call Ikigai.',
+      'Nobody lands in the middle in one step, and that is fine. We will walk one circle at a time and look for honest evidence instead of perfect answers. I am a guide, not a fortune teller, so nothing here is a promise about any job.',
+    ],
+    ikigaiNextPage: 'NEXT',
+    ikigaiDone: 'READY',
+    ikigaiSkip: 'SKIP',
     questIntro: 'Quest 1: The Lay of the Land. No wrong answers, no timer.',
     startQuest: 'START QUEST',
     whatIsThis: 'WHAT IS THIS?',
     explain:
-      'RWR is a short game for thinking about work. I ask about what you love, what you are good at, what the world needs, and what you can be paid for. Then we sketch a roadmap together. I am a guide, not a fortune teller, so nothing here is a promise about any job.',
+      'RWR is a short game for thinking about work. We walk the four circles of Ikigai one at a time, then sketch a roadmap together. I am a guide, not a fortune teller, so nothing here is a promise about any job.',
     explainContinue: 'GOT IT, START QUEST',
     askName: 'What should I call you?',
     nameLabel: 'Your name or nickname',

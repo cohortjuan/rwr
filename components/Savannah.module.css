@@ -13,7 +13,7 @@
 .horizon {
   bottom: 44%;
   height: calc(var(--px) * 22);
-  color: #7a4a1e;
+  color: var(--silhouette, #7a4a1e);
   overflow: hidden;
 }
 
@@ -74,7 +74,8 @@
   top: 0;
   height: 44%;
   color: #5a2a1c;
-  opacity: 0.85;
+  /* The birds sleep at night. */
+  opacity: var(--bird-opacity, 0.85);
   overflow: hidden;
 }
 
@@ -147,5 +148,35 @@
   }
   to {
     transform: translate(110vw, 0);
+  }
+}
+
+/* Night sky: a field of small stars that twinkle in two steps. Hidden by day. */
+.stars {
+  position: absolute;
+  inset: 0 0 44% 0;
+  opacity: var(--star-opacity, 0);
+  background-image:
+    radial-gradient(1.5px 1.5px at 8% 18%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 17% 52%, #dfe6ff 99%, transparent),
+    radial-gradient(2px 2px at 26% 9%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 34% 38%, #dfe6ff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 44% 14%, #fff 99%, transparent),
+    radial-gradient(2px 2px at 57% 30%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 66% 8%, #dfe6ff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 73% 47%, #fff 99%, transparent),
+    radial-gradient(2px 2px at 82% 20%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 91% 40%, #dfe6ff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 95% 12%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 4% 66%, #fff 99%, transparent);
+  animation: twinkle 2.8s steps(2, jump-none) infinite alternate;
+}
+
+@keyframes twinkle {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(0.6);
   }
 }

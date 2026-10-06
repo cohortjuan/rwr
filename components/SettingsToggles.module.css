@@ -1,3 +1,39 @@
+.moon,
+.moonOn {
+  /* One pixel of the moon icon. */
+  --px: 2.5px;
+
+  position: fixed;
+  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px));
+  right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px));
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.85);
+  border: 2px solid var(--cream);
+  cursor: pointer;
+}
+
+.moon:hover,
+.moonOn:hover {
+  background: var(--indigo);
+}
+
+.moonOn {
+  color: var(--ink);
+  background: var(--gold-bright);
+  border-color: var(--ink);
+  box-shadow: 0 0 14px var(--gold-bright);
+}
+
+.moonOn:hover {
+  background: var(--gold);
+}
+
 .bar {
   position: fixed;
   right: clamp(20px, 3vw, 40px);

@@ -16,6 +16,14 @@
   --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
 }
 
+/* Night mode: the screens after the title go from deep indigo to near-black blue. */
+html[data-theme='night'] {
+  --indigo: #0c1230;
+  --indigo-deep: #04050f;
+  --teal: #16403f;
+  --teal-deep: #0b2a2c;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -76,7 +84,8 @@ textarea {
 /* Shared page shell for the screens after the title. */
 .screen {
   min-height: 100dvh;
-  padding: clamp(28px, 4vw, 48px) clamp(20px, 3vw, 40px) 110px;
+  /* The top padding keeps content below the round day/night button in the corner. */
+  padding: 78px clamp(20px, 3vw, 40px) 110px;
   display: flex;
   flex-direction: column;
   align-items: center;

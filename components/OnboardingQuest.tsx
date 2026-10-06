@@ -10,7 +10,7 @@ import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './OnboardingQuest.module.css'
 
-type Step = 'hello' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
+type Step = 'hello' | 'ikigai' | 'ikigaiDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
 
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
@@ -71,6 +71,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   const reducedMotion = useReducedMotion()
   const bottomRef = useRef<HTMLDivElement>(null)
   const [step, setStep] = useState<Step>(startAt)
+  const [deepPage, setDeepPage] = useState(0)
   const [nameDraft, setNameDraft] = useState('')
   const [answerDraft, setAnswerDraft] = useState('')
   const [pending, setPending] = useState(false)
@@ -174,8 +175,51 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
 
         {step === 'hello' && (
           <DialogBox text={lines.onboarding.hello}>
-            <button type="button" className="btn" autoFocus onClick={() => go('intro')}>
+            <button type="button" className="btn" autoFocus onClick={() => go('ikigai')}>
               {lines.onboarding.next}
+            </button>
+          </DialogBox>
+        )}
+
+        {step === 'ikigai' && (
+          <DialogBox text={lines.onboarding.ikigaiBrief}>
+            <button type="button" className="btn" autoFocus onClick={() => go('intro')}>
+              {lines.onboarding.ikigaiGotIt}
+            </button>
+            <button
+              type="button"
+              className="btn btn-quiet"
+              onClick={() => {
+                setDeepPage(0)
+                go('ikigaiDeep')
+              }}
+            >
+              {lines.onboarding.ikigaiMore}
+            </button>
+          </DialogBox>
+        )}
+
+        {step === 'ikigaiDeep' && (
+          <DialogBox text={lines.onboarding.ikigaiDeep[deepPage]}>
+            {deepPage < lines.onboarding.ikigaiDeep.length - 1 ? (
+              <button
+                type="button"
+                className="btn"
+                autoFocus
+                onClick={() => {
+                  playSfx('select', sound)
+                  setDeepPage(deepPage + 1)
+                }}
+              >
+                {lines.onboarding.ikigaiNextPage} ({deepPage + 1}/{lines.onboarding.ikigaiDeep.length})
+              </button>
+            ) : (
+              <button type="button" className="btn" autoFocus onClick={() => go('intro')}>
+                {lines.onboarding.ikigaiDone}
+              </button>
+            )}
+            <button type="button" className="btn btn-quiet" onClick={() => go('intro')}>
+              {lines.onboarding.ikigaiSkip}
             </button>
           </DialogBox>
         )}

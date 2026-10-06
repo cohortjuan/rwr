@@ -5,11 +5,56 @@
   height: 100dvh;
   min-height: 300px;
   overflow: hidden;
-  background: #e2ab3f;
+  background: var(--sky-1);
   cursor: pointer;
   user-select: none;
   /* Cub size follows the width, but never outgrows a short screen (phone held sideways). */
   --cub: min(clamp(150px, 21vw, 300px), 44vh);
+
+  /* Day colours: a golden savannah at sunset. */
+  --sky-1: #dba238;
+  --sky-2: #e6b548;
+  --sky-3: #efc85e;
+  --sky-4: #f4d87c;
+  --sky-5: #f8e7a6;
+  --orb: #fbf3d0;
+  --orb-glow: rgba(251, 243, 208, 0.28);
+  --hill: #c79a3a;
+  --ground-1: #6b9a4a;
+  --ground-2: #3f8a5c;
+  --ground-3: #2a7a63;
+  --ground-4: #1e5f5a;
+  --ground-5: var(--maroon);
+  --ground-6: #3b1019;
+  --subtitle: var(--maroon);
+  --silhouette: #7a4a1e;
+  --bird-opacity: 0.85;
+  --star-opacity: 0;
+  --cub-filter: none;
+}
+
+/* Night colours: the same savannah under a rising moon. */
+:global(html[data-theme='night']) .stage,
+:global(html[data-theme='night']) .stagePoweringOn {
+  --sky-1: #070b24;
+  --sky-2: #0c1436;
+  --sky-3: #14204c;
+  --sky-4: #1d2e63;
+  --sky-5: #2b4180;
+  --orb: #eef1ff;
+  --orb-glow: rgba(214, 224, 255, 0.2);
+  --hill: #101a3c;
+  --ground-1: #1d3b3a;
+  --ground-2: #17302f;
+  --ground-3: #122a33;
+  --ground-4: #0d1f2b;
+  --ground-5: #0f0c29;
+  --ground-6: #07061a;
+  --subtitle: var(--cream);
+  --silhouette: #05081c;
+  --bird-opacity: 0;
+  --star-opacity: 1;
+  --cub-filter: brightness(0.82) saturate(0.9);
 }
 
 /* The picture snaps open like an old TV warming up. */
@@ -67,11 +112,11 @@
   inset: 0 0 44% 0;
   background: linear-gradient(
     180deg,
-    #dba238 0%,
-    #e6b548 38%,
-    #efc85e 62%,
-    #f4d87c 82%,
-    #f8e7a6 100%
+    var(--sky-1) 0%,
+    var(--sky-2) 38%,
+    var(--sky-3) 62%,
+    var(--sky-4) 82%,
+    var(--sky-5) 100%
   );
 }
 
@@ -83,8 +128,8 @@
   aspect-ratio: 2 / 1;
   transform: translateX(-50%);
   border-radius: 999px 999px 0 0;
-  background: #fbf3d0;
-  box-shadow: 0 0 0 clamp(14px, 3vw, 44px) rgba(251, 243, 208, 0.28);
+  background: var(--orb);
+  box-shadow: 0 0 0 clamp(14px, 3vw, 44px) var(--orb-glow);
 }
 
 .hills {
@@ -94,8 +139,8 @@
   bottom: 44%;
   height: 7%;
   background:
-    radial-gradient(ellipse 30% 100% at 12% 100%, #c79a3a 99%, transparent 100%),
-    radial-gradient(ellipse 34% 80% at 90% 100%, #c79a3a 99%, transparent 100%);
+    radial-gradient(ellipse 30% 100% at 12% 100%, var(--hill) 99%, transparent 100%),
+    radial-gradient(ellipse 34% 80% at 90% 100%, var(--hill) 99%, transparent 100%);
 }
 
 .ground {
@@ -103,16 +148,16 @@
   inset: 56% 0 0 0;
   background: linear-gradient(
     180deg,
-    #6b9a4a 0%,
-    #6b9a4a 6%,
-    #3f8a5c 6%,
-    #3f8a5c 16%,
-    #2a7a63 16%,
-    #2a7a63 52%,
-    #1e5f5a 52%,
-    #1e5f5a 62%,
-    var(--maroon) 62%,
-    #3b1019 100%
+    var(--ground-1) 0%,
+    var(--ground-1) 6%,
+    var(--ground-2) 6%,
+    var(--ground-2) 16%,
+    var(--ground-3) 16%,
+    var(--ground-3) 52%,
+    var(--ground-4) 52%,
+    var(--ground-4) 62%,
+    var(--ground-5) 62%,
+    var(--ground-6) 100%
   );
 }
 
@@ -145,12 +190,13 @@
   font-family: var(--font-pixel), monospace;
   font-size: min(clamp(0.55rem, 1.9vw, 1.25rem), 4.4vh);
   letter-spacing: 0.08em;
-  color: var(--maroon);
+  color: var(--subtitle);
 }
 
 /* Cub: 4-frame strip, 291x198 per frame. The wrapper slides, the sprite steps. */
 .cubWalking,
 .cubSeated {
+  filter: var(--cub-filter);
   position: absolute;
   left: 50%;
   bottom: 29%;
@@ -215,6 +261,7 @@
 
 /* Front-facing seated cub (153x173), feet on the same line as the walking cub. */
 .cubFacing {
+  filter: var(--cub-filter);
   position: absolute;
   left: 50%;
   bottom: 29%;

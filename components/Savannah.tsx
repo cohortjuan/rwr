@@ -1,3 +1,4 @@
+import PixelArt from '@/components/PixelArt'
 import styles from './Savannah.module.css'
 
 // Distant life on the title screen: birds crossing the sky and animal silhouettes walking the
@@ -58,27 +59,6 @@ const acacia = [
   '........#.........',
 ]
 
-function PixelArt({ rows, className }: { rows: string[], className?: string }) {
-  const width = rows[0].length
-  // One rectangle per horizontal run of filled pixels.
-  const runs = rows.flatMap((row, y) =>
-    [...row.matchAll(/#+/g)].map((run) => ({ x: run.index, y, length: run[0].length })),
-  )
-  return (
-    <svg
-      className={className}
-      viewBox={`0 0 ${width} ${rows.length}`}
-      style={{ width: `calc(var(--px) * ${width})`, height: `calc(var(--px) * ${rows.length})` }}
-      shapeRendering="crispEdges"
-      fill="currentColor"
-    >
-      {runs.map((run) => (
-        <rect key={`${run.x}-${run.y}`} x={run.x} y={run.y} width={run.length} height={1} />
-      ))}
-    </svg>
-  )
-}
-
 function Bird({ className }: { className: string }) {
   return (
     <span className={`${styles.bird} ${className}`}>
@@ -100,6 +80,11 @@ export function Horizon() {
       </div>
     </div>
   )
+}
+
+// Dots of light in the night sky. Hidden by day.
+export function Stars() {
+  return <div className={styles.stars} aria-hidden="true" />
 }
 
 export function Birds() {
