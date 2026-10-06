@@ -203,6 +203,9 @@ export default function WardrobeScreen() {
                           >
                             {lines.wardrobe.buy}
                           </button>
+                          {block === 'mane' && item.needsMane && (
+                            <p className={styles.fine}>{lines.wardrobe.needsMane(item.needsMane)}</p>
+                          )}
                           {block === 'power' && item.needsPower && (
                             <p className={styles.fine}>{lines.wardrobe.needsPower(item.needsPower)}</p>
                           )}

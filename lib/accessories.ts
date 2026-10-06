@@ -40,6 +40,8 @@ export type Accessory = {
   gift?: 'quest' | 'nomad' | 'leader'
   // Cannot be bought until Pride Power reaches this.
   needsPower?: number
+  // Cannot be bought until the mane has grown to this size (see maneSize).
+  needsMane?: number
   // Fur only: a CSS filter that tints the coat. The mane is drawn separately and keeps its colour.
   filter?: string
   // Mane only: its colour and its shade.
@@ -56,7 +58,7 @@ export type Accessory = {
 export const HEADROOM = 6
 export const GRID = { width: 51, height: 58 }
 
-export const CHEER_SPARKS = 5
+export const CHEER_SPARKS = 1
 export const INTERVIEW_SPARKS = 25
 
 export const categories: AccessoryCategory[] = ['fur', 'mane', 'hat', 'shades', 'neck']
@@ -106,36 +108,38 @@ const shadesRows = [
   '.FFFFFFFF.........FFFFFFFF.',
 ]
 
+// A mane colour can be bought once he has his first hair on top to colour (Mane level 1).
 const mane = (id: string, price: number, colours: readonly [string, string]): Accessory => ({
   id: `mane-${id}`,
   category: 'mane',
   price,
+  needsMane: 1,
   mane: [colours[0], colours[1]],
 })
 
 export const accessories: Accessory[] = [
   // Fur: the coat's colour. The mane is drawn on top in its own colour, so the two combine.
   { id: 'golden', category: 'fur', price: 0 },
-  { id: 'snow', category: 'fur', price: 20, filter: 'grayscale(1) brightness(1.35) contrast(0.9)' },
-  { id: 'shadow', category: 'fur', price: 20, filter: 'grayscale(0.85) brightness(0.55) contrast(1.15)' },
-  { id: 'ember', category: 'fur', price: 20, filter: 'hue-rotate(-22deg) saturate(1.5)' },
-  { id: 'rose', category: 'fur', price: 20, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
-  { id: 'sky', category: 'fur', price: 30, filter: 'hue-rotate(170deg) saturate(0.9)' },
+  { id: 'snow', category: 'fur', price: 25, filter: 'grayscale(1) brightness(1.35) contrast(0.9)' },
+  { id: 'shadow', category: 'fur', price: 25, filter: 'grayscale(0.85) brightness(0.55) contrast(1.15)' },
+  { id: 'ember', category: 'fur', price: 25, filter: 'hue-rotate(-22deg) saturate(1.5)' },
+  { id: 'rose', category: 'fur', price: 25, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
+  { id: 'sky', category: 'fur', price: 35, filter: 'hue-rotate(170deg) saturate(0.9)' },
 
   // Mane colours. Only the colour is bought: the size follows the Mane upgrade.
   { id: 'mane-natural', category: 'mane', price: 0, mane: NATURAL_MANE },
-  mane('black', 20, tone.black),
-  mane('white', 20, tone.white),
-  mane('red', 20, tone.red),
-  mane('blue', 20, tone.blue),
-  mane('purple', 20, tone.purple),
-  mane('teal', 20, tone.teal),
-  mane('pink', 20, tone.pink),
+  mane('black', 25, tone.black),
+  mane('white', 25, tone.white),
+  mane('red', 25, tone.red),
+  mane('blue', 25, tone.blue),
+  mane('purple', 25, tone.purple),
+  mane('teal', 25, tone.teal),
+  mane('pink', 25, tone.pink),
 
   {
     id: 'cap',
     category: 'hat',
-    price: 20,
+    price: 25,
     variants: options(['red', 'blue', 'green', 'black'], (main, shade) => ({ R: main, D: shade })),
     art: [
       {
@@ -159,7 +163,7 @@ export const accessories: Accessory[] = [
   {
     id: 'beanie',
     category: 'hat',
-    price: 20,
+    price: 25,
     variants: options(['blue', 'red', 'green', 'purple'], (main) => ({ B: main })),
     art: [
       {
@@ -240,7 +244,7 @@ export const accessories: Accessory[] = [
   {
     id: 'shades',
     category: 'shades',
-    price: 15,
+    price: 20,
     variants: [
       { id: 'black', swatch: INK, palette: { L: INK } },
       { id: 'brown', swatch: '#5a3a22', palette: { L: '#5a3a22' } },
@@ -253,14 +257,14 @@ export const accessories: Accessory[] = [
     // A light frame. (A gold frame vanished into the fur.)
     id: 'aviators',
     category: 'shades',
-    price: 25,
+    price: 30,
     variants: options(['silver', 'white', 'pink', 'teal'], (main) => ({ F: main })),
     art: [{ x: 11, y: 14, rows: shadesRows, palette: { F: tone.silver[0], L: INK, W: WHITE } }],
   },
   {
     id: 'sunset',
     category: 'shades',
-    price: 25,
+    price: 30,
     variants: [
       { id: 'sunset', swatch: '#e84fb0', palette: { A: '#4fd8e8', B: '#7b3fe4', C: '#e84fb0' } },
       { id: 'fire', swatch: '#f08a2a', palette: { A: '#ffe08a', B: '#f08a2a', C: '#c83e52' } },
@@ -288,7 +292,7 @@ export const accessories: Accessory[] = [
     // Eyeglasses: frames only, so the eyes show through.
     id: 'glasses-round',
     category: 'shades',
-    price: 15,
+    price: 20,
     variants: options(['black', 'brown', 'blue', 'white'], (main) => ({ F: main })),
     art: [
       {
@@ -311,7 +315,7 @@ export const accessories: Accessory[] = [
   {
     id: 'glasses-square',
     category: 'shades',
-    price: 15,
+    price: 20,
     variants: options(['red', 'blue', 'green', 'black'], (main) => ({ F: main })),
     art: [
       {
@@ -359,7 +363,7 @@ export const accessories: Accessory[] = [
   {
     id: 'scarf',
     category: 'neck',
-    price: 15,
+    price: 20,
     variants: options(['red', 'blue', 'green', 'purple'], (main, shade) => ({ R: main, D: shade })),
     art: [
       {
@@ -381,7 +385,7 @@ export const accessories: Accessory[] = [
   {
     id: 'bow-tie',
     category: 'neck',
-    price: 15,
+    price: 20,
     variants: options(['purple', 'red', 'black', 'blue'], (main) => ({ P: main })),
     art: [
       {
@@ -397,7 +401,7 @@ export const accessories: Accessory[] = [
     // medallion with a lion's head in side view, drawn at twice the grid's detail.
     id: 'chain',
     category: 'neck',
-    price: 30,
+    price: 35,
     needsPower: 15,
     variants: options(['gold', 'silver', 'rose'], (main, bright) => ({ G: main, Y: bright, R: main })),
     sparkles: [{ x: 21, y: 38 }],
@@ -477,8 +481,13 @@ export function owns(progress: Progress, item: Accessory, others: Progress[] = [
 }
 
 // Why an accessory cannot be bought right now, or null when it can.
-export function buyBlock(progress: Progress, item: Accessory, others: Progress[] = []): 'gift' | 'power' | 'sparks' | null {
+export function buyBlock(
+  progress: Progress,
+  item: Accessory,
+  others: Progress[] = [],
+): 'gift' | 'mane' | 'power' | 'sparks' | null {
   if (item.gift) return 'gift'
+  if (item.needsMane && maneSize(progress) < item.needsMane) return 'mane'
   if (item.needsPower && pridePower(progress, others).level < item.needsPower) return 'power'
   if (sparks(progress).balance < item.price) return 'sparks'
   return null

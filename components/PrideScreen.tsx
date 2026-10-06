@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
+import { CHEER_SPARKS } from '@/lib/accessories'
 import LionAvatar from '@/components/LionAvatar'
 import QrCode from '@/components/QrCode'
 import { lines } from '@/lib/lines'
@@ -340,7 +341,7 @@ export default function PrideScreen() {
             </form>
 
             <h2 className={`${styles.subheading} ${styles.spaced}`}>{lines.pride.receivedHeading}</h2>
-            <p className={styles.fine}>{lines.pride.cheerRule}</p>
+            <p className={styles.fine}>{lines.pride.cheerRule(CHEER_SPARKS)}</p>
             {progress.cheersReceived.length === 0 ? (
               <p className={styles.note}>{lines.pride.receivedEmpty}</p>
             ) : (

@@ -49,8 +49,9 @@ prophet: nothing in the game promises a job or an outcome.
   shades or glasses, and neck, and each piece comes in a few colours. A few pieces are gifts for
   progress instead, and the jewelled crown comes only with the roar. Every lion starts with
   none, and accessories need an account
-- The mane grows in three sizes with the Mane upgrade. Buying a mane colour changes only its
-  colour, never its size
+- The mane grows in three sizes with the Mane upgrade, starting with a crest on top at level 1.
+  Mane colours unlock at that point, and buying one changes only the colour (the lock on his
+  forehead included), never the size
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
@@ -143,6 +144,7 @@ To be completed before submission. Running notes:
 - Architecture and database diagrams: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Database schema: [supabase/migrations/0001_init.sql](supabase/migrations/0001_init.sql)
 - UI reference mockups: [docs/reference](docs/reference)
+- Mane progression sheet: [docs/design/mane-progression.html](docs/design/mane-progression.html)
 
 ## Demo video
 

@@ -279,7 +279,7 @@ export const lines = {
     categories: { fur: 'FUR', mane: 'MANE COLOUR', hat: 'HATS', shades: 'SHADES AND GLASSES', neck: 'NECK' },
     notes: {
       fur: 'Fur changes the coat. The mane keeps its own colour, so the two can be mixed.',
-      mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up.',
+      mane: 'A colour changes only the colour, the lock on his forehead included. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1.',
     },
     colourLabel: (name: string) => `Colour: ${name}`,
     colours: {
@@ -340,6 +340,7 @@ export const lines = {
     wearing: 'WEARING',
     short: (n: number) => `${n} more sparks needed`,
     needsPower: (n: number) => `Unlocks at Pride Power ${n}`,
+    needsMane: (n: number) => `Unlocks when the MANE upgrade reaches level ${n}`,
     gifts: {
       quest: 'A gift for finishing Quest 1',
       nomad: 'A gift when Todah becomes a Nomad',
@@ -471,14 +472,15 @@ export const lines = {
       talk: 'Had a real conversation about the work',
       interview: 'Landed a job interview',
     },
-    logWorth: { linkedin: '+1', message: '+1', talk: '+2', interview: '+2 and 25 sparks' },
+    logWorth: { linkedin: '+1', message: '+1', talk: '+2', interview: '+2 and sparks' },
     logNoteLabel: 'Who was it? A first name or a role is enough.',
     logNotePlaceholder: 'For example: recruiter at a clinic group',
     logAdd: 'LOG IT',
     logPrivate: 'This log stays on your device. It is never part of your card.',
     logEmpty: 'Nothing logged yet.',
     logRemove: 'Remove',
-    cheerRule: 'Each cheer earns 5 sparks for the wardrobe, once per friend per day, and only from someone in your pride.',
+    cheerRule: (n: number) =>
+      `Each cheer earns ${n} ${n === 1 ? 'spark' : 'sparks'} for the wardrobe, once per friend per day, and only from someone in your pride.`,
 
     cardHeading: 'MY CARD',
     cardIntro: 'This is everything a friend sees. Nothing else you typed is shared.',

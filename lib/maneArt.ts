@@ -1,9 +1,14 @@
 // Generated art. Do not edit by hand: the shapes were fitted to the seated sprite's outline.
 //
 // maneArt holds the mane at four sizes, on the sprite's grid (one cell is 3 sprite pixels).
-// Size 0 is the cub's own tuft, drawn only when the mane has been given a colour. Sizes 1 to 3
-// follow the Mane upgrade's level: a crest between the ears, ruffs beside the jaw, and from
-// size 2 a ruff on the chest. M is the mane colour and D its shade.
+// Size 0 is the cub's own bump of hair on top of the head. Size 1 is his first real hair: a
+// narrow crest on top, like a mohawk. Size 2 widens it and adds ruffs beside the jaw and a
+// small one on the chest, and size 3 is the full mane. The size follows the Mane upgrade's
+// level. M is the mane colour and D its shade.
+//
+// foreheadTuft is the little lock of hair in the middle of his forehead, traced from the
+// sprite pixel by pixel (three art pixels per cell), so it can take the mane's colour along
+// with the hair on top.
 //
 // lionPendant is the chain's medallion, a lion's head in side view, at twice the grid's
 // detail (two art pixels per cell).
@@ -20,36 +25,19 @@ export const maneArt: { x: number, y: number, rows: string[] }[] = [
     ],
   },
   {
-    x: 3,
-    y: -3,
+    x: 20,
+    y: -5,
     rows: [
-      '....................D.D.....................',
-      '...................DMDMDD...................',
-      '..................DMMMMMM...................',
-      '................DDMMMMMMMDD.................',
-      '................MMMMMMMMMMM.................',
-      '...............DMMM..M..MMMDD...............',
-      '..............DM..M.....M.MMM...............',
-      '..............MM...........MM...............',
-      '...............M...........M................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      '............................................',
-      'M..........................................M',
-      'DM.......................................MD.',
-      '.DMM...................................MMD..',
-      '..DMM..................................MMD..',
-      '..DDM................................MMD....',
-      '...DM................................MD.....',
-      '...DM................................MD.....',
+      '.....D...',
+      '...DDM...',
+      '...MMMD..',
+      '..DMMMMD.',
+      '.DMMMMMM.',
+      '.MMMMMMMD',
+      'DMMMMMMMM',
+      'MMMMMMMMM',
+      'MM..M..MM',
+      '.M.....M.',
     ],
   },
   {
@@ -155,6 +143,38 @@ export const maneArt: { x: number, y: number, rows: string[] }[] = [
     ],
   },
 ]
+
+export const foreheadTuft: { x: number, y: number, cell: number, rows: string[] } = {
+  x: 57 / 3,
+  y: 13 / 3,
+  cell: 1 / 3,
+  rows: [
+    'DDDDDMMMDDDMDDDDMM.......',
+    'DDDDDMDDDDDDDDDDDM.......',
+    'DDDDDMMMDDDDDDDDDM.......',
+    'DDDDDMMMDDDDDDDDDM.......',
+    'DDDDDM.MMMMMMMMMM........',
+    'DDDDM....................',
+    'DDDDM....................',
+    'DDDDM....................',
+    'DDDDM....................',
+    'MMMMMMDM..........MMMMM..',
+    '....MDDD..........MDDDM..',
+    '....MDDD..........MDDDM..',
+    '....MDDD..........MDDDM..',
+    '....MMMM..........MDDDM..',
+    '........MMDDDM....MDDMM..',
+    '........MDDDDM....MDDDM..',
+    '........MDDDDM....MDDM...',
+    '........MMMDMM.M.MMDDD...',
+    '............MMMMMMMMMM...',
+    '............MMDMMM.......',
+    '............MMMMMM.......',
+    '............MMMMMM.......',
+    '............MMMMMM.......',
+    '.........................',
+  ],
+}
 
 export const lionPendant: string[] = [
   '........RRRRRRRR........',
