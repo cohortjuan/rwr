@@ -206,9 +206,30 @@ def regal_b():
     lock(cells, joined=True)
     return cells
 
-# Level 3 has two candidates while the look is being chosen. FULL_MANE picks the one the game uses.
-full_manes = {'A': art(regal()), 'B': art(regal_b())}
-FULL_MANE = 'A'
+SEAM = 18    # the row where the two halves of the combined mane meet, level with the eyes
+
+def regal_c():
+    # The chosen full mane: the top of the first design (points rising like a crown, strands
+    # fanning from the face) over the bottom of the second (a long fall of pointed locks and
+    # a darker ruff under the chin).
+    top, bottom = regal(), regal_b()
+    cells = {spot: c for spot, c in top.items() if spot[1] < SEAM}
+    cells.update({spot: c for spot, c in bottom.items() if spot[1] >= SEAM})
+    def face(x, y): return ((x - 24.5) / 14.2) ** 2 + ((y + 0.5 - 19.5) / 12.3) ** 2 < 1
+    def ear(x, y):
+        return any(((x + 0.5 - ex) / 3.6) ** 2 + ((y + 0.5 - 8.0) / 4.6) ** 2 < 1 for ex in (7.5, 42.0))
+    # where the halves meet, redraw the dark edge so the outline stays unbroken
+    for (x, y) in list(cells):
+        if y in (SEAM - 1, SEAM):
+            around = ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1))
+            if any(spot not in cells and not face(*spot) and not ear(*spot) for spot in around):
+                cells[(x, y)] = 'D'
+    return cells
+
+# Level 3 went through two candidates, A and B. C joins the top of A to the bottom of B.
+# FULL_MANE picks the one the game uses.
+full_manes = {'A': art(regal()), 'B': art(regal_b()), 'C': art(regal_c())}
+FULL_MANE = 'C'
 sizes = [art(growing(0)), art(growing(1)), art(growing(2)), full_manes[FULL_MANE]]
 
 # The chain's pendant: a lion's head in side view on a round medallion, two art pixels per cell.
@@ -292,7 +313,7 @@ notes = {
     0: 'The cub as he starts. Nothing is drawn over him.',
     1: 'His first hair on top: a narrow crest, like a mohawk, running down into the lock on his forehead.',
     2: 'A wider crest, ruffs beside the jaw, and a small ruff on the chest.',
-    3: 'The full mane: it frames the whole face, leaves only the ears showing, and falls over the chest.',
+    3: 'The full mane: points rising like a crown, only the ears showing, and a long fall of locks over the chest with a darker ruff under the chin.',
 }
 rows = [('Natural (free)', ('#c9601b', '#8f3f12'), True),
         ('Black (bought, from level 1)', ('#2a2233', '#120e1a'), False),
@@ -331,9 +352,9 @@ for title, colours, natural in rows:
         note = notes[size] if natural else ('Mane colours are locked until level 1.' if size == 0 else '')
         html += f'<figure>{lion(size, colours, draw)}<figcaption><strong>LEVEL {size}</strong>{note}</figcaption></figure>\n'
     html += '</div>\n'
-html += '<h2>Level 3 candidates</h2>\n<p class="lead">A fans out from the face. B falls from the crown, ends in pointed locks, and has a darker ruff under the chin.</p>\n<div class="row">\n'
+html += '<h2>Level 3 candidates</h2>\n<p class="lead">A fans out from the face. B falls from the crown, ends in pointed locks, and has a darker ruff under the chin. C is the top of A over the bottom of B.</p>\n<div class="row">\n'
 for key, shape in full_manes.items():
-    for title, colours, _ in rows[:3]:
+    for title, colours, _ in (rows[:3] if key == FULL_MANE else rows[:1]):
         svg = rects(shape, {'M': colours[0], 'D': colours[1]})
         used = ' (in the game now)' if key == FULL_MANE else ''
         html += f'<figure><div class="stage"><div class="sprite"></div><svg viewBox="0 0 51 64" shape-rendering="crispEdges" preserveAspectRatio="none">{svg}</svg></div><figcaption><strong>{key}{used}</strong>{title.split(" (")[0]}</figcaption></figure>\n'
