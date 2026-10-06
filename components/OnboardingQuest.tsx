@@ -6,7 +6,7 @@ import DialogBox from '@/components/DialogBox'
 import { lines, type EntryChoice } from '@/lib/lines'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
 import { NAME_TOKEN } from '@/lib/tokens'
-import { useHydrated, useSettings } from '@/lib/settings'
+import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './OnboardingQuest.module.css'
 
@@ -68,6 +68,8 @@ export default function OnboardingQuest({ demo }: { demo: boolean }) {
 
 function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress, startAt: Step }) {
   const { sound } = useSettings()
+  const reducedMotion = useReducedMotion()
+  const bottomRef = useRef<HTMLDivElement>(null)
   const [step, setStep] = useState<Step>(startAt)
   const [nameDraft, setNameDraft] = useState('')
   const [answerDraft, setAnswerDraft] = useState('')
@@ -113,6 +115,18 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     requestedFor.current = chat.length
     void requestReply(chat)
   }, [step, awaitingAnswer, chat, requestReply])
+
+  // Keep the newest line and the answer box in view. Watching the page's height (instead of
+  // the message count) also catches the answer box appearing once Todah finishes typing.
+  useEffect(() => {
+    const anchor = bottomRef.current
+    const content = anchor?.parentElement
+    if (!anchor || !content || (step !== 'chat' && step !== 'done')) return
+    const follow = () => anchor.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'end' })
+    const observer = new ResizeObserver(follow)
+    observer.observe(content)
+    return () => observer.disconnect()
+  }, [step, reducedMotion])
 
   function submitName(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -308,6 +322,8 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             </DialogBox>
           </>
         )}
+
+        <div ref={bottomRef} className={styles.bottom} aria-hidden="true" />
       </div>
     </main>
   )

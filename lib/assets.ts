@@ -6,4 +6,7 @@ export const SEATED_SPRITE: string | null = '/sprites/todah-sit.png'
 // Looping background music, played under the sound toggle. A 24-second loop keeps the
 // download small. Set to null to turn music off.
 export const MUSIC_TRACK: string | null = '/audio/theme-loop.mp3'
+// Volume on the title screen, and the quieter background level everywhere after it (0 to 1).
 export const MUSIC_VOLUME = 0.25
+export const MUSIC_BACKGROUND_VOLUME = 0.07
+export const MUSIC_FADE_SECONDS = 1.5

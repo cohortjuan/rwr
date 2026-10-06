@@ -149,3 +149,10 @@
     opacity: 1;
   }
 }
+
+/* Scroll target below the conversation. The margin keeps the answer box clear of the
+   settings bar when the page scrolls to it. */
+.bottom {
+  height: 1px;
+  scroll-margin-bottom: 96px;
+}
