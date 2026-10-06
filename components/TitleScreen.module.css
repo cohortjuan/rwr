@@ -361,28 +361,6 @@
   gap: 12px;
 }
 
-.account {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 10px 0 0;
-  font-size: 0.85rem;
-  color: var(--cream);
-  overflow-wrap: anywhere;
-}
-
-.logOut {
-  font-family: var(--font-pixel), monospace;
-  font-size: 0.5rem;
-  color: var(--cream);
-  background: none;
-  border: 2px solid var(--cream);
-  padding: 5px 7px;
-  cursor: pointer;
-}
-
 /* Phones: lift the prompt above the settings bar. */
 @media (max-width: 640px) {
   .prompt {

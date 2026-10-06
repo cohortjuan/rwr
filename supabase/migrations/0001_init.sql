@@ -1,5 +1,6 @@
 -- RWR initial schema, applied to the "rwr" Supabase project on 2026-10-05.
 -- Every table is locked to its owner with row level security.
+-- Note: the level names in the two check constraints below were changed by 0004_rename_levels.sql.
 
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,

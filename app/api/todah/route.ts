@@ -1,6 +1,7 @@
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
-import { buildSystemPrompt, COMPLETE_TOKENS, type Phase, type TodahMode } from '@/lib/prompts'
+import { phases, type Phase } from '@/lib/levels'
+import { buildSystemPrompt, COMPLETE_TOKENS, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
 
 // The only place the app talks to an LLM. Keys stay on the server.
@@ -13,7 +14,6 @@ const MAX_TEXT_LENGTH = 1000
 const ONBOARDING_ANSWERS = 3
 
 const modes: TodahMode[] = ['onboarding', 'interview', 'help']
-const phases: Phase[] = ['Passion', 'Vocation', 'Mission', 'Profession', 'Crossroads']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
 type IncomingMessage = { role: 'user' | 'todah', text: string }

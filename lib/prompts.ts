@@ -1,3 +1,4 @@
+import { describePhase, type Phase } from '@/lib/levels'
 import type { EntryChoice } from '@/lib/lines'
 import { NAME_TOKEN } from '@/lib/tokens'
 
@@ -5,8 +6,6 @@ import { NAME_TOKEN } from '@/lib/tokens'
 // Every prompt carries the same guardrails: no promised outcomes, and a distress pause.
 
 export type TodahMode = 'onboarding' | 'interview' | 'help'
-
-export type Phase = 'Passion' | 'Vocation' | 'Mission' | 'Profession' | 'Crossroads'
 
 export type PromptContext = {
   mode: TodahMode
@@ -66,7 +65,7 @@ Rules:
 - If something conflicts with an earlier answer, name it with curiosity, never judgment,
   and ask permission first.
 - If they say "I don't know," normalize it and offer a smaller question.
-- Current phase: ${context.phase ?? 'Passion'}. Claims so far: ${context.claimsJson ?? '[]'}.
+- Current phase: ${describePhase(context.phase ?? 'Heart')}. Claims so far: ${context.claimsJson ?? '[]'}.
 - When you have enough evidence for this phase, reply with the single token PHASE_COMPLETE
   after your final reflection.
 

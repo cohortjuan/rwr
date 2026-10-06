@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
-import { logOut, useAccountEmail } from '@/lib/account'
+import { useAccountEmail } from '@/lib/account'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
@@ -148,14 +148,6 @@ export default function TitleScreen() {
                   {lines.title.continueNew}
                 </button>
               </div>
-              {email && (
-                <p className={styles.account}>
-                  <span>{lines.account.signedInAs(email)}</span>
-                  <button type="button" className={styles.logOut} onClick={logOut}>
-                    {lines.account.logOut}
-                  </button>
-                </p>
-              )}
             </div>
           )}
         </div>

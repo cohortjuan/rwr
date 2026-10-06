@@ -89,3 +89,32 @@
     text-align: center;
   }
 }
+
+/* Signed-in badge with LOG OUT, in the top-left corner (the moon has the top-right). */
+.account {
+  position: fixed;
+  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + 5px);
+  left: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-left, 0px));
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 150px);
+}
+
+.email {
+  font-size: 0.8rem;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.7);
+  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Narrow screens: just the button, to leave the top of the screen clear. */
+@media (max-width: 640px) {
+  .email {
+    display: none;
+  }
+}

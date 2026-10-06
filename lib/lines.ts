@@ -1,3 +1,5 @@
+import { levels } from '@/lib/levels'
+
 // Every canned (non-AI) line in RWR lives here so the wording can be edited in one place.
 // Rules that must survive edits: Todah is a guide, not a prophet. He never says a job or
 // outcome is promised, and he does not roar until the player confirms their goal is reached.
@@ -61,7 +63,7 @@ export const lines = {
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
     ikigaiBrief:
-      'This trail follows Ikigai, a Japanese idea of what makes life feel worth living. For work, it sits where four things meet: what you love, what you are good at, what the world needs, and what you can be paid for.',
+      'This trail follows Ikigai, a Japanese idea of what makes life feel worth living. For work, it sits where four things meet: what you love (Heart), what you are good at (Craft), what the world needs (Cause), and what you can be paid for (Coin).',
     ikigaiGotIt: 'GOT IT',
     ikigaiMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
@@ -69,7 +71,7 @@ export const lines = {
       'Ikigai (say ee-kee-guy) joins two Japanese words: iki, life, and gai, worth. In Japan it can be anything that makes a day worth getting up for, big or small. A craft, a garden, a grandchild.',
       'The four-circle picture is a newer, Western way to draw it for careers. Where two circles overlap you get a name: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession.',
       'Miss a circle and something feels off. Paid and skilled but not in love? Comfortable, yet empty. Loving it but unpaid? Joyful, yet broke. The middle, where all four meet, is the sweet spot people call Ikigai.',
-      'Nobody lands in the middle in one step, and that is fine. We will walk one circle at a time and look for honest evidence instead of perfect answers. I am a guide, not a fortune teller, so nothing here is a promise about any job.',
+      `Nobody lands in the middle in one step, and that is fine. We will walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. We look for honest evidence instead of perfect answers. I am a guide, not a fortune teller, so nothing here is a promise about any job.`,
     ],
     ikigaiNextPage: 'NEXT',
     ikigaiDone: 'READY',
@@ -108,7 +110,7 @@ export const lines = {
     answerPlaceholder: 'Type your answer',
     send: 'SEND',
     complete: (name: string) =>
-      `Quest 1 complete. Thank you for walking with me, ${name}. Level 1: Passion is the next trail, and it is still being built.`,
+      `Quest 1 complete. Thank you for walking with me, ${name}. Level ${levels[0].number}: ${levels[0].name}, ${levels[0].circle}, is the next trail, and it is still being built.`,
     toUpgrades: 'SEE LION UPGRADES',
     toTitle: 'BACK TO TITLE',
   },
