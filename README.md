@@ -98,8 +98,10 @@ To be completed before submission. Running notes:
 ## Asset credits
 
 - Roar sound (`public/audio/roar-reward.mp3`): source and license still to be verified.
-- Music (`public/audio/theme-loop.mp3`): a 24-second loop cut from "African Africa Music" by
+- Title music (`public/audio/theme-loop.mp3`): a 24-second loop cut from "African Africa Music" by
   Tunetank, from Pixabay, used under the Pixabay Content License.
+- Background music (`public/audio/background-loop.mp3`): a 45-second loop cut from "Lofi Mood" by
+  Pulsebox, from Pixabay, used under the Pixabay Content License.
 
 ## Design and architecture
 

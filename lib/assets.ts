@@ -3,10 +3,13 @@
 // Seated, front-facing cub for the title screen (shown after the walk-in).
 export const SEATED_SPRITE: string | null = '/sprites/todah-sit.png'
 
-// Looping background music, played under the sound toggle. A 24-second loop keeps the
-// download small. Set to null to turn music off.
+// Music, played under the sound toggle. Both are short loops to keep downloads small.
+// The theme plays on the title screen, then crossfades into the soft background track for
+// the rest of the game. Set either to null to turn it off.
 export const MUSIC_TRACK: string | null = '/audio/theme-loop.mp3'
-// Volume on the title screen, and the quieter background level everywhere after it (0 to 1).
+export const MUSIC_BACKGROUND_TRACK: string | null = '/audio/background-loop.mp3'
+
+// Volumes from 0 to 1, and how long the crossfade takes.
 export const MUSIC_VOLUME = 0.25
-export const MUSIC_BACKGROUND_VOLUME = 0.07
+export const MUSIC_BACKGROUND_VOLUME = 0.12
 export const MUSIC_FADE_SECONDS = 1.5
