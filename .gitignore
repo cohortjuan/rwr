@@ -1,7 +1,33 @@
+# local-only notes (never commit)
 HANDOFF.md
-node_modules/
-.next/
-.env
-.env.local
-.env*.local
 CLAUDE.md
+
+# dependencies
+node_modules/
+/.pnp
+.pnp.*
+
+# next.js
+.next/
+/out/
+/build
+
+# env files: only the placeholder example is committed
+.env
+.env.*
+.env*.local
+!.env.local.example
+
+# misc
+.DS_Store
+*.pem
+/coverage
+npm-debug.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
