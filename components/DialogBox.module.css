@@ -34,15 +34,28 @@
   background-repeat: no-repeat;
   image-rendering: pixelated;
   border: 3px solid var(--gold);
-  animation: bob 1.6s steps(2) infinite;
+  position: relative;
 }
 
-@keyframes bob {
+/* Same framing as the portrait, so only the mouth appears to change. */
+.mouth {
+  position: absolute;
+  inset: 0;
+  background-image: url('/sprites/todah-sit-talk.png');
+  background-size: 118% auto;
+  background-position: 50% 8%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+  animation: talk 0.26s steps(2, jump-none) infinite;
+}
+
+@keyframes talk {
   from {
-    transform: translateY(0);
+    opacity: 0;
   }
   to {
-    transform: translateY(-3px);
+    opacity: 1;
   }
 }
 

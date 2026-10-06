@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useReducedMotion, useSettings } from '@/lib/settings'
-import { playSfx } from '@/lib/sfx'
+import { useReducedMotion } from '@/lib/settings'
 import styles from './DialogBox.module.css'
 
 type Props = {
@@ -13,7 +12,7 @@ type Props = {
 
 const CHAR_MS = 22
 
-// Todah's speech box. Text types out like a 16-bit RPG; click or press a key to finish it.
+// Todah's speech box. Text types out like a 16-bit RPG while his mouth moves; click to finish it.
 // The choices (children) appear once the line is fully shown.
 export default function DialogBox(props: Props) {
   // Keying on the text restarts the typewriter for every new line.
@@ -22,7 +21,6 @@ export default function DialogBox(props: Props) {
 
 function TypedBox({ text, speaker = 'TODAH', children }: Props) {
   const reducedMotion = useReducedMotion()
-  const { sound } = useSettings()
   const [count, setCount] = useState(0)
   const done = reducedMotion || count >= text.length
 
@@ -34,18 +32,16 @@ function TypedBox({ text, speaker = 'TODAH', children }: Props) {
     return () => window.clearInterval(timer)
   }, [done])
 
-  // A soft blip every few letters while the line types out.
-  useEffect(() => {
-    if (!done && count % 3 === 1) playSfx('blip', sound)
-  }, [count, done, sound])
-
   function finish() {
     if (!done) setCount(text.length)
   }
 
   return (
     <section className={styles.box} onClick={finish}>
-      <div className={styles.portrait} aria-hidden="true" />
+      <div className={styles.portrait} aria-hidden="true">
+        {/* Mouth-open frame, flapped on and off while the line types out. */}
+        {!done && <div className={styles.mouth} />}
+      </div>
       <div className={styles.body}>
         <p className={styles.speaker}>{speaker}</p>
         {/* Screen readers get the whole line at once instead of letter by letter. */}

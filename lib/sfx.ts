@@ -3,12 +3,11 @@
 // Tiny 16-bit style sound effects made with the Web Audio API, so there are no audio files
 // to license. Every caller passes the sound setting so the toggle is always respected.
 
-export type SfxName = 'blip' | 'select' | 'levelUp' | 'complete'
+export type SfxName = 'select' | 'levelUp' | 'complete'
 
 type Note = { frequency: number, start: number, length: number }
 
 const patterns: Record<SfxName, { volume: number, notes: Note[] }> = {
-  blip: { volume: 0.025, notes: [{ frequency: 740, start: 0, length: 0.025 }] },
   select: {
     volume: 0.06,
     notes: [
