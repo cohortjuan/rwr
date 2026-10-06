@@ -4,6 +4,8 @@
   width: min(300px, 72vw, 46vh);
   aspect-ratio: 1;
   margin: 0 auto 18px;
+  /* Lets the overlap names size themselves from the wheel, not the screen. */
+  container-type: inline-size;
   animation: popIn 0.35s steps(5) both;
 }
 
@@ -81,9 +83,11 @@
 }
 
 .overlap {
-  font-family: var(--font-talk), var(--font-body);
-  font-size: clamp(0.62rem, 2.4vw, 0.8rem);
+  /* Pixel fonts blur at this size on phones, so these four use a plain high-legibility face. */
+  font-family: var(--font-clear), var(--font-body);
+  font-size: clamp(0.6875rem, 5.2cqw, 0.875rem);
   font-weight: 700;
+  line-height: 1.2;
   color: var(--ink);
   background: var(--cream);
   border: 2px solid var(--ink);

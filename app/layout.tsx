@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Pixelify_Sans, Press_Start_2P } from 'next/font/google'
+import { Atkinson_Hyperlegible, Pixelify_Sans, Press_Start_2P } from 'next/font/google'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
 import TvFrame from '@/components/TvFrame'
@@ -16,6 +16,13 @@ const pixel = Press_Start_2P({
 const talk = Pixelify_Sans({
   subsets: ['latin'],
   variable: '--font-talk',
+})
+
+// Built to stay clear at small sizes. Only the four overlap names on the Ikigai diagram use it.
+const clear = Atkinson_Hyperlegible({
+  weight: '700',
+  subsets: ['latin'],
+  variable: '--font-clear',
 })
 
 export const metadata: Metadata = {
@@ -39,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${pixel.variable} ${talk.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${pixel.variable} ${talk.variable} ${clear.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: applySavedSettings }} />
       </head>
