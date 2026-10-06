@@ -46,7 +46,8 @@ prophet: nothing in the game promises a job or an outcome.
   player's own word, since RWR cannot see LinkedIn or email
 - Wardrobe: cheers received and interviews landed earn sparks, which buy accessories that show
   on the lion everywhere it appears. One piece per group can be worn: fur and mane colour,
-  claws, hats, shades and neck. A few pieces are gifts for progress instead
+  claws, hats, shades or glasses, and neck. A few pieces are gifts for progress instead, and the
+  crown comes only with the roar. Every lion starts with none, and accessories need an account
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader

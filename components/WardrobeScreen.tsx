@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
+import LoginBox from '@/components/LoginBox'
 import {
   accessories,
   buyBlock,
@@ -15,6 +16,7 @@ import {
   wornIds,
   type Accessory,
 } from '@/lib/accessories'
+import { useAccountEmail } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -32,6 +34,9 @@ export default function WardrobeScreen() {
   const lion = useLionText()
   const { sound } = useSettings()
   const keptLions = useKeptLions()
+  // Guests can look, but only a player with an account can own or wear accessories.
+  const signedIn = Boolean(useAccountEmail())
+  const [loginOpen, setLoginOpen] = useState(false)
   const [status, setStatus] = useState('')
 
   if (!hydrated) return <main className="screen" />
@@ -45,6 +50,7 @@ export default function WardrobeScreen() {
     wearing.includes(item.id) || (item.id === DEFAULT_FUR && !wearing.some((id) => id !== item.id && accessories.find((other) => other.id === id)?.category === 'fur'))
 
   function wear(item: Accessory) {
+    if (!signedIn) return
     playSfx('select', sound)
     saveProgress({ wearing: { ...progress.wearing, [item.category]: item.id } })
   }
@@ -58,7 +64,7 @@ export default function WardrobeScreen() {
 
   // Buying puts the piece straight on.
   function buy(item: Accessory) {
-    if (buyBlock(progress, item, others)) return
+    if (!signedIn || buyBlock(progress, item, others)) return
     playSfx('levelUp', sound)
     saveProgress({
       bought: [...progress.bought, item.id],
@@ -94,6 +100,15 @@ export default function WardrobeScreen() {
           </div>
         </section>
 
+        {!signedIn && (
+          <section className={`panel ${styles.account}`}>
+            <p>{lines.wardrobe.accountNote}</p>
+            <button type="button" className="btn" onClick={() => setLoginOpen(true)}>
+              {lines.wardrobe.accountButton}
+            </button>
+          </section>
+        )}
+
         {categories.map((category) => (
           <section key={category} className={styles.group}>
             <h2 className={styles.subheading}>{lines.wardrobe.categories[category]}</h2>
@@ -102,7 +117,7 @@ export default function WardrobeScreen() {
               {accessories
                 .filter((item) => item.category === category)
                 .map((item) => {
-                  const mine = owns(progress, item, others)
+                  const mine = signedIn && owns(progress, item, others)
                   const worn = isWorn(item)
                   const block = mine ? null : buyBlock(progress, item, others)
                   // Each card shows the lion wearing just this piece, so it can be judged before buying.
@@ -140,7 +155,8 @@ export default function WardrobeScreen() {
                           {lines.wardrobe.takeOff}
                         </button>
                       )}
-                      {!mine && !item.gift && (
+                      {!signedIn && item.id !== DEFAULT_FUR && <p className={styles.fine}>{lines.wardrobe.accountNeeded}</p>}
+                      {signedIn && !mine && !item.gift && (
                         <>
                           <button
                             type="button"
@@ -172,6 +188,8 @@ export default function WardrobeScreen() {
           </Link>
         </p>
       </div>
+
+      <LoginBox open={loginOpen} guest={false} onClose={() => setLoginOpen(false)} onEnter={() => setLoginOpen(false)} />
     </main>
   )
 }

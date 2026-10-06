@@ -11,6 +11,10 @@ import {
 // Sparks buy them. Sparks come from encouragement (a cheer from a friend) and from landing a
 // job interview, never from money. A few pieces are gifts for progress instead.
 //
+// A hat is pulled down between the ears, not balanced on top: its bottom row sits about 6
+// cells down, where the head reaches full width, and it is centred on column 25, the middle
+// of the face.
+//
 // Art is drawn on the seated sprite's own grid. One cell is 3 sprite pixels, so the sprite is
 // 51 cells wide and 58 tall. `x` and `y` are where the art's top-left cell goes, and `y` can
 // be negative for a hat that rises above the head. Each letter in `rows` is a colour from
@@ -51,9 +55,9 @@ const RED_DEEP = '#8f1d2c'
 const TEAL = '#2a9d8f'
 const PURPLE = '#7b3fe4'
 
-// Three claws on each front paw.
-const claws = (rows: string[], palette: Record<string, string>): AccessoryArt => ({ x: 15, y: 55, rows, palette })
-const plainClaws = ['C..C..C.......C..C..C', 'C..C..C.......C..C..C']
+// Three claws on each front paw: two cells wide with a pointed tip.
+const claws = (rows: string[], palette: Record<string, string>): AccessoryArt => ({ x: 14, y: 55, rows, palette })
+const plainClaws = ['CC.CC.CC......CC.CC.CC', 'CC.CC.CC......CC.CC.CC', '.C..C..C.......C..C..C']
 
 export const accessories: Accessory[] = [
   // Fur and mane. These tint the whole lion: a true two-colour coat needs the mane drawn as
@@ -65,6 +69,7 @@ export const accessories: Accessory[] = [
   { id: 'rose', category: 'fur', price: 20, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
   { id: 'sky', category: 'fur', price: 30, filter: 'hue-rotate(170deg) saturate(0.9)' },
 
+  { id: 'claws-black', category: 'claws', price: 10, art: claws(plainClaws, { C: INK }) },
   { id: 'claws-gold', category: 'claws', price: 10, art: claws(plainClaws, { C: GOLD_BRIGHT }) },
   { id: 'claws-ruby', category: 'claws', price: 10, art: claws(plainClaws, { C: RED }) },
   { id: 'claws-aqua', category: 'claws', price: 10, art: claws(plainClaws, { C: '#4fd8e8' }) },
@@ -72,7 +77,7 @@ export const accessories: Accessory[] = [
     id: 'claws-rainbow',
     category: 'claws',
     price: 20,
-    art: claws(['R..G..B.......P..C..Y', 'R..G..B.......P..C..Y'], {
+    art: claws(['RR.GG.BB......PP.CC.YY', 'RR.GG.BB......PP.CC.YY', '.R..G..B.......P..C..Y'], {
       R: RED,
       G: '#5fcf6a',
       B: '#4f8fe8',
@@ -87,18 +92,20 @@ export const accessories: Accessory[] = [
     category: 'hat',
     price: 20,
     art: {
-      x: 16,
-      y: -5,
+      x: 14,
+      y: -1,
       rows: [
-        '....RRRRRRRRRR...........',
-        '..RRRRRRRRRRRRRR.........',
-        '.RRRRRRRRRRRRRRRR........',
-        'RRRRRRRRRRRRRRRRRR.......',
-        'RRRRRRRRRRRRRRRRRR.......',
-        'RRRRRRRRRRRRRRRRRRRRRRRRR',
-        'DDDDDDDDDDDDDDDDDDDDDDDDD',
+        '.......RRRRRRRRR.......',
+        '.....RRRRRRRRRRRRR.....',
+        '...RRRRRRRRRRRRRRRRR...',
+        '..RRRRRRRRRRRRRRRRRRR..',
+        '..RRRRRRRRRWRRRRRRRRR..',
+        '..RRRRRRRRRRRRRRRRRRR..',
+        '..RRRRRRRRRRRRRRRRRRR..',
+        'DDDDDDDDDDDDDDDDDDDDDDD',
+        '.DDDDDDDDDDDDDDDDDDDDD.',
       ],
-      palette: { R: RED, D: RED_DEEP },
+      palette: { R: RED, D: RED_DEEP, W: WHITE },
     },
   },
   {
@@ -107,16 +114,17 @@ export const accessories: Accessory[] = [
     price: 20,
     art: {
       x: 15,
-      y: -6,
+      y: -2,
       rows: [
-        '.........WW.........',
-        '........WWWW........',
-        '......BBBBBBBB......',
-        '...BBBBBBBBBBBBBB...',
-        '.BBBBBBBBBBBBBBBBBB.',
-        'BBBBBBBBBBBBBBBBBBBB',
-        'WBBWBBWBBWBBWBBWBBWB',
-        'WBBWBBWBBWBBWBBWBBWB',
+        '.........WWW.........',
+        '........WWWWW........',
+        '......BBBBBBBBB......',
+        '....BBBBBBBBBBBBB....',
+        '..BBBBBBBBBBBBBBBBB..',
+        '.BBBBBBBBBBBBBBBBBBB.',
+        'BBBBBBBBBBBBBBBBBBBBB',
+        'BWBBWBBWBBWBBWBBWBBWB',
+        'BWBBWBBWBBWBBWBBWBBWB',
       ],
       palette: { B: '#3f6fd8', W: WHITE },
     },
@@ -127,15 +135,17 @@ export const accessories: Accessory[] = [
     price: 0,
     gift: 'nomad',
     art: {
-      x: 11,
-      y: -5,
+      x: 10,
+      y: -1,
       rows: [
-        '.......TTTTTTTTTTTTTTT.......',
-        '......TTTTTTTTTTTTTTTTT......',
-        '......TTTTTTTTTTTTTTTTT......',
-        '......NNNNNNNNNNNNNNNNN......',
-        'TTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
-        '.TTTTTTTTTTTTTTTTTTTTTTTTTTT.',
+        '.......TTTTTTTTTTTTTTTTT.......',
+        '......TTTTTTTTTTTTTTTTTTT......',
+        '......TTTTTTTTTTTTTTTTTTT......',
+        '......TTTTTTTTTTTTTTTTTTT......',
+        '......NNNNNNNNNNNNNNNNNNN......',
+        '......NNNNNNNNNNNNNNNNNNN......',
+        'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+        '.TTTTTTTTTTTTTTTTTTTTTTTTTTTTT.',
       ],
       palette: { T: '#c9a26b', N: '#7a4a1e' },
     },
@@ -147,16 +157,17 @@ export const accessories: Accessory[] = [
     gift: 'leader',
     art: {
       x: 16,
-      y: -5,
+      y: -1,
       rows: [
-        'G...G...G...G...G',
-        'G...G...G...G...G',
-        'GG.GGG.GGG.GGG.GG',
-        'GGGGGGGGGGGGGGGGG',
-        'GGRGGGGGBGGGGGRGG',
-        'GGGGGGGGGGGGGGGGG',
+        'G...G....G....G...G',
+        'G...G....G....G...G',
+        'GG.GGG..GGG..GGG.GG',
+        'GGGGGGGGGGGGGGGGGGG',
+        'GGRGGGGGGBGGGGGGRGG',
+        'GGGGGGGGGGGGGGGGGGG',
+        'YYYYYYYYYYYYYYYYYYY',
       ],
-      palette: { G: GOLD, R: RED, B: '#4f8fe8' },
+      palette: { G: GOLD, Y: GOLD_BRIGHT, R: RED, B: '#4f8fe8' },
     },
   },
 
@@ -181,43 +192,85 @@ export const accessories: Accessory[] = [
     },
   },
   {
-    id: 'gold-rims',
+    // Same shape as the black pair, with a silver frame. (A gold frame vanished into the fur.)
+    id: 'aviators',
     category: 'shades',
     price: 25,
     art: {
       x: 11,
       y: 14,
       rows: [
-        'GGGGGGGGGGGGGGGGGGGGGGGGGGG',
-        'GKKKKKKKKG.......GKKKKKKKKG',
-        'GKWWKKKKKG.......GKWWKKKKKG',
-        'GKWKKKKKKG.......GKWKKKKKKG',
-        'GKKKKKKKKG.......GKKKKKKKKG',
-        'GKKKKKKKKG.......GKKKKKKKKG',
-        'GKKKKKKKKG.......GKKKKKKKKG',
-        '.GGGGGGGG.........GGGGGGGG.',
+        'SSSSSSSSSSSSSSSSSSSSSSSSSSS',
+        'SKKKKKKKKS.......SKKKKKKKKS',
+        'SKWWKKKKKS.......SKWWKKKKKS',
+        'SKWKKKKKKS.......SKWKKKKKKS',
+        'SKKKKKKKKS.......SKKKKKKKKS',
+        'SKKKKKKKKS.......SKKKKKKKKS',
+        'SKKKKKKKKS.......SKKKKKKKKS',
+        '.SSSSSSSS.........SSSSSSSS.',
       ],
-      palette: { G: GOLD, K: INK, W: WHITE },
+      palette: { S: '#dfe6ff', K: INK, W: WHITE },
     },
   },
   {
-    id: 'visor',
+    id: 'sunset',
     category: 'shades',
     price: 25,
     art: {
-      x: 10,
+      x: 11,
       y: 14,
       rows: [
-        'KKKKKKKKKKKKKKKKKKKKKKKKKKKKK',
-        'KCCCCCCCCCCCCCCCCCCCCCCCCCCCK',
-        'KCWWCCCCCCCCCCCCCCCCCCCCCCCCK',
-        'KCCCCCCCCCCCCCCCCCCCCCCCCCCCK',
-        'KPPPPPPPPPPPPPPPPPPPPPPPPPPPK',
-        'KPPPPPPPPPPPPPPPPPPPPPPPPPPPK',
-        'KMMMMMMMMMMMMMMMMMMMMMMMMMMMK',
-        '.KKKKKKKKKKKKKKKKKKKKKKKKKKK.',
+        'KKKKKKKKKKKKKKKKKKKKKKKKKKK',
+        'KCCCCCCCCK.......KCCCCCCCCK',
+        'KCWWCCCCCK.......KCWWCCCCCK',
+        'KCCCCCCCCK.......KCCCCCCCCK',
+        'KPPPPPPPPK.......KPPPPPPPPK',
+        'KPPPPPPPPK.......KPPPPPPPPK',
+        'KMMMMMMMMK.......KMMMMMMMMK',
+        '.KKKKKKKK.........KKKKKKKK.',
       ],
       palette: { K: INK, C: '#4fd8e8', P: PURPLE, M: '#e84fb0', W: WHITE },
+    },
+  },
+  {
+    // Eyeglasses: frames only, so the eyes show through.
+    id: 'glasses-round',
+    category: 'shades',
+    price: 15,
+    art: {
+      x: 11,
+      y: 14,
+      rows: [
+        '..KKKKKK...........KKKKKK..',
+        '.K......K.........K......K.',
+        'K........KKKKKKKKK........K',
+        'K........K.......K........K',
+        'K........K.......K........K',
+        'K........K.......K........K',
+        '.K......K.........K......K.',
+        '..KKKKKK...........KKKKKK..',
+      ],
+      palette: { K: INK },
+    },
+  },
+  {
+    id: 'glasses-square',
+    category: 'shades',
+    price: 15,
+    art: {
+      x: 11,
+      y: 14,
+      rows: [
+        'RRRRRRRRRR.......RRRRRRRRRR',
+        'R........R.......R........R',
+        'R........RRRRRRRRR........R',
+        'R........R.......R........R',
+        'R........R.......R........R',
+        'R........R.......R........R',
+        'R........R.......R........R',
+        'RRRRRRRRRR.......RRRRRRRRRR',
+      ],
+      palette: { R: RED },
     },
   },
 
@@ -273,24 +326,33 @@ export const accessories: Accessory[] = [
     },
   },
   {
+    // Gold on golden fur disappears, so the links carry a dark edge and the pendant is a dark
+    // medallion with a lion in side view on it.
     id: 'chain',
     category: 'neck',
     price: 30,
     needsPower: 15,
     art: {
-      x: 13,
-      y: 32,
+      x: 12,
+      y: 31,
       rows: [
-        'GG.....................GG',
-        '.GG...................GG.',
-        '..GGG...............GGG..',
-        '....GGGG.........GGGG....',
-        '.......GGGGGGGGGGG.......',
-        '..........GGGGG..........',
-        '..........GYYYG..........',
-        '..........GGGGG..........',
+        'YG.......................GY',
+        'KYG.....................GYK',
+        '.KYGG.................GGYK.',
+        '..KKYGG.............GGYKK..',
+        '....KKYGGG.......GGGYKK....',
+        '......KKYGGGGGGGGGYKK......',
+        '..........GGGGGGG..........',
+        '........GGKKKKKKKGG........',
+        '.......GKKKKKMMMMKKG.......',
+        '.......GKYKKMMMYYYKG.......',
+        '.......GKKYYYMMYKYKG.......',
+        '.......GKKYYYYMMYKKG.......',
+        '.......GKKYKYKKYKYKG.......',
+        '........GGKKKKKKKGG........',
+        '..........GGGGGGG..........',
       ],
-      palette: { G: GOLD, Y: GOLD_BRIGHT },
+      palette: { G: GOLD, Y: GOLD_BRIGHT, K: INK, M: '#c9601b' },
     },
   },
 ]

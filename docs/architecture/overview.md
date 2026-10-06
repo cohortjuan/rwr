@@ -34,7 +34,8 @@ flowchart LR
   `lib/progress.ts` holds the sum.
 - **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from cheers received (5 each,
   once per friend per day, only from someone in the pride) and interviews logged (25 each).
-  They buy accessories, one worn per category. `LionAvatar` draws the seated sprite and the
+  They buy accessories, one worn per category. Guests can look but only a signed-in player
+  can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the
   accessories on one 51 by 64 grid, so they line up at any size. Fur colours are CSS filters
   over the whole sprite; a true two-colour coat needs the mane as its own art layer.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.

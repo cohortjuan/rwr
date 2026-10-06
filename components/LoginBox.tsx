@@ -12,11 +12,13 @@ type Props = {
   open: boolean
   onClose: () => void
   onEnter: () => void
+  // False where playing as a guest is not on offer (the wardrobe needs an account).
+  guest?: boolean
 }
 
 // Floating retro dialog: log in, sign up, or play as guest.
 // A native <dialog> gives us the focus trap and Esc-to-close.
-export default function LoginBox({ open, onClose, onEnter }: Props) {
+export default function LoginBox({ open, onClose, onEnter, guest = true }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [tab, setTab] = useState<Tab>('login')
   const [email, setEmail] = useState('')
@@ -150,9 +152,11 @@ export default function LoginBox({ open, onClose, onEnter }: Props) {
       </form>
 
       <div className={styles.guestRow}>
-        <button type="button" className="btn" onClick={onEnter}>
-          {lines.login.guest}
-        </button>
+        {guest && (
+          <button type="button" className="btn" onClick={onEnter}>
+            {lines.login.guest}
+          </button>
+        )}
         <button type="button" className="btn btn-quiet" onClick={onClose}>
           {lines.login.close}
         </button>

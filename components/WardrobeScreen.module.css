@@ -64,6 +64,14 @@
   color: var(--gold-bright);
 }
 
+.account {
+  margin-bottom: 28px;
+}
+
+.account p {
+  margin: 0 0 14px;
+}
+
 .group {
   margin-bottom: 28px;
 }
