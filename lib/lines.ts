@@ -18,6 +18,11 @@ export const lines = {
     newGameNo: 'KEEP MY GAME',
   },
 
+  account: {
+    signedInAs: (email: string) => `Signed in as ${email}`,
+    logOut: 'LOG OUT',
+  },
+
   settings: {
     soundOn: 'SOUND: ON',
     soundOff: 'SOUND: OFF',
@@ -109,7 +114,7 @@ export const lines = {
     points: [
       { title: 'On this device', body: 'Your name, answers, upgrades, and goal are saved in this browser so you can come back. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
       { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
-      { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database.' },
+      { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
     ],
     saveOn: 'SAVE ON THIS DEVICE: ON',
@@ -118,13 +123,12 @@ export const lines = {
     aiOn: 'AI REPLIES: ON',
     aiOff: 'AI REPLIES: OFF',
     deleteButton: 'DELETE MY DATA',
-    deleteConfirm: 'Delete your game from this device, and from your account if you are signed in? This cannot be undone.',
+    deleteConfirm: 'Delete your game from this device? If you are signed in, your account is deleted too. This cannot be undone.',
     deleteYes: 'YES, DELETE IT',
     deleteNo: 'KEEP MY DATA',
     deleted: 'Done. Your game data is gone from this device.',
-    deletedAccount: 'Done. Your game data is gone from this device and from your account, and you are signed out.',
-    deleteFailed: 'Your device copy is deleted, but the account copy could not be reached. Please try again.',
-    accountNote: 'To remove the login email itself, contact the person who runs this copy of RWR.',
+    deletedAccount: 'Done. Your game data is gone from this device and your account is deleted.',
+    deleteFailed: 'Your device copy is deleted, but the account could not be reached. Please try again.',
     back: 'BACK TO TITLE',
     link: 'PRIVACY',
   },

@@ -3,28 +3,18 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
+import { deleteAccount, logOut, useAccountEmail } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { clearProgress, saveProgress, setSaveOnDevice, useProgress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
-import { getSupabase } from '@/lib/supabase'
 import styles from './PrivacyScreen.module.css'
-
-// Tables that hold a signed-in player's rows. Row level security limits each delete to the
-// player's own rows; the filter below is belt and braces.
-const ownedTables: { table: string, column: string }[] = [
-  { table: 'claims', column: 'user_id' },
-  { table: 'roadmap_steps', column: 'user_id' },
-  { table: 'upgrades', column: 'user_id' },
-  { table: 'goals', column: 'user_id' },
-  { table: 'interview_sessions', column: 'user_id' },
-  { table: 'profiles', column: 'id' },
-]
 
 // Plain-language account of where a player's answers go, with the controls to stop or undo it.
 export default function PrivacyScreen() {
   const hydrated = useHydrated()
   const settings = useSettings()
   const progress = useProgress()
+  const email = useAccountEmail()
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -33,24 +23,12 @@ export default function PrivacyScreen() {
     setConfirming(false)
     setBusy(true)
     clearProgress()
-    const supabase = getSupabase()
-    try {
-      const session = supabase ? (await supabase.auth.getSession()).data.session : null
-      if (!supabase || !session) {
-        setStatus(lines.privacy.deleted)
-        return
-      }
-      for (const { table, column } of ownedTables) {
-        const { error } = await supabase.from(table).delete().eq(column, session.user.id)
-        if (error) throw error
-      }
-      await supabase.auth.signOut()
-      setStatus(lines.privacy.deletedAccount)
-    } catch {
-      setStatus(lines.privacy.deleteFailed)
-    } finally {
-      setBusy(false)
+    if (!email) {
+      setStatus(lines.privacy.deleted)
+    } else {
+      setStatus((await deleteAccount()) ? lines.privacy.deletedAccount : lines.privacy.deleteFailed)
     }
+    setBusy(false)
   }
 
   if (!hydrated) return <main className="screen" />
@@ -95,7 +73,14 @@ export default function PrivacyScreen() {
           <p className={styles.status} role="status">
             {status || (!settings.saveOnDevice ? lines.privacy.saveOffNote : '')}
           </p>
-          <p className="note">{lines.privacy.accountNote}</p>
+          {email && (
+            <p className={styles.account}>
+              <span>{lines.account.signedInAs(email)}</span>
+              <button type="button" className="btn btn-quiet" onClick={logOut}>
+                {lines.account.logOut}
+              </button>
+            </p>
+          )}
         </section>
 
         <p className={styles.footer}>

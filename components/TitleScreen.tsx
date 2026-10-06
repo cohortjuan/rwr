@@ -4,11 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
+import { logOut, useAccountEmail } from '@/lib/account'
 import { SEATED_SPRITE } from '@/lib/assets'
 import { lines } from '@/lib/lines'
 import { clearProgress, hasSavedGame, useProgress } from '@/lib/progress'
 import { useHydrated, useReducedMotion } from '@/lib/settings'
-import { getSupabase } from '@/lib/supabase'
 import styles from './TitleScreen.module.css'
 
 // Keys that should never count as "any key": they belong to the browser and to keyboard users.
@@ -21,24 +21,13 @@ export default function TitleScreen() {
   const progress = useProgress()
   const [walkDone, setWalkDone] = useState(false)
   const [boxOpen, setBoxOpen] = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
+  const email = useAccountEmail()
+  const signedIn = Boolean(email)
   const [confirmingNew, setConfirmingNew] = useState(false)
 
   // Reduced motion: the cub starts seated and never walks.
   const seated = walkDone || reducedMotion
   const returning = hydrated && (signedIn || hasSavedGame(progress))
-
-  useEffect(() => {
-    const supabase = getSupabase()
-    if (!supabase) return
-    let active = true
-    supabase.auth.getSession().then(({ data }) => {
-      if (active) setSignedIn(Boolean(data.session))
-    })
-    return () => {
-      active = false
-    }
-  }, [])
 
   const enterGame = useCallback(() => {
     router.push(progress.onboardingDone ? '/upgrades' : '/quest')
@@ -128,6 +117,14 @@ export default function TitleScreen() {
                   {lines.title.continueNew}
                 </button>
               </div>
+              {email && (
+                <p className={styles.account}>
+                  <span>{lines.account.signedInAs(email)}</span>
+                  <button type="button" className={styles.logOut} onClick={logOut}>
+                    {lines.account.logOut}
+                  </button>
+                </p>
+              )}
             </div>
           )}
         </div>

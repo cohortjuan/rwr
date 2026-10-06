@@ -59,3 +59,12 @@
 .footer {
   margin: 24px 0 0;
 }
+
+.account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
