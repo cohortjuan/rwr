@@ -1,0 +1,73 @@
+.header {
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0;
+}
+
+.group {
+  margin-bottom: 32px;
+}
+
+.subheading {
+  font-size: 0.85rem;
+  color: var(--gold-bright);
+  margin-bottom: 12px;
+}
+
+.piece {
+  margin-bottom: 18px;
+  padding: 14px;
+  background: var(--teal-deep);
+  border: 4px solid var(--ink);
+}
+
+.pieceName {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.cost {
+  margin-left: 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  font-weight: 400;
+  color: var(--gold-bright);
+}
+
+.tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.tiles li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.lion {
+  width: 100%;
+  max-width: 170px;
+  background: var(--teal);
+  border: 3px solid var(--gold);
+}
+
+.footer {
+  margin: 0;
+}

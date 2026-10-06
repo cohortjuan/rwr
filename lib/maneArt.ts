@@ -10,8 +10,8 @@
 // Every size includes the lock of hair on his forehead as a filled shape, joined to the hair
 // on top, so the whole of it takes the mane's colour together.
 //
-// lionPendant is the chain's medallion, a lion's head in side view, at twice the grid's
-// detail (two art pixels per cell).
+// lionPendant is the chain's medallion, a lion's head in side view, and crownArt is the crown
+// given for the roar. Both are at twice the grid's detail (two art pixels per cell).
 
 export const maneArt: { x: number, y: number, rows: string[] }[] = [
   {
@@ -187,4 +187,30 @@ export const lionPendant: string[] = [
   '....RRRKKMMMMKKKKRRR....',
   '......RRRRRRRRRRRR......',
   '........RRRRRRRR........',
+]
+
+export const crownArt: string[] = [
+  '.....................OOOO.....................',
+  '....................ORWRRO....................',
+  '....................ORRRRO....................',
+  '............OOO......OGGO....OOO..............',
+  '...........OPPPO....OYGGSO..OPPPO.............',
+  '...........OPPPO....OYGGSO..OPPPO.............',
+  '...OOO......OYGSO...OYGGSO...OYGSO....OOO.....',
+  '..OPPPO.....OYGSO..OYYGGSSO..OYGSO...OPPPO....',
+  '..OPPPSO...OYYGSSO.OYYGGSSO.OYYGSSO..OPPPSO...',
+  '...OYGSO...OYYGGSOOOYYGGSSOOOYYGGSO...OYGSO...',
+  '..OYYGSSOOOOYGGGSVVVYYGGGSVVVYGGGSOOOOYYGSSO..',
+  '..OYYGGSVVVYYGGGSSVYYYGGGSSVYYGGGSSVVVYYGGSO..',
+  '.OYYGGGSSVVYYGGGSSVYYYGGGSSVYYGGGSSVVYYGGGSSO.',
+  '.OYYGGGSSVYYYGGGSSSYYYGGGSSYYYGGGSSSVYYGGGSSO.',
+  'OYYYGGGSSSYYYGGGSSYYYGGGGSSYYYGGGSSSYYYGGGSSSO',
+  'OYYYGGGGSSYYYGGGGSYYYGGGGSSYYYGGGGSSYYYGGGGSSO',
+  '.OYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYO.',
+  '.OGGGGWBBGGGGWRRGGGGGWEEEGGGGGWRRGGGGWBBGGGGO.',
+  '.OGGGGBBBGPPGRRRGPPGGEEEEGGPPGRRRGPPGBBBGGGGO.',
+  '.OGGGGBBBGPPGRRRGPPGGEEEEGGPPGRRRGPPGBBBGGGGO.',
+  '.OGGGGBBBGGGGRRRGGGGGEEEEGGGGGRRRGGGGBBBGGGGO.',
+  '.OSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSO.',
+  '..OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO..',
 ]

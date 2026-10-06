@@ -148,3 +148,9 @@
   outline: 3px solid var(--gold-bright);
   outline-offset: 1px;
 }
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

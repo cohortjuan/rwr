@@ -1,4 +1,4 @@
-import { lionPendant } from '@/lib/maneArt'
+import { crownArt, lionPendant } from '@/lib/maneArt'
 import {
   countedCheers,
   pridePower,
@@ -209,33 +209,44 @@ export const accessories: Accessory[] = [
     ],
   },
   {
-    // The crown comes only with the roar. It is set with jewels and it glints.
+    // The crown comes only with the roar, so it is the richest piece: drawn at twice the
+    // grid's detail, set with jewels, outlined so it stands out, and it glints.
     id: 'crown',
     category: 'hat',
     price: 0,
     gift: 'leader',
-    variants: options(['gold', 'silver', 'rose'], (main, bright) => ({ G: main, Y: bright })),
+    variants: [
+      { id: 'gold', swatch: GOLD, palette: {} },
+      { id: 'silver', swatch: tone.silver[0], palette: { G: tone.silver[0], Y: tone.silver[1], S: '#8f97ad' } },
+      { id: 'rose', swatch: tone.rose[0], palette: { G: tone.rose[0], Y: tone.rose[1], S: '#c26f5a' } },
+    ],
     sparkles: [
-      { x: 15, y: -3 },
-      { x: 25, y: -4 },
-      { x: 35, y: -2 },
-      { x: 20, y: 3 },
-      { x: 31, y: 2 },
+      { x: 13, y: -3 },
+      { x: 25, y: -5 },
+      { x: 36, y: -4 },
+      { x: 19, y: 1 },
+      { x: 31, y: 0 },
+      { x: 25, y: 4 },
     ],
     art: [
       {
-        x: 16,
-        y: -1,
-        rows: [
-          'R...B....E....B...R',
-          'G...G....G....G...G',
-          'GG.GGG..GGG..GGG.GG',
-          'GGGGGGGGGEGGGGGGGGG',
-          'GRGGBGGGEWEGGGBGGRG',
-          'GGGGGGGGGEGGGGGGGGG',
-          'YYYYYYYYYYYYYYYYYYY',
-        ],
-        palette: { G: GOLD, Y: GOLD_BRIGHT, R: '#e8334a', B: '#4f8fe8', E: '#3fcf7a', W: WHITE },
+        // A touch larger than two pixels per cell, and worn low on the brow.
+        x: 12.1,
+        y: -6,
+        cell: 0.56,
+        rows: crownArt,
+        palette: {
+          O: '#5a3410',
+          G: GOLD,
+          Y: GOLD_BRIGHT,
+          S: '#c98a1b',
+          V: '#8f1d2c',
+          R: '#e8334a',
+          B: '#4f8fe8',
+          E: '#3fcf7a',
+          P: '#f3f6ff',
+          W: WHITE,
+        },
       },
     ],
   },

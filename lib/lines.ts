@@ -353,6 +353,15 @@ export const lines = {
     back: 'BACK TO UPGRADES',
   },
 
+  // The lookbook: every wardrobe piece in every colour, to look through.
+  lookbook: {
+    heading: 'LOOKBOOK',
+    intro: 'Every piece in the wardrobe, in every colour it comes in. One from each group can be worn at a time.',
+    maneLevel: (n: number) => `Mane level ${n}`,
+    open: 'SEE EVERY PIECE',
+    back: 'BACK TO WARDROBE',
+  },
+
   // The trail map: evidence for each Ikigai circle. Rules that must survive edits: it is a
   // map, not a verdict. It never names a best career and never promises an outcome.
   map: {

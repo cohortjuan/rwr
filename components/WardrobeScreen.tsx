@@ -107,9 +107,14 @@ export default function WardrobeScreen() {
               <li>{lines.wardrobe.earnInterview(INTERVIEW_SPARKS)}</li>
             </ul>
             <p className={styles.fine}>{lines.wardrobe.earnedSoFar(purse.cheers, purse.interviews)}</p>
-            <Link className="btn" href="/pride">
-              {lines.wardrobe.toPride}
-            </Link>
+            <div className={styles.links}>
+              <Link className="btn" href="/pride">
+                {lines.wardrobe.toPride}
+              </Link>
+              <Link className="btn btn-quiet" href="/lookbook">
+                {lines.lookbook.open}
+              </Link>
+            </div>
             <p className={styles.status} role="status">
               {status}
             </p>
