@@ -5,10 +5,13 @@ import Link from 'next/link'
 import { lines } from '@/lib/lines'
 import { circles, compassTotal } from '@/lib/compass'
 import {
+  isPath,
+  PATH_EVIDENCE,
   pridePower,
   saveProgress,
   slotContent,
   todahForm,
+  useKeptLions,
   useLionText,
   useProgress,
   type Progress,
@@ -38,6 +41,7 @@ function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalM
     phrase: totalLevel < totalMax,
     unpaid: !progress.upgrades.paws,
     pride: progress.pride.length === 0,
+    den: !isPath(progress),
     map: compassTotal(progress).score === 0,
     goal: !progress.goalText,
     device: true,
@@ -71,14 +75,17 @@ export default function UpgradesScreen() {
   const [leveledUp, setLeveledUp] = useState<SlotId | null>(null)
 
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
-  const { level: totalLevel, max: totalMax } = pridePower(progress)
+  // Den counts paths across every lion, so the other lions' games are needed too.
+  const keptLions = useKeptLions()
+  const others = keptLions.map((kept) => kept.progress)
+  const { level: totalLevel, max: totalMax } = pridePower(progress, others)
   const evidence = compassTotal(progress)
   // What the player has already said on the trail, offered back as wording to reuse.
   const trailWords = [
     ...circles.map((circle) => progress.compass[circle].claim.trim()),
     ...progress.onboardingChat.filter((message) => message.role === 'user').map((message) => message.text),
   ].filter(Boolean)
-  const form = todahForm(progress)
+  const form = todahForm(progress, others)
   const tipId = tips && !tipsQuiet ? pickTip(progress, form, totalLevel, totalMax) : null
 
   function dismissTip(id: TipId) {
@@ -192,7 +199,7 @@ export default function UpgradesScreen() {
 
         <ul className={styles.grid}>
           {slots.map((slot) => {
-            const level = slotLevel(slot, slotContent(progress, slot))
+            const level = slotLevel(slot, slotContent(progress, slot, others))
             const card = (
               <>
                 <span className={styles.slotName}>{slot.name}</span>
@@ -246,7 +253,64 @@ export default function UpgradesScreen() {
         aria-labelledby="sheet-heading"
         onClose={() => setOpenId(null)}
       >
-        {openSlot && (
+        {openSlot?.tally && (
+          <div>
+            <h2 id="sheet-heading" className={styles.sheetHeading}>
+              {openSlot.name}
+            </h2>
+            <p className={styles.slotTerm}>{openSlot.resumeTerm}</p>
+            <p className={styles.preview}>
+              <LevelBar level={slotLevel(openSlot, slotContent(progress, openSlot, others))} />
+              <span>
+                {lines.upgrades.level(slotLevel(openSlot, slotContent(progress, openSlot, others)), MAX_LEVEL)}
+              </span>
+            </p>
+            <ol className={styles.checks}>
+              {openSlot.checks.map((check, index) => {
+                const met = slotLevel(openSlot, slotContent(progress, openSlot, others)) > index
+                return (
+                  <li key={check.rule} className={met ? styles.checkMet : styles.check}>
+                    <span className={styles.checkLevel}>{lines.upgrades.checkLevel(index + 1)}</span>
+                    <span>
+                      {check.rule}
+                      <span className="sr-only"> ({met ? lines.upgrades.checkMet : lines.upgrades.checkOpen})</span>
+                    </span>
+                  </li>
+                )
+              })}
+            </ol>
+
+            <div className={styles.suggestions}>
+              <p className={styles.suggestionsHeading}>{lines.upgrades.denHeading}</p>
+              <ul className={styles.paths}>
+                {[progress, ...others].map((game, index) => {
+                  const map = compassTotal(game)
+                  return (
+                    <li key={index}>
+                      <strong>{game.lionName}</strong>: {game.goalText.trim() || lines.upgrades.denGoalMissing}.{' '}
+                      {lines.upgrades.denEvidence(map.score, map.max, PATH_EVIDENCE)}.{' '}
+                      <span className={styles.pathState}>
+                        {isPath(game) ? lines.upgrades.denCounts : lines.upgrades.denNotYet}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className={styles.pathHint}>{lines.upgrades.denHint}</p>
+            </div>
+
+            <div className={styles.sheetButtons}>
+              <Link className="btn" href="/map">
+                {lines.upgrades.toMap}
+              </Link>
+              <button type="button" className="btn btn-quiet" onClick={() => setOpenId(null)}>
+                {lines.upgrades.denClose}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {openSlot && !openSlot.tally && (
           <form onSubmit={save}>
             <h2 id="sheet-heading" className={styles.sheetHeading}>
               {openSlot.name}

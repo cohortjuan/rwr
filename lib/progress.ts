@@ -1,7 +1,7 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
-import { stepsDone, trailSteps } from '@/lib/compass'
+import { compassTotal, stepsDone, trailSteps } from '@/lib/compass'
 import type { EntryChoice } from '@/lib/lines'
 import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
@@ -37,6 +37,12 @@ export type Circle = 'heart' | 'craft' | 'cause' | 'coin'
 // One circle on the trail map: what the player claims, and which evidence they ticked.
 export type CircleEntry = { claim: string, evidence: string[] }
 
+// One piece of real-world outreach the player logged: a LinkedIn connection, an email or
+// message about a job, or a real conversation. RWR cannot see any of these, so the log is
+// the player's own word. The note is theirs alone and stays on this device.
+export type OutreachKind = 'linkedin' | 'message' | 'talk'
+export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
+
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
 export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
@@ -61,6 +67,7 @@ export type Progress = {
   pride: PrideCard[]
   cheersReceived: CheerReceived[]
   cheersSent: number
+  outreach: Outreach[]
   // The trail map (see lib/compass.ts): a claim and its evidence for each circle, the needs
   // the player picked for Cause, and the real-world steps they have done.
   compass: Record<Circle, CircleEntry>
@@ -90,6 +97,7 @@ export const emptyProgress: Progress = {
   pride: [],
   cheersReceived: [],
   cheersSent: 0,
+  outreach: [],
   compass: {
     heart: { claim: '', evidence: [] },
     craft: { claim: '', evidence: [] },
@@ -286,18 +294,53 @@ export function useLionText(): (text: string) => string {
   return (text) => withLionName(text, lionName)
 }
 
-// What a slot is levelled from. Most slots hold what the player typed. The Pride slot is not
-// typed: it grows with the friends in My Pride, one line per friend.
-export function slotContent(progress: Progress, slot: Slot): string {
-  if (slot.id === 'pride') return progress.pride.map((card) => card.id).join('\n')
+// A real conversation is worth more than a message sent.
+const outreachWorth: Record<OutreachKind, number> = { linkedin: 1, message: 1, talk: 2 }
+
+// Cheers that count toward the pride. To make farming pointless, a cheer counts only from
+// someone whose card is in the pride, and once per friend per day.
+function countedCheers(progress: Progress): number {
+  const friends = new Set(progress.pride.map((card) => card.id))
+  const counted = new Set<string>()
+  for (const cheer of progress.cheersReceived) {
+    const sender = cheer.key.split(':')[0]
+    if (friends.has(sender)) counted.add(`${sender}:${cheer.at.slice(0, 10)}`)
+  }
+  return counted.size
+}
+
+// The connections behind the Pride slot: friends who joined, outreach logged, cheers received.
+export function connections(progress: Progress): { friends: number, outreach: number, cheers: number, total: number } {
+  const friends = progress.pride.length
+  const outreach = progress.outreach.reduce((sum, entry) => sum + (outreachWorth[entry.kind] ?? 0), 0)
+  const cheers = countedCheers(progress)
+  return { friends, outreach, cheers, total: friends + outreach + cheers }
+}
+
+// A lion is a career path explored once it has a main goal and some evidence on its trail
+// map. Starting a new game is not enough.
+export const PATH_EVIDENCE = 3
+
+export function isPath(progress: Progress): boolean {
+  return progress.goalText.trim().length > 0 && compassTotal(progress).score >= PATH_EVIDENCE
+}
+
+const tally = (count: number) => Array.from({ length: count }, () => 'x').join('\n')
+
+// What a slot is levelled from. Most slots hold what the player typed. Two are tallies, one
+// line per thing counted: Pride counts connections, and Den counts the career paths explored
+// across every lion (`others` is the progress of the player's other lions).
+export function slotContent(progress: Progress, slot: Slot, others: Progress[] = []): string {
+  if (slot.id === 'pride') return tally(connections(progress).total)
+  if (slot.id === 'den') return tally([progress, ...others].filter(isPath).length)
   return progress.upgrades[slot.id] ?? ''
 }
 
 // Pride Power: levels earned across the live upgrade slots, plus one for each real-world
 // trail step done. Also returns the most that can be earned.
-export function pridePower(progress: Progress): { level: number, max: number } {
+export function pridePower(progress: Progress, others: Progress[] = []): { level: number, max: number } {
   const live = slots.filter((slot) => !slot.locked)
-  const level = live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot)), 0)
+  const level = live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot, others)), 0)
   return { level: level + stepsDone(progress), max: live.length * MAX_LEVEL + trailSteps.length }
 }
 
@@ -308,9 +351,9 @@ export function hasSavedGame(progress: Progress): boolean {
 // Todah's form follows what the player has built, never how much they have chatted.
 // Nomad: onboarding done and at least two upgrade slots started.
 // Pride Leader: only after the player confirms their main goal is reached.
-export function todahForm(progress: Progress): TodahForm {
+export function todahForm(progress: Progress, others: Progress[] = []): TodahForm {
   if (progress.goalAchievedAt) return 'leader'
-  const started = slots.filter((slot) => slotLevel(slot, slotContent(progress, slot)) > 0).length
+  const started = slots.filter((slot) => slotLevel(slot, slotContent(progress, slot, others)) > 0).length
   if (progress.onboardingDone && started >= 2) return 'nomad'
   return 'cub'
 }

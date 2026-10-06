@@ -33,11 +33,15 @@ prophet: nothing in the game promises a job or an outcome.
   confidence. It names the strongest and thinnest circle and one small real-world step, and
   never names a "best career". For "what the world needs" the player picks from the UN's 17
   Sustainable Development Goals and is pointed to public job-outlook data to check it
-- Lion upgrades: five live resume slots, two shown as coming soon. Levels are earned by what an
-  entry says (what you did, a result with a number), not by its length. Real-world trail steps
-  add Pride Power. Helpful tips can be switched off
+- Lion upgrades: six live slots, one shown as coming soon. Levels are earned by what an entry
+  says (what you did, a result with a number), not by its length. Real-world trail steps add
+  Pride Power. Helpful tips can be switched off
+- Den: levels up with each career path explored, meaning a lion with a main goal and evidence
+  on its trail map, so starting a new game is not enough
 - My Pride: add friends by QR code or link with no account, follow their lions, and send preset
-  cheers. Friends level up the Pride slot
+  cheers. The Pride slot counts connections (friends, logged outreach such as a LinkedIn
+  connection or an email about a job, and cheers received) and needs 3, 10, then 25. Outreach
+  is the player's own word, since RWR cannot see LinkedIn or email
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader

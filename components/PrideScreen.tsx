@@ -16,7 +16,18 @@ import {
   withCard,
   type CheerId,
 } from '@/lib/pride'
-import { saveProgress, slotContent, useLionText, useProgress, type PrideCard, type TodahForm } from '@/lib/progress'
+import {
+  connections,
+  saveProgress,
+  slotContent,
+  useKeptLions,
+  useLionText,
+  useProgress,
+  type OutreachKind,
+  type PrideCard,
+  type Progress,
+  type TodahForm,
+} from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import { MAX_LEVEL, PRIDE_LEVELS, slotLevel, slots } from '@/lib/upgrades'
@@ -30,6 +41,9 @@ const formLabel: Record<TodahForm, string> = {
 
 const prideSlot = slots.find((slot) => slot.id === 'pride')
 const cheerIds = Object.keys(lines.pride.cheers) as CheerId[]
+const outreachKinds = Object.keys(lines.pride.logKinds) as OutreachKind[]
+const NOTE_MIN = 3
+const NOTE_MAX = 60
 
 function shortDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -62,6 +76,9 @@ export default function PrideScreen() {
   const progress = useProgress()
   const lion = useLionText()
   const { sound } = useSettings()
+  const keptLions = useKeptLions()
+  const [logKind, setLogKind] = useState<OutreachKind>('linkedin')
+  const [logNote, setLogNote] = useState('')
   // The card or cheer in the link this page was opened with, until the player has dealt with it.
   const [link, setLink] = useState(() => (typeof window === 'undefined' ? '' : window.location.hash))
   // A card's timestamp is set once per visit.
@@ -108,9 +125,15 @@ export default function PrideScreen() {
 
   if (!hydrated) return <main className="screen" />
 
-  const level = prideSlot ? slotLevel(prideSlot, slotContent(progress, prideSlot)) : 0
+  const prideLevel = (game: Progress) => (prideSlot ? slotLevel(prideSlot, slotContent(game, prideSlot)) : 0)
+  const level = prideLevel(progress)
+  const made = connections(progress)
   const nextAt = PRIDE_LEVELS[level]
-  const myCard = buildCard(progress, openedAt)
+  const myCard = buildCard(
+    progress,
+    openedAt,
+    keptLions.map((lion) => lion.progress),
+  )
   const myLink = progress.cardId ? cardLink(window.location.origin, myCard) : ''
   const canShare = typeof navigator.share === 'function'
   const removing = progress.pride.find((friend) => friend.id === removingId)
@@ -132,10 +155,8 @@ export default function PrideScreen() {
       return
     }
     const pride = withCard(progress.pride, card)
-    const before = level
-    const after = prideSlot ? slotLevel(prideSlot, pride.map((friend) => friend.id).join('\n')) : 0
     saveProgress({ pride })
-    playSfx(after > before ? 'levelUp' : 'select', sound)
+    playSfx(prideLevel({ ...progress, pride }) > level ? 'levelUp' : 'select', sound)
     setStatus(isNew ? lines.pride.added(card.name) : lines.pride.updated(card.name))
   }
 
@@ -181,6 +202,17 @@ export default function PrideScreen() {
     if (sent) saveProgress({ cheersSent: progress.cheersSent + 1 })
   }
 
+  function logOutreach(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const note = logNote.trim().slice(0, NOTE_MAX)
+    if (note.length < NOTE_MIN) return
+    const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+    const outreach = [{ id, kind: logKind, note, at: new Date().toISOString() }, ...progress.outreach]
+    saveProgress({ outreach })
+    playSfx(prideLevel({ ...progress, outreach }) > level ? 'levelUp' : 'select', sound)
+    setLogNote('')
+  }
+
   function removeFriend() {
     saveProgress({ pride: progress.pride.filter((friend) => friend.id !== removingId) })
     setRemovingId(null)
@@ -194,8 +226,9 @@ export default function PrideScreen() {
           <p className={styles.intro}>{lines.pride.intro}</p>
           <p className={styles.slot}>
             <strong>{lines.pride.slot(level, MAX_LEVEL)}</strong>{' '}
-            {nextAt ? lines.pride.slotNext(nextAt - progress.pride.length) : lines.pride.slotFull}
+            {nextAt ? lines.pride.slotNext(nextAt - made.total) : lines.pride.slotFull}
           </p>
+          <p className={styles.tally}>{lines.pride.tally(made.friends, made.outreach, made.cheers)}</p>
         </header>
 
         {incoming && !isOwn && (incoming.kind === 'cheer' || !known) && (
@@ -305,6 +338,7 @@ export default function PrideScreen() {
             </form>
 
             <h2 className={`${styles.subheading} ${styles.spaced}`}>{lines.pride.receivedHeading}</h2>
+            <p className={styles.fine}>{lines.pride.cheerRule}</p>
             {progress.cheersReceived.length === 0 ? (
               <p className={styles.note}>{lines.pride.receivedEmpty}</p>
             ) : (
@@ -321,6 +355,66 @@ export default function PrideScreen() {
             )}
           </section>
         </div>
+
+        <section className={`panel ${styles.log}`}>
+          <h2 className={styles.subheading}>{lines.pride.logHeading}</h2>
+          <p className={styles.note}>{lines.pride.logIntro}</p>
+          <form onSubmit={logOutreach}>
+            <div className={styles.kinds} role="radiogroup" aria-label={lines.pride.logHeading}>
+              {outreachKinds.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  role="radio"
+                  aria-checked={logKind === kind}
+                  className={logKind === kind ? styles.kindOn : styles.kind}
+                  onClick={() => setLogKind(kind)}
+                >
+                  {lines.pride.logKinds[kind]} <strong>{lines.pride.logWorth[kind]}</strong>
+                </button>
+              ))}
+            </div>
+            <div className="field">
+              <label htmlFor="log-note">{lines.pride.logNoteLabel}</label>
+              <input
+                id="log-note"
+                autoComplete="off"
+                maxLength={NOTE_MAX}
+                placeholder={lines.pride.logNotePlaceholder}
+                value={logNote}
+                onChange={(event) => setLogNote(event.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn" disabled={logNote.trim().length < NOTE_MIN}>
+              {lines.pride.logAdd}
+            </button>
+          </form>
+          <p className={styles.fine}>{lines.pride.logPrivate}</p>
+          {progress.outreach.length === 0 ? (
+            <p className={styles.note}>{lines.pride.logEmpty}</p>
+          ) : (
+            <ul className={styles.entries}>
+              {progress.outreach.map((entry) => (
+                <li key={entry.id}>
+                  <span>
+                    <span className={styles.cheerWho}>
+                      {shortDate(entry.at)}, {lines.pride.logKinds[entry.kind]} {lines.pride.logWorth[entry.kind]}
+                    </span>
+                    {entry.note}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.entryRemove}
+                    aria-label={`${lines.pride.logRemove}: ${entry.note}`}
+                    onClick={() => saveProgress({ outreach: progress.outreach.filter((item) => item.id !== entry.id) })}
+                  >
+                    {lines.pride.logRemove}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <section className={styles.friends}>
           <h2 className={styles.subheading}>{lines.pride.friendsHeading}</h2>

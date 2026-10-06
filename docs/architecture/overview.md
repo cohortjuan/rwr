@@ -25,6 +25,11 @@ flowchart LR
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.
+- **Den** counts career paths: lions that have a main goal and at least 3 evidence points.
+- **Pride** counts connections: friends in My Pride, outreach the player logs (self-reported),
+  and cheers received. A cheer counts once per friend per day and only from someone already in
+  the pride. Levels need 3, 10 and 25. With no accounts these are an honour system; checking
+  who sent a cheer would need sign-in and a server-side record.
 - **Pride Power** is the slot levels plus one for each real-world trail step done.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
 

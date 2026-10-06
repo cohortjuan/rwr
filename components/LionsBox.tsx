@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { lines } from '@/lib/lines'
-import { pridePower, todahForm, type KeptLion, type TodahForm } from '@/lib/progress'
+import { pridePower, todahForm, useProgress, type KeptLion, type TodahForm } from '@/lib/progress'
 import styles from './LionBoxes.module.css'
 
 type Props = {
@@ -21,6 +21,7 @@ const formLabel: Record<TodahForm, string> = {
 // The lions set aside from earlier games. Picking one puts it back in play.
 export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const current = useProgress()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -37,13 +38,15 @@ export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
       <p className={styles.text}>{lines.lions.listIntro}</p>
       <ul className={styles.list}>
         {lions.map((lion) => {
-          const power = pridePower(lion.progress)
+          // Every other lion, including the one in play, counts toward this lion's Den.
+          const others = [current, ...lions.filter((other) => other.id !== lion.id).map((other) => other.progress)]
+          const power = pridePower(lion.progress, others)
           return (
             <li key={lion.id} className={styles.lion}>
               <div>
                 <p className={styles.lionName}>{lion.progress.lionName.toUpperCase()}</p>
                 <p className={styles.lionDetail}>
-                  {lines.lions.summary(formLabel[todahForm(lion.progress)], power.level, power.max)}
+                  {lines.lions.summary(formLabel[todahForm(lion.progress, others)], power.level, power.max)}
                 </p>
                 {lion.progress.goalText && (
                   <p className={styles.lionDetail}>

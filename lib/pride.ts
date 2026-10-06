@@ -13,7 +13,7 @@ export type PrideLink =
   | { kind: 'cheer', card: PrideCard, cheer: CheerId, key: string }
 
 export const PRIDE_MAX_FRIENDS = 30
-export const CHEERS_KEPT = 20
+export const CHEERS_KEPT = 60
 
 const VERSION = 1
 const NAME_MAX = 24
@@ -29,14 +29,14 @@ export function newCardId(): string {
 }
 
 // The snapshot friends see: first name, lion, form, Pride Power, and the goal if shared.
-export function buildCard(progress: Progress, now: number): PrideCard {
-  const power = pridePower(progress)
+export function buildCard(progress: Progress, now: number, others: Progress[] = []): PrideCard {
+  const power = pridePower(progress, others)
   const showGoal = progress.shareGoal && progress.goalText.trim().length > 0
   return {
     id: progress.cardId,
     name: progress.playerName.trim().slice(0, NAME_MAX) || lines.pride.noName,
     lion: progress.lionName,
-    form: todahForm(progress),
+    form: todahForm(progress, others),
     power: power.level,
     max: power.max,
     goal: showGoal ? progress.goalText.trim().slice(0, GOAL_MAX) : '',

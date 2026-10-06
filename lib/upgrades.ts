@@ -25,12 +25,15 @@ export type Slot = {
   suggestions: string[]
   // A slot with its own page opens that page instead of the typing sheet.
   page?: string
+  // A tally slot is counted, not typed: its sheet shows what is counted and has no text box.
+  tally?: boolean
 }
 
 export const MAX_LEVEL = 3
 
-// Friends needed for each level of the Pride slot.
-export const PRIDE_LEVELS = [1, 2, 3]
+// Connections needed for each level of the Pride slot. The last one is meant to take weeks
+// of steady outreach, not an afternoon.
+export const PRIDE_LEVELS = [3, 10, 25]
 
 const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
 const sentences = (text: string) => text.split(/[.!?]+/).filter((part) => words(part) >= 3).length
@@ -130,18 +133,24 @@ export const slots: Slot[] = [
     suggestions: [],
   },
   {
+    // Levelled from the career paths explored across the player's lions (see slotContent).
     id: 'den',
     name: 'DEN',
-    resumeTerm: 'Projects and portfolio',
-    locked: true,
+    resumeTerm: 'Career paths explored',
+    locked: false,
     prompt: '',
     placeholder: '',
-    checks: [never, never, never],
+    checks: [
+      { rule: 'Explore one path: a lion with a main goal and evidence on its trail map.', met: (content) => entries(content).length >= 1 },
+      { rule: 'Explore a second path with another lion.', met: (content) => entries(content).length >= 2 },
+      { rule: 'Explore three paths, so you can compare them side by side.', met: (content) => entries(content).length >= 3 },
+    ],
     growth: 'The den fills in behind him.',
     suggestions: [],
+    tally: true,
   },
   {
-    // Levelled from the friends in My Pride, one line per friend (see slotContent).
+    // Levelled from connections: friends, outreach logged, cheers received (see slotContent).
     id: 'pride',
     name: 'PRIDE',
     resumeTerm: 'References and network',
@@ -149,9 +158,9 @@ export const slots: Slot[] = [
     prompt: '',
     placeholder: '',
     checks: [
-      { rule: 'One friend joins your pride.', met: (content) => entries(content).length >= PRIDE_LEVELS[0] },
-      { rule: 'Two friends in your pride.', met: (content) => entries(content).length >= PRIDE_LEVELS[1] },
-      { rule: 'Three friends in your pride.', met: (content) => entries(content).length >= PRIDE_LEVELS[2] },
+      { rule: `Make ${PRIDE_LEVELS[0]} connections.`, met: (content) => entries(content).length >= PRIDE_LEVELS[0] },
+      { rule: `Reach ${PRIDE_LEVELS[1]} connections.`, met: (content) => entries(content).length >= PRIDE_LEVELS[1] },
+      { rule: `Reach ${PRIDE_LEVELS[2]} connections.`, met: (content) => entries(content).length >= PRIDE_LEVELS[2] },
     ],
     growth: 'Companion lions appear.',
     suggestions: [],
