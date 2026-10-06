@@ -1,6 +1,7 @@
 # local-only notes (never commit)
 HANDOFF.md
 CLAUDE.md
+docs/journal/
 
 # dependencies
 node_modules/
