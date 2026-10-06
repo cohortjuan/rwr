@@ -153,32 +153,98 @@
   }
 }
 
-/* Night sky: a field of small stars that twinkle in two steps. Hidden by day. */
+/* Night sky: small stars, some of which twinkle, and a shooting star now and then. Hidden by
+   day. */
 .stars {
   position: absolute;
   inset: 0 0 44% 0;
   opacity: var(--star-opacity, 0);
-  background-image:
-    radial-gradient(1.5px 1.5px at 8% 18%, #fff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 17% 52%, #dfe6ff 99%, transparent),
-    radial-gradient(2px 2px at 26% 9%, #fff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 34% 38%, #dfe6ff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 44% 14%, #fff 99%, transparent),
-    radial-gradient(2px 2px at 57% 30%, #fff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 66% 8%, #dfe6ff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 73% 47%, #fff 99%, transparent),
-    radial-gradient(2px 2px at 82% 20%, #fff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 91% 40%, #dfe6ff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 95% 12%, #fff 99%, transparent),
-    radial-gradient(1.5px 1.5px at 4% 66%, #fff 99%, transparent);
-  animation: twinkle 2.8s steps(2, jump-none) infinite alternate;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+}
+
+.starBig {
+  width: 3px;
+  height: 3px;
+}
+
+.starBlue {
+  background: #dfe6ff;
+}
+
+/* Steady most of the time, then a quick dim and a flash. Each star sets its own length and
+   head start (see Savannah.tsx), so the sky never blinks in unison. */
+.twinkler {
+  animation: twinkle 5s steps(1) infinite;
 }
 
 @keyframes twinkle {
-  from {
-    filter: brightness(1);
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
-  to {
-    filter: brightness(0.6);
+  72% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.8);
+  }
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* A streak with a bright head and a fading tail. It is invisible for most of its cycle and
+   crosses in about a second, so with motion off it never shows. */
+.shooting {
+  position: absolute;
+  width: clamp(36px, 7vw, 84px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #dfe6ff 70%, #fff);
+  opacity: 0;
+  transform: rotate(var(--angle)) translateX(0);
+}
+
+/* Two streaks on different clocks, so they come from different places at uneven gaps. */
+.shootOne {
+  --angle: 24deg;
+  top: 14%;
+  left: 12%;
+  animation: shoot 17s linear 2.5s infinite;
+}
+
+.shootTwo {
+  --angle: 152deg;
+  top: 8%;
+  left: 68%;
+  animation: shoot 29s linear 11s infinite;
+}
+
+@keyframes shoot {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(0);
+  }
+  1% {
+    opacity: 1;
+  }
+  5% {
+    opacity: 1;
+  }
+  7%,
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(40vw);
   }
 }
