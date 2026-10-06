@@ -23,7 +23,8 @@
   bottom: 0;
 }
 
-/* The herd starts off-screen to the left, so it stays hidden when motion is off. */
+/* The herd starts off-screen to the left, so it stays hidden when motion is off.
+   The negative delay skips the off-screen part of the walk, so it is stepping in on load. */
 .herd {
   position: absolute;
   left: 0;
@@ -32,7 +33,7 @@
   align-items: flex-end;
   gap: calc(var(--px) * 9);
   transform: translateX(-120%);
-  animation: cross 48s linear 6s infinite;
+  animation: cross 48s linear -3s infinite;
 }
 
 @keyframes cross {
@@ -69,7 +70,8 @@
   }
 }
 
-/* Birds: high in the sky, behind the logo. */
+/* Birds: high in the sky, behind the logo. Their delays are head starts too: the first is
+   at the edge of the screen on load and the other two follow close behind. */
 .flock {
   top: 0;
   height: 44%;
@@ -125,17 +127,17 @@
 
 .birdOne {
   top: 20%;
-  animation-delay: 3s;
+  animation-delay: -2.2s;
 }
 
 .birdTwo {
   top: 29%;
-  animation-delay: 4.4s;
+  animation-delay: -1.2s;
 }
 
 .birdThree {
   top: 14%;
-  animation-delay: 5.6s;
+  animation-delay: -0.4s;
   --px: clamp(1px, 0.22vw, 3px);
 }
 
