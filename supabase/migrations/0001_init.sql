@@ -1,5 +1,5 @@
--- RWR initial schema. Not applied yet: review, then run in the Supabase SQL editor
--- or with the Supabase CLI. Every table is locked to its owner with row level security.
+-- RWR initial schema, applied to the "rwr" Supabase project on 2026-10-05.
+-- Every table is locked to its owner with row level security.
 
 create table public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,

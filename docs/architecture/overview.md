@@ -32,5 +32,5 @@ erDiagram
   auth_users ||--o| goals : sets
 ```
 
-Status: the schema is written but not applied, and account progress is not synced to the database
-yet. Progress is saved in the browser (localStorage) for guests and accounts alike.
+Status: the schema is applied to the Supabase project, but account progress is not synced to the
+database yet. Progress is saved in the browser (localStorage) for guests and accounts alike.
