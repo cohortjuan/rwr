@@ -1,0 +1,218 @@
+.header {
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0 0 10px;
+}
+
+.slot {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.slot strong {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.65rem;
+  color: var(--gold-bright);
+  margin-right: 6px;
+}
+
+.subheading {
+  font-size: 0.8rem;
+  color: var(--gold-bright);
+  margin-bottom: 10px;
+}
+
+.spaced {
+  margin-top: 26px;
+}
+
+.note {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  color: var(--gold-bright);
+}
+
+.manual {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 10px;
+  color: var(--ink);
+  background: var(--cream);
+  border: 3px solid var(--ink);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+/* A card or a cheer that arrived by link pops in above everything else. */
+.incoming {
+  margin-bottom: 16px;
+  animation: arrive 0.3s steps(4) both;
+}
+
+@keyframes arrive {
+  from {
+    transform: translateY(-10px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cheerFrom {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+}
+
+.cheerText {
+  margin: 0 0 16px;
+  font-family: var(--font-talk), var(--font-body);
+  font-size: 1.3rem;
+  color: var(--gold-bright);
+}
+
+/* The card itself: what one player shows another. */
+.face {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(15, 12, 41, 0.45);
+  border: 3px solid var(--gold);
+}
+
+.faceName {
+  margin: 0 0 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--gold-bright);
+  overflow-wrap: anywhere;
+}
+
+.faceForm,
+.facePower {
+  margin: 0 0 6px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.55rem;
+}
+
+.bar {
+  height: 10px;
+  margin-bottom: 10px;
+  background: var(--ink);
+  border: 2px solid var(--ink);
+}
+
+.barFill {
+  height: 100%;
+  background: var(--gold);
+}
+
+.faceGoal {
+  margin: 0;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.reached {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  color: var(--ink);
+  background: var(--gold-bright);
+}
+
+.asOf {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.qr {
+  display: block;
+  width: min(100%, 260px);
+  margin: 0 auto 12px;
+  border: 4px solid var(--ink);
+}
+
+.buttons,
+.pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pick {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Cheers are sentences, so their buttons use the reading font and wrap. */
+.pick :global(.btn) {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  text-align: left;
+  white-space: normal;
+}
+
+.cheers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.cheers li {
+  padding: 10px;
+  background: rgba(15, 12, 41, 0.45);
+  border-left: 4px solid var(--gold);
+}
+
+.cheerWho {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.friends {
+  margin-bottom: 24px;
+}
+
+.grid {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  align-items: start;
+  gap: 20px;
+}
+
+.footer {
+  margin: 0;
+}

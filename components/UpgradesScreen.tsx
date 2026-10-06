@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { lines } from '@/lib/lines'
-import { saveProgress, todahForm, useLionText, useProgress, type Progress, type TodahForm } from '@/lib/progress'
+import {
+  saveProgress,
+  slotContent,
+  todahForm,
+  useLionText,
+  useProgress,
+  type Progress,
+  type TodahForm,
+} from '@/lib/progress'
 import { saveSettings, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx, preloadSfx } from '@/lib/sfx'
 import { MAX_LEVEL, slotLevel, slots, type Slot, type SlotId } from '@/lib/upgrades'
@@ -27,6 +35,7 @@ function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalM
     levels: totalLevel > 0 && totalLevel < totalMax,
     phrase: totalLevel < totalMax,
     unpaid: !progress.upgrades.paws,
+    pride: progress.pride.length === 0,
     goal: !progress.goalText,
     device: true,
   }
@@ -60,7 +69,7 @@ export default function UpgradesScreen() {
 
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
   const liveSlots = slots.filter((slot) => !slot.locked)
-  const totalLevel = liveSlots.reduce((sum, slot) => sum + slotLevel(slot, progress.upgrades[slot.id] ?? ''), 0)
+  const totalLevel = liveSlots.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot)), 0)
   const totalMax = liveSlots.length * MAX_LEVEL
   const form = todahForm(progress)
   const tipId = tips && !tipsQuiet ? pickTip(progress, form, totalLevel, totalMax) : null
@@ -167,30 +176,42 @@ export default function UpgradesScreen() {
 
         <ul className={styles.grid}>
           {slots.map((slot) => {
-            const level = slotLevel(slot, progress.upgrades[slot.id] ?? '')
+            const level = slotLevel(slot, slotContent(progress, slot))
+            const card = (
+              <>
+                <span className={styles.slotName}>{slot.name}</span>
+                <span className={styles.slotTerm}>{slot.resumeTerm}</span>
+                {slot.locked ? (
+                  <span className={styles.slotState}>{lines.upgrades.locked}</span>
+                ) : (
+                  <>
+                    <LevelBar level={level} />
+                    <span className={styles.slotState}>
+                      {level === 0 ? lines.upgrades.empty : lines.upgrades.level(level, MAX_LEVEL)}
+                    </span>
+                  </>
+                )}
+                <span className={styles.slotGrowth}>{slot.growth}</span>
+                {leveledUp === slot.id && <span className={styles.levelUp}>{lines.upgrades.levelUp}</span>}
+              </>
+            )
             return (
               <li key={slot.id}>
-                <button
-                  type="button"
-                  className={slot.locked ? styles.slotLocked : styles.slot}
-                  disabled={slot.locked}
-                  onClick={() => open(slot)}
-                >
-                  <span className={styles.slotName}>{slot.name}</span>
-                  <span className={styles.slotTerm}>{slot.resumeTerm}</span>
-                  {slot.locked ? (
-                    <span className={styles.slotState}>{lines.upgrades.locked}</span>
-                  ) : (
-                    <>
-                      <LevelBar level={level} />
-                      <span className={styles.slotState}>
-                        {level === 0 ? lines.upgrades.empty : lines.upgrades.level(level, MAX_LEVEL)}
-                      </span>
-                    </>
-                  )}
-                  <span className={styles.slotGrowth}>{slot.growth}</span>
-                  {leveledUp === slot.id && <span className={styles.levelUp}>{lines.upgrades.levelUp}</span>}
-                </button>
+                {/* A slot with its own page (Pride) is a link there. The rest open the typing sheet. */}
+                {slot.page ? (
+                  <Link className={styles.slot} href={slot.page}>
+                    {card}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className={slot.locked ? styles.slotLocked : styles.slot}
+                    disabled={slot.locked}
+                    onClick={() => open(slot)}
+                  >
+                    {card}
+                  </button>
+                )}
               </li>
             )
           })}

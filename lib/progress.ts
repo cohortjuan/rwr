@@ -4,7 +4,7 @@ import { useSyncExternalStore } from 'react'
 import type { EntryChoice } from '@/lib/lines'
 import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
-import { MAX_LEVEL, slots, slotLevel, type SlotId } from '@/lib/upgrades'
+import { MAX_LEVEL, slots, slotLevel, type Slot, type SlotId } from '@/lib/upgrades'
 
 // Progress lives in this browser's localStorage, or in memory only when the player turns
 // "save on this device" off. Account sync to the database comes later.
@@ -13,6 +13,25 @@ import { MAX_LEVEL, slots, slotLevel, type SlotId } from '@/lib/upgrades'
 // aside as a kept lion, and the player can switch back to it from the title screen.
 
 export type ChatMessage = { role: 'user' | 'todah', text: string }
+
+export type TodahForm = 'cub' | 'nomad' | 'leader'
+
+// What one player shares with a friend: a small snapshot that travels inside a link or QR
+// code and never touches a server. `at` is when the snapshot was made.
+export type PrideCard = {
+  id: string
+  name: string
+  lion: string
+  form: TodahForm
+  power: number
+  max: number
+  goal: string
+  reached: boolean
+  at: string
+}
+
+// A preset cheer a friend sent. `key` stops the same link from being counted twice.
+export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
 export type Progress = {
   // The guide's name in this game. Todah unless the player renamed their lion.
@@ -28,12 +47,17 @@ export type Progress = {
   goalAchievedAt: string | null
   // Tips on the upgrades screen that the player has already dismissed in this game.
   tipsSeen: string[]
+  // My Pride. cardId names this lion's card (made the first time the page opens), shareGoal
+  // says whether the card carries the main goal, and pride holds the friends' cards.
+  cardId: string
+  shareGoal: boolean
+  pride: PrideCard[]
+  cheersReceived: CheerReceived[]
+  cheersSent: number
 }
 
 // A game that was set aside when the player started a new lion.
 export type KeptLion = { id: string, keptAt: string, progress: Progress }
-
-export type TodahForm = 'cub' | 'nomad' | 'leader'
 
 const KEY = 'rwr.progress.v1'
 const LIONS_KEY = 'rwr.lions.v1'
@@ -49,6 +73,11 @@ export const emptyProgress: Progress = {
   goalText: '',
   goalAchievedAt: null,
   tipsSeen: [],
+  cardId: '',
+  shareGoal: true,
+  pride: [],
+  cheersReceived: [],
+  cheersSent: 0,
 }
 
 const listeners = new Set<() => void>()
@@ -160,9 +189,10 @@ function keep(progress: Progress): KeptLion {
   return { id, keptAt: new Date().toISOString(), progress }
 }
 
-// A game is worth keeping once the player has given a name, to themselves or to the lion.
+// A game is worth keeping once the player has given a name, to themselves or to the lion,
+// or has friends in its pride.
 function worthKeeping(progress: Progress): boolean {
-  return hasSavedGame(progress) || progress.lionName !== DEFAULT_LION_NAME
+  return hasSavedGame(progress) || progress.lionName !== DEFAULT_LION_NAME || progress.pride.length > 0
 }
 
 // Starts a fresh game with a new lion. The game in play is kept, not erased.
@@ -236,10 +266,17 @@ export function useLionText(): (text: string) => string {
   return (text) => withLionName(text, lionName)
 }
 
+// What a slot is levelled from. Most slots hold what the player typed. The Pride slot is not
+// typed: it grows with the friends in My Pride, one line per friend.
+export function slotContent(progress: Progress, slot: Slot): string {
+  if (slot.id === 'pride') return progress.pride.map((card) => card.id).join('\n')
+  return progress.upgrades[slot.id] ?? ''
+}
+
 // Levels earned across the live upgrade slots, and the most that can be earned.
 export function pridePower(progress: Progress): { level: number, max: number } {
   const live = slots.filter((slot) => !slot.locked)
-  const level = live.reduce((sum, slot) => sum + slotLevel(slot, progress.upgrades[slot.id] ?? ''), 0)
+  const level = live.reduce((sum, slot) => sum + slotLevel(slot, slotContent(progress, slot)), 0)
   return { level, max: live.length * MAX_LEVEL }
 }
 
@@ -252,7 +289,7 @@ export function hasSavedGame(progress: Progress): boolean {
 // Pride Leader: only after the player confirms their main goal is reached.
 export function todahForm(progress: Progress): TodahForm {
   if (progress.goalAchievedAt) return 'leader'
-  const started = slots.filter((slot) => slotLevel(slot, progress.upgrades[slot.id] ?? '') > 0).length
+  const started = slots.filter((slot) => slotLevel(slot, slotContent(progress, slot)) > 0).length
   if (progress.onboardingDone && started >= 2) return 'nomad'
   return 'cub'
 }

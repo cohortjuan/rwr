@@ -131,6 +131,8 @@
   box-shadow: 0 6px 0 var(--ink);
   padding: 14px;
   cursor: pointer;
+  /* The Pride slot is a link, so it needs the look a button gets for free. */
+  text-decoration: none;
 }
 
 .slot:hover {

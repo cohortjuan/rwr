@@ -17,6 +17,8 @@ export type Slot = {
   // What visibly changes on Todah (the overlay art comes later).
   growth: string
   suggestions: string[]
+  // A slot with its own page opens that page instead of the typing sheet.
+  page?: string
 }
 
 const words = (content: string) => content.trim().split(/\s+/).filter(Boolean).length
@@ -119,14 +121,15 @@ export const slots: Slot[] = [
     id: 'pride',
     name: 'PRIDE',
     resumeTerm: 'References and network',
-    locked: true,
+    locked: false,
     prompt: '',
     placeholder: '',
-    levelRule: '',
+    levelRule: 'Grows with each friend who joins your pride (1, 2, 3).',
     thresholds: [1, 2, 3],
     count: entries,
     growth: 'Companion lions appear.',
     suggestions: [],
+    page: '/pride',
   },
 ]
 
