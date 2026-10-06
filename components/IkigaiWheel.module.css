@@ -1,0 +1,85 @@
+.wheel,
+.wheelGlow {
+  position: relative;
+  width: min(300px, 72vw, 46vh);
+  aspect-ratio: 1;
+  margin: 0 auto 18px;
+  animation: popIn 0.35s steps(5) both;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* The sweet spot in the middle pulses when it is the subject. */
+.wheelGlow .canvas {
+  animation: glow 1.1s steps(3, jump-none) infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    filter: drop-shadow(0 0 0 var(--gold-bright));
+  }
+  to {
+    filter: drop-shadow(0 0 14px var(--gold-bright));
+  }
+}
+
+.label,
+.labelMissing,
+.overlap,
+.center {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-pixel), monospace;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.label,
+.labelMissing {
+  font-size: clamp(0.42rem, 1.9vw, 0.6rem);
+  color: #fff;
+  text-shadow:
+    1px 0 0 var(--ink),
+    -1px 0 0 var(--ink),
+    0 1px 0 var(--ink),
+    0 -1px 0 var(--ink),
+    2px 2px 0 var(--ink);
+  animation: popIn 0.25s steps(3) both;
+}
+
+.labelMissing {
+  opacity: 0.45;
+}
+
+.overlap {
+  font-family: var(--font-talk), var(--font-body);
+  font-size: clamp(0.62rem, 2.4vw, 0.8rem);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  padding: 1px 4px;
+  animation: popIn 0.25s steps(3) both;
+}
+
+.center {
+  left: 50%;
+  top: 50%;
+  font-size: clamp(0.36rem, 1.6vw, 0.5rem);
+  color: var(--ink);
+}

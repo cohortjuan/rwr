@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
+import IkigaiWheel, { type WheelFocus } from '@/components/IkigaiWheel'
 import { lines, type EntryChoice } from '@/lib/lines'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
 import { NAME_TOKEN } from '@/lib/tokens'
@@ -11,6 +12,10 @@ import { playSfx } from '@/lib/sfx'
 import styles from './OnboardingQuest.module.css'
 
 type Step = 'hello' | 'ikigai' | 'ikigaiDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
+
+// Which part of the Ikigai diagram lights up on each page of the deeper explanation:
+// the word, the overlaps, a missing circle, then the middle.
+const deepFocus: WheelFocus[] = ['all', 'overlaps', 'missing', 'center']
 
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
@@ -122,7 +127,8 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   useEffect(() => {
     const anchor = bottomRef.current
     const content = anchor?.parentElement
-    if (!anchor || !content || (step !== 'chat' && step !== 'done')) return
+    const follows = step === 'chat' || step === 'done' || step === 'ikigai' || step === 'ikigaiDeep'
+    if (!anchor || !content || !follows) return
     const follow = () => anchor.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'end' })
     const observer = new ResizeObserver(follow)
     observer.observe(content)
@@ -180,6 +186,10 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             </button>
           </DialogBox>
         )}
+
+        {step === 'ikigai' && <IkigaiWheel focus="circles" />}
+
+        {step === 'ikigaiDeep' && <IkigaiWheel focus={deepFocus[deepPage] ?? 'all'} />}
 
         {step === 'ikigai' && (
           <DialogBox text={lines.onboarding.ikigaiBrief}>
