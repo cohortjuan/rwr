@@ -1,4 +1,5 @@
-.stage {
+.stage,
+.stagePoweringOn {
   position: relative;
   width: 100%;
   height: 100dvh;
@@ -9,6 +10,55 @@
   user-select: none;
   /* Cub size follows the width, but never outgrows a short screen (phone held sideways). */
   --cub: min(clamp(150px, 21vw, 300px), 44vh);
+}
+
+/* The picture snaps open like an old TV warming up. */
+.stagePoweringOn {
+  animation: powerUp 0.45s steps(6) both;
+}
+
+@keyframes powerUp {
+  from {
+    transform: scaleY(0.02);
+    filter: brightness(4);
+  }
+  to {
+    transform: scaleY(1);
+    filter: brightness(1);
+  }
+}
+
+/* Screen "switched off": shown only when the browser needs a tap before it allows sound. */
+.powerOff {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(ellipse at center, #1c1a26 0%, #07060b 75%);
+}
+
+.powerOn {
+  font-family: var(--font-pixel), monospace;
+  font-size: clamp(1rem, 3.4vw, 1.9rem);
+  letter-spacing: 0.08em;
+  color: var(--gold-bright);
+  text-shadow: 0 0 18px var(--gold);
+  background: none;
+  border: 0;
+  padding: 16px 20px;
+  cursor: pointer;
+  animation: blink 1.2s steps(2, jump-none) infinite;
+}
+
+.powerHint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cream);
+  opacity: 0.75;
 }
 
 /* Scene, back to front: sky, sun, far hills, ground bands. The horizon sits at 56%. */

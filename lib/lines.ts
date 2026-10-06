@@ -8,6 +8,8 @@ export const lines = {
   title: {
     name: 'RWR',
     subtitle: '16-BIT CAREER ADVENTURE',
+    powerOn: 'POWER ON',
+    powerOnHint: 'Tap, click, or press any key',
     pressStart: 'PRESS START',
     skipHint: 'Tap or press any key to skip',
     continuePrompt: 'CONTINUE?',

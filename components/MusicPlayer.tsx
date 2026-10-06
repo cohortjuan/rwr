@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import { setAudioGate } from '@/lib/audioGate'
 import { MUSIC_BACKGROUND_VOLUME, MUSIC_FADE_SECONDS, MUSIC_TRACK, MUSIC_VOLUME } from '@/lib/assets'
 import { useSettings } from '@/lib/settings'
 
@@ -69,6 +70,7 @@ export default function MusicPlayer() {
     let playing = false
     const onPlaying = () => {
       playing = true
+      setAudioGate('open')
     }
     const onStopped = () => {
       playing = false
@@ -80,7 +82,11 @@ export default function MusicPlayer() {
       if (event) connect(audio)
       const context = contextRef.current
       if (context && context.state !== 'running') void context.resume()
-      if (!playing) audio.play().catch(() => {})
+      if (playing) return
+      audio.play().catch((error: unknown) => {
+        // Tell the title screen the browser wants a tap first, so it can ask for one.
+        if (!event && error instanceof DOMException && error.name === 'NotAllowedError') setAudioGate('blocked')
+      })
     }
 
     audio.volume = contextRef.current ? 1 : levelRef.current

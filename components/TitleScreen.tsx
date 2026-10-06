@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LoginBox from '@/components/LoginBox'
 import { logOut, useAccountEmail } from '@/lib/account'
-import { SEATED_SPRITE } from '@/lib/assets'
+import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
+import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
 import { clearProgress, hasSavedGame, useProgress } from '@/lib/progress'
-import { useHydrated, useReducedMotion } from '@/lib/settings'
+import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import styles from './TitleScreen.module.css'
+
+// How long to wait to learn whether the browser allows sound before starting anyway.
+const AUDIO_CHECK_MS = 1000
 
 // Keys that should never count as "any key": they belong to the browser and to keyboard users.
 const ignoredKeys = new Set(['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'CapsLock'])
@@ -24,6 +28,22 @@ export default function TitleScreen() {
   const email = useAccountEmail()
   const signedIn = Boolean(email)
   const [confirmingNew, setConfirmingNew] = useState(false)
+  const { sound } = useSettings()
+  const audioGate = useAudioGate()
+  const [poweredOn, setPoweredOn] = useState(false)
+  const [audioCheckDone, setAudioCheckDone] = useState(false)
+
+  // Browsers block sound until the player interacts. When that happens the screen starts
+  // "switched off" and asks for one tap, so the walk-in can play with its music.
+  const wantsMusic = sound && Boolean(MUSIC_TRACK)
+  const needsPowerOn = hydrated && wantsMusic && audioGate === 'blocked' && !poweredOn
+  const checkingAudio = wantsMusic && audioGate === 'unknown' && !audioCheckDone
+  const started = hydrated && !needsPowerOn && !checkingAudio
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setAudioCheckDone(true), AUDIO_CHECK_MS)
+    return () => window.clearTimeout(timer)
+  }, [])
 
   // Reduced motion: the cub starts seated and never walks.
   const seated = walkDone || reducedMotion
@@ -36,12 +56,17 @@ export default function TitleScreen() {
   // First press skips the walk. After that, press start opens the login box.
   // Returning players get the Continue? choices instead, so a stray key does nothing there.
   const advance = useCallback(() => {
+    if (!started) {
+      // The same tap also starts the music (see MusicPlayer).
+      if (needsPowerOn) setPoweredOn(true)
+      return
+    }
     if (!seated) {
       setWalkDone(true)
       return
     }
     if (!returning) setBoxOpen(true)
-  }, [seated, returning])
+  }, [started, needsPowerOn, seated, returning])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -63,21 +88,21 @@ export default function TitleScreen() {
 
   return (
     <>
-      <main className={styles.stage} onClick={advance}>
+      <main className={poweredOn ? styles.stagePoweringOn : styles.stage} onClick={advance}>
         <div className={styles.sky} aria-hidden="true" />
         <div className={styles.sun} aria-hidden="true" />
         <div className={styles.hills} aria-hidden="true" />
         <div className={styles.ground} aria-hidden="true" />
 
         {/* The title drops in once the cub has arrived. */}
-        {seated && (
+        {started && seated && (
           <div className={styles.logo}>
             <h1 className={styles.name}>{lines.title.name}</h1>
             <p className={styles.subtitle}>{lines.title.subtitle}</p>
           </div>
         )}
 
-        {seated && SEATED_SPRITE ? (
+        {!started ? null : seated && SEATED_SPRITE ? (
           <div
             className={styles.cubFacing}
             style={{ backgroundImage: `url(${SEATED_SPRITE})` }}
@@ -98,15 +123,15 @@ export default function TitleScreen() {
         )}
 
         <div className={styles.prompt} onClick={(event) => event.stopPropagation()}>
-          {!seated && <p className={styles.hint}>{lines.title.skipHint}</p>}
+          {started && !seated && <p className={styles.hint}>{lines.title.skipHint}</p>}
 
-          {seated && !returning && (
+          {started && seated && !returning && (
             <button type="button" className={styles.pressStart} onClick={() => setBoxOpen(true)}>
               {lines.title.pressStart}
             </button>
           )}
 
-          {seated && returning && (
+          {started && seated && returning && (
             <div className={styles.continue}>
               <p className={styles.continuePrompt}>{lines.title.continuePrompt}</p>
               <div className={styles.continueButtons}>
@@ -128,6 +153,15 @@ export default function TitleScreen() {
             </div>
           )}
         </div>
+
+        {needsPowerOn && (
+          <div className={styles.powerOff}>
+            <button type="button" className={styles.powerOn} onClick={() => setPoweredOn(true)}>
+              {lines.title.powerOn}
+            </button>
+            <p className={styles.powerHint}>{lines.title.powerOnHint}</p>
+          </div>
+        )}
       </main>
 
       <ConfirmBox
