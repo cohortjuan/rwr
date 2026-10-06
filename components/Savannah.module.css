@@ -70,11 +70,12 @@
   }
 }
 
-/* Birds: high in the sky, behind the logo. Their delays are head starts too: the first is
-   at the edge of the screen on load and the other two follow close behind. */
+/* Birds: low in the sky, under the title and across the sun. Their delays are head starts
+   too: the first is at the edge of the screen on load and the other two follow close behind. */
 .flock {
   top: 0;
-  height: 44%;
+  /* Down to the horizon line. */
+  height: 56%;
   color: #5a2a1c;
   /* The birds sleep at night. */
   opacity: var(--bird-opacity, 0.85);
@@ -126,17 +127,17 @@
 }
 
 .birdOne {
-  top: 20%;
+  top: 78%;
   animation-delay: -2.2s;
 }
 
 .birdTwo {
-  top: 29%;
+  top: 86%;
   animation-delay: -1.2s;
 }
 
 .birdThree {
-  top: 14%;
+  top: 72%;
   animation-delay: -0.4s;
   --px: clamp(1px, 0.22vw, 3px);
 }

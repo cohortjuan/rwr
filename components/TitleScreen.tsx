@@ -110,8 +110,9 @@ export default function TitleScreen() {
       <main className={poweredOn ? styles.stagePoweringOn : styles.stage} onClick={advance}>
         <div className={styles.sky} aria-hidden="true" />
         <Stars />
-        {started && <Birds />}
         <div className={styles.sun} aria-hidden="true" />
+        {/* After the sun and before the hills, so the birds cross its face and pass behind the hills. */}
+        {started && <Birds />}
         <div className={styles.hills} aria-hidden="true" />
         {started && <Horizon />}
         <div className={styles.ground} aria-hidden="true" />
