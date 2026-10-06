@@ -7,7 +7,7 @@ import {
   type AccessoryArt,
   type Variant,
 } from '@/lib/accessories'
-import { foreheadTuft, maneArt } from '@/lib/maneArt'
+import { maneArt } from '@/lib/maneArt'
 import styles from './LionAvatar.module.css'
 
 type Props = {
@@ -88,13 +88,7 @@ export default function LionAvatar({
         shapeRendering="crispEdges"
         preserveAspectRatio="none"
       >
-        {maneShape && (
-          <g>
-            {rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}
-            {/* The lock on his forehead always matches the hair on top. */}
-            {rects({ ...foreheadTuft, palette: { M: base, D: shade } }, 'tuft')}
-          </g>
-        )}
+        {maneShape && <g>{rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}</g>}
         {drawn.map(({ item, variant }) => (
           <g key={item.id}>
             {item.art?.map((art, layer) =>

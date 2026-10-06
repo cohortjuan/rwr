@@ -279,7 +279,7 @@ export const lines = {
     categories: { fur: 'FUR', mane: 'MANE COLOUR', hat: 'HATS', shades: 'SHADES AND GLASSES', neck: 'NECK' },
     notes: {
       fur: 'Fur changes the coat. The mane keeps its own colour, so the two can be mixed.',
-      mane: 'A colour changes only the colour, the lock on his forehead included. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1.',
+      mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1.',
     },
     colourLabel: (name: string) => `Colour: ${name}`,
     colours: {

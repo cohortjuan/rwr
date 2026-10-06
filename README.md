@@ -144,7 +144,8 @@ To be completed before submission. Running notes:
 - Architecture and database diagrams: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Database schema: [supabase/migrations/0001_init.sql](supabase/migrations/0001_init.sql)
 - UI reference mockups: [docs/reference](docs/reference)
-- Mane progression sheet: [docs/design/mane-progression.html](docs/design/mane-progression.html)
+- Mane progression sheet: [docs/design/mane-progression.html](docs/design/mane-progression.html),
+  drawn by [scripts/mane-art.py](scripts/mane-art.py)
 
 ## Demo video
 
