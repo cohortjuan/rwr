@@ -54,7 +54,7 @@ function shortDate(iso: string): string {
 function CardFace({ card, children }: { card: PrideCard, children?: React.ReactNode }) {
   return (
     <div className={styles.face}>
-      <LionAvatar className={styles.faceLion} wearing={card.wear ?? []} />
+      <LionAvatar className={styles.faceLion} wearing={card.wear ?? []} mane={card.mane ?? 0} />
       <p className={styles.faceName}>{lines.pride.cardWith(card.name, card.lion)}</p>
       <p className={styles.faceForm}>{formLabel[card.form]}</p>
       <p className={styles.facePower}>{lines.pride.power(card.power, card.max)}</p>

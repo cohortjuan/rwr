@@ -6,14 +6,17 @@ import LionAvatar from '@/components/LionAvatar'
 import LoginBox from '@/components/LoginBox'
 import {
   accessories,
+  accessory,
   buyBlock,
   categories,
   CHEER_SPARKS,
-  DEFAULT_FUR,
+  defaults,
   INTERVIEW_SPARKS,
+  maneSize,
   owns,
   sparks,
   wornIds,
+  wornToken,
   type Accessory,
 } from '@/lib/accessories'
 import { useAccountEmail } from '@/lib/account'
@@ -24,8 +27,11 @@ import { playSfx } from '@/lib/sfx'
 import styles from './WardrobeScreen.module.css'
 
 type ItemId = keyof typeof lines.wardrobe.items
+type ColourId = keyof typeof lines.wardrobe.colours
+type NoteId = keyof typeof lines.wardrobe.notes
 
 const itemName = (item: Accessory) => lines.wardrobe.items[item.id as ItemId] ?? item.id
+const colourName = (id: string) => lines.wardrobe.colours[id as ColourId] ?? id
 
 // Where sparks are spent: accessories for the lion, one worn from each group.
 export default function WardrobeScreen() {
@@ -44,10 +50,14 @@ export default function WardrobeScreen() {
   const others = keptLions.map((kept) => kept.progress)
   const purse = sparks(progress)
   const wearing = wornIds(progress, others)
+  const mane = maneSize(progress)
+  const wornIn = (category: string) => wearing.find((token) => accessory(token)?.category === category)
 
-  // The default fur is what the lion wears when no other fur is chosen.
-  const isWorn = (item: Accessory) =>
-    wearing.includes(item.id) || (item.id === DEFAULT_FUR && !wearing.some((id) => id !== item.id && accessories.find((other) => other.id === id)?.category === 'fur'))
+  // A group's default (golden fur, the natural mane) is what the lion has when nothing else is chosen.
+  const isWorn = (item: Accessory) => {
+    const current = wornIn(item.category)
+    return current ? accessory(current) === item : defaults[item.category] === item.id
+  }
 
   function wear(item: Accessory) {
     if (!signedIn) return
@@ -73,6 +83,12 @@ export default function WardrobeScreen() {
     setStatus(lines.wardrobe.bought(itemName(item)))
   }
 
+  // Colours are free to try and to switch. The lion shows one once the piece is worn.
+  function pickColour(item: Accessory, colour: string) {
+    playSfx('select', sound)
+    saveProgress({ tones: { ...progress.tones, [item.id]: colour } })
+  }
+
   return (
     <main className="screen">
       <div className="screen-inner">
@@ -82,7 +98,7 @@ export default function WardrobeScreen() {
         </header>
 
         <section className={`panel ${styles.top}`}>
-          <LionAvatar className={styles.preview} wearing={wearing} blink />
+          <LionAvatar className={styles.preview} wearing={wearing} mane={mane} blink />
           <div>
             <p className={styles.sparks}>{lines.wardrobe.sparks(purse.balance)}</p>
             <h2 className={styles.subheading}>{lines.wardrobe.earnHeading}</h2>
@@ -112,7 +128,9 @@ export default function WardrobeScreen() {
         {categories.map((category) => (
           <section key={category} className={styles.group}>
             <h2 className={styles.subheading}>{lines.wardrobe.categories[category]}</h2>
-            {category === 'fur' && <p className={styles.fine}>{lines.wardrobe.furNote}</p>}
+            {category in lines.wardrobe.notes && (
+              <p className={styles.fine}>{lion(lines.wardrobe.notes[category as NoteId])}</p>
+            )}
             <ul className={styles.grid}>
               {accessories
                 .filter((item) => item.category === category)
@@ -120,12 +138,28 @@ export default function WardrobeScreen() {
                   const mine = signedIn && owns(progress, item, others)
                   const worn = isWorn(item)
                   const block = mine ? null : buyBlock(progress, item, others)
-                  // Each card shows the lion wearing just this piece, so it can be judged before buying.
-                  const restWorn = wearing.filter((id) => accessories.find((other) => other.id === id)?.category !== category)
+                  const colour = item.variants?.find((option) => option.id === progress.tones[item.id]) ?? item.variants?.[0]
+                  // Each card shows the lion as it is now, with this piece swapped in.
+                  const rest = wearing.filter((token) => accessory(token)?.category !== category)
                   return (
                     <li key={item.id} className={worn ? styles.cardWorn : styles.card}>
-                      <LionAvatar className={styles.thumb} wearing={[...restWorn, item.id]} />
+                      <LionAvatar className={styles.thumb} wearing={[...rest, wornToken(item, colour?.id)]} mane={mane} />
                       <p className={styles.itemName}>{itemName(item)}</p>
+                      {item.variants && (
+                        <div className={styles.swatches} role="group" aria-label={itemName(item)}>
+                          {item.variants.map((option) => (
+                            <button
+                              key={option.id}
+                              type="button"
+                              className={option === colour ? styles.swatchOn : styles.swatch}
+                              style={{ background: option.swatch }}
+                              aria-label={lines.wardrobe.colourLabel(colourName(option.id))}
+                              aria-pressed={option === colour}
+                              onClick={() => pickColour(item, option.id)}
+                            />
+                          ))}
+                        </div>
+                      )}
                       <p className={styles.itemState}>
                         {worn
                           ? lines.wardrobe.wearing
@@ -145,7 +179,7 @@ export default function WardrobeScreen() {
                           {lines.wardrobe.wear}
                         </button>
                       )}
-                      {mine && worn && item.id !== DEFAULT_FUR && (
+                      {mine && worn && defaults[item.category] !== item.id && (
                         <button
                           type="button"
                           className="btn btn-quiet"
@@ -155,7 +189,9 @@ export default function WardrobeScreen() {
                           {lines.wardrobe.takeOff}
                         </button>
                       )}
-                      {!signedIn && item.id !== DEFAULT_FUR && <p className={styles.fine}>{lines.wardrobe.accountNeeded}</p>}
+                      {!signedIn && defaults[item.category] !== item.id && (
+                        <p className={styles.fine}>{lines.wardrobe.accountNeeded}</p>
+                      )}
                       {signedIn && !mine && !item.gift && (
                         <>
                           <button

@@ -10,7 +10,7 @@ import NameLionBox from '@/components/NameLionBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
 import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
-import { wornIds } from '@/lib/accessories'
+import { maneSize, wornIds } from '@/lib/accessories'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
@@ -134,6 +134,7 @@ export default function TitleScreen() {
                 progress,
                 keptLions.map((kept) => kept.progress),
               )}
+              mane={maneSize(progress)}
               blink
             />
           </div>

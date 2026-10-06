@@ -37,7 +37,10 @@ flowchart LR
   They buy accessories, one worn per category. Guests can look but only a signed-in player
   can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the
   accessories on one 51 by 64 grid, so they line up at any size. Fur colours are CSS filters
-  over the whole sprite; a true two-colour coat needs the mane as its own art layer.
+  over the sprite. The mane is its own layer (`lib/maneArt.ts`, generated to fit the sprite's
+  outline) in four sizes: its size follows the Mane upgrade's level and its colour is the one
+  thing a purchase changes. Each accessory has colour options, passed around as `id~colour`
+  tokens, so a friend's card shows the same outfit.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
 
 ## My Pride (friends without a backend)

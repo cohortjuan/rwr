@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
 import { lines } from '@/lib/lines'
-import { sparks, wornIds } from '@/lib/accessories'
+import { maneSize, sparks, wornIds } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
 import {
   isPath,
@@ -168,6 +168,7 @@ export default function UpgradesScreen() {
               <LionAvatar
                 className={styles.portrait}
                 wearing={wornIds(progress, others)}
+                mane={maneSize(progress)}
                 mood={leveledUp ? 'happy' : 'neutral'}
                 blink
               />

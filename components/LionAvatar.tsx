@@ -1,9 +1,20 @@
-import { accessories, accessory, GRID, HEADROOM, type Accessory } from '@/lib/accessories'
+import {
+  GRID,
+  HEADROOM,
+  NATURAL_MANE,
+  parseToken,
+  type Accessory,
+  type AccessoryArt,
+  type Variant,
+} from '@/lib/accessories'
+import { maneArt } from '@/lib/maneArt'
 import styles from './LionAvatar.module.css'
 
 type Props = {
-  // Ids of the accessories being worn (see wornIds in lib/accessories.ts).
+  // Tokens for the accessories being worn (see wornIds in lib/accessories.ts).
   wearing: string[]
+  // The mane's size, 0 to 3, from the Mane upgrade's level (see maneSize).
+  mane?: number
   mood?: 'neutral' | 'happy'
   // The mouth flaps while a line types out.
   talking?: boolean
@@ -12,33 +23,57 @@ type Props = {
 }
 
 // Later entries are drawn on top: neck first, the hat last.
-const drawOrder = ['neck', 'claws', 'shades', 'hat']
+const drawOrder = ['neck', 'shades', 'hat']
 
-// One rectangle per run of the same colour in each row of an accessory's art.
-function rects(item: Accessory) {
-  const art = item.art
-  if (!art) return null
+// One rectangle per run of the same colour in each row of a piece of art.
+function rects(art: AccessoryArt, key: string) {
+  const cell = art.cell ?? 1
   return art.rows.flatMap((row, y) =>
     [...row.matchAll(/([A-Za-z])\1*/g)].map((run) => (
       <rect
-        key={`${item.id}-${y}-${run.index}`}
-        x={art.x + run.index}
-        y={art.y + HEADROOM + y}
-        width={run[0].length}
-        height={1}
+        key={`${key}-${y}-${run.index}`}
+        x={art.x + run.index * cell}
+        y={art.y + HEADROOM + y * cell}
+        width={run[0].length * cell}
+        height={cell}
         fill={art.palette[run[1]]}
       />
     )),
   )
 }
 
-// The seated lion with its accessories. The sprite keeps its own proportions and the
-// accessories are drawn on the same grid, so they stay in place at any size.
-export default function LionAvatar({ wearing, mood = 'neutral', talking = false, blink = false, className }: Props) {
-  const worn = wearing.map(accessory).filter((item): item is Accessory => item !== undefined)
-  const fur = worn.find((item) => item.category === 'fur')
-  const drawn = accessories.filter((item) => worn.includes(item) && item.art)
-  drawn.sort((a, b) => drawOrder.indexOf(a.category) - drawOrder.indexOf(b.category))
+// A four-pointed glint, one cell across.
+function sparkle(x: number, y: number, index: number, key: string) {
+  const top = y + HEADROOM
+  return (
+    <g key={`${key}-glint-${index}`} className={styles.sparkle} style={{ animationDelay: `${index * 0.37}s` }}>
+      <rect x={x + 0.3} y={top - 0.6} width={0.4} height={2.2} fill="#ffffff" />
+      <rect x={x - 0.6} y={top + 0.3} width={2.2} height={0.4} fill="#ffffff" />
+    </g>
+  )
+}
+
+// The seated lion with its mane and accessories. The sprite keeps its own proportions and
+// everything else is drawn on the same grid, so it stays in place at any size.
+export default function LionAvatar({
+  wearing,
+  mane = 0,
+  mood = 'neutral',
+  talking = false,
+  blink = false,
+  className,
+}: Props) {
+  const worn = wearing
+    .map(parseToken)
+    .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
+  const fur = worn.find((entry) => entry.item.category === 'fur')?.item
+  const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
+  // The cub's own tuft is left alone unless the mane has been given a colour.
+  const maneShape = mane > 0 || maneColour ? maneArt[Math.min(Math.max(mane, 0), maneArt.length - 1)] : null
+  const [base, shade] = maneColour ?? NATURAL_MANE
+
+  const drawn = worn.filter((entry) => entry.item.art)
+  drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category))
 
   return (
     <div className={`${styles.stage} ${className ?? ''}`} aria-hidden="true">
@@ -53,8 +88,14 @@ export default function LionAvatar({ wearing, mood = 'neutral', talking = false,
         shapeRendering="crispEdges"
         preserveAspectRatio="none"
       >
-        {drawn.map((item) => (
-          <g key={item.id}>{rects(item)}</g>
+        {maneShape && <g>{rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}</g>}
+        {drawn.map(({ item, variant }) => (
+          <g key={item.id}>
+            {item.art?.map((art, layer) =>
+              rects({ ...art, palette: { ...art.palette, ...variant?.palette } }, `${item.id}-${layer}`),
+            )}
+            {item.sparkles?.map((glint, index) => sparkle(glint.x, glint.y, index, item.id))}
+          </g>
         ))}
       </svg>
     </div>

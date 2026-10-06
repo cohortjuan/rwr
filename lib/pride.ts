@@ -1,4 +1,4 @@
-import { accessory, categories, wornIds } from '@/lib/accessories'
+import { accessory, categories, maneSize, wornIds } from '@/lib/accessories'
 import { lines } from '@/lib/lines'
 import { isNameAllowed, LION_NAME_MAX } from '@/lib/names'
 import { pridePower, todahForm, type PrideCard, type Progress, type TodahForm } from '@/lib/progress'
@@ -44,6 +44,7 @@ export function buildCard(progress: Progress, now: number, others: Progress[] = 
     reached: showGoal && Boolean(progress.goalAchievedAt),
     at: new Date(now).toISOString(),
     wear: wornIds(progress, others),
+    mane: maneSize(progress),
   }
 }
 
@@ -74,6 +75,7 @@ function pack(card: PrideCard): unknown[] {
     card.reached ? 1 : 0,
     minutes,
     card.wear ?? [],
+    card.mane ?? 0,
   ]
 }
 
@@ -89,7 +91,7 @@ export function cheerLink(origin: string, card: PrideCard, cheer: CheerId): stri
 // Anyone can write a link by hand, so nothing in one is trusted: every field is checked,
 // trimmed to size, and run through the name filter before it is shown or saved.
 function unpack(fields: unknown[]): PrideCard | null {
-  const [id, name, lion, form, power, max, goal, reached, minutes, wear] = fields
+  const [id, name, lion, form, power, max, goal, reached, minutes, wear, mane] = fields
   if (typeof id !== 'string' || !/^[a-z0-9]{6,16}$/.test(id)) return null
   if (typeof name !== 'string' || typeof lion !== 'string' || typeof goal !== 'string') return null
   if (typeof form !== 'number' || !forms[form]) return null
@@ -117,6 +119,7 @@ function unpack(fields: unknown[]): PrideCard | null {
     wear: Array.isArray(wear)
       ? wear.filter((item): item is string => typeof item === 'string' && accessory(item) !== undefined).slice(0, categories.length)
       : [],
+    mane: typeof mane === 'number' && Number.isInteger(mane) && mane >= 0 && mane <= 3 ? mane : 0,
   }
 }
 

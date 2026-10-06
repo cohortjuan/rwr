@@ -126,3 +126,25 @@
 .footer {
   margin: 0;
 }
+
+/* Colour options for a piece: small squares, the chosen one ringed in gold. */
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.swatch,
+.swatchOn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+}
+
+.swatchOn {
+  outline: 3px solid var(--gold-bright);
+  outline-offset: 1px;
+}

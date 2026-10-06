@@ -29,8 +29,10 @@ export type PrideCard = {
   goal: string
   reached: boolean
   at: string
-  // Ids of the accessories the lion is wearing. Missing on cards made before the wardrobe.
+  // What the lion is wearing (accessory tokens) and how grown its mane is, 0 to 3.
+  // Missing on cards made before the wardrobe.
   wear?: string[]
+  mane?: number
 }
 
 // The four Ikigai circles, in the order of the levels: Heart, Craft, Cause, Coin.
@@ -45,7 +47,7 @@ export type CircleEntry = { claim: string, evidence: string[] }
 export type OutreachKind = 'linkedin' | 'message' | 'talk' | 'interview'
 
 // The lion's wardrobe. One accessory from each category can be worn at a time.
-export type AccessoryCategory = 'fur' | 'claws' | 'hat' | 'shades' | 'neck'
+export type AccessoryCategory = 'fur' | 'mane' | 'hat' | 'shades' | 'neck'
 export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
 
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
@@ -76,6 +78,8 @@ export type Progress = {
   // Accessories bought with sparks, and the one worn in each category (see lib/accessories.ts).
   bought: string[]
   wearing: Partial<Record<AccessoryCategory, string>>
+  // The colour option chosen for an accessory, by its id.
+  tones: Record<string, string>
   // The trail map (see lib/compass.ts): a claim and its evidence for each circle, the needs
   // the player picked for Cause, and the real-world steps they have done.
   compass: Record<Circle, CircleEntry>
@@ -108,6 +112,7 @@ export const emptyProgress: Progress = {
   outreach: [],
   bought: [],
   wearing: {},
+  tones: {},
   compass: {
     heart: { claim: '', evidence: [] },
     craft: { claim: '', evidence: [] },

@@ -45,9 +45,12 @@ prophet: nothing in the game promises a job or an outcome.
   connection, an email about a job, or an interview) and needs 3, 10, then 25. Outreach is the
   player's own word, since RWR cannot see LinkedIn or email
 - Wardrobe: cheers received and interviews landed earn sparks, which buy accessories that show
-  on the lion everywhere it appears. One piece per group can be worn: fur and mane colour,
-  claws, hats, shades or glasses, and neck. A few pieces are gifts for progress instead, and the
-  crown comes only with the roar. Every lion starts with none, and accessories need an account
+  on the lion everywhere it appears. One piece per group can be worn: fur, mane colour, hats,
+  shades or glasses, and neck, and each piece comes in a few colours. A few pieces are gifts for
+  progress instead, and the jewelled crown comes only with the roar. Every lion starts with
+  none, and accessories need an account
+- The mane grows in three sizes with the Mane upgrade. Buying a mane colour changes only its
+  colour, never its size
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
