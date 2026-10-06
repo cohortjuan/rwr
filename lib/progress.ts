@@ -50,6 +50,16 @@ export type OutreachKind = 'linkedin' | 'message' | 'talk' | 'interview'
 export type AccessoryCategory = 'fur' | 'mane' | 'hat' | 'shades' | 'neck'
 export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
 
+// Dev tools, for a dev account only (see lib/account.ts): look at any stage of the game without
+// playing up to it. Nothing here adds to Pride Power.
+export type DevOverrides = {
+  // Every accessory counts as owned.
+  unlockAll: boolean
+  // The mane's size and Todah's form, or null to follow the game.
+  mane: number | null
+  form: TodahForm | null
+}
+
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
 export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
@@ -85,6 +95,8 @@ export type Progress = {
   compass: Record<Circle, CircleEntry>
   needs: string[]
   stepsDone: string[]
+  // null in every game except one a dev account has switched dev tools on for.
+  dev: DevOverrides | null
 }
 
 // A game that was set aside when the player started a new lion.
@@ -121,6 +133,7 @@ export const emptyProgress: Progress = {
   },
   needs: [],
   stepsDone: [],
+  dev: null,
 }
 
 const listeners = new Set<() => void>()
@@ -404,6 +417,7 @@ export function hasSavedGame(progress: Progress): boolean {
 // Nomad: onboarding done and at least two upgrade slots started.
 // Pride Leader: only after the player confirms their main goal is reached.
 export function todahForm(progress: Progress, others: Progress[] = []): TodahForm {
+  if (progress.dev?.form) return progress.dev.form
   if (progress.goalAchievedAt) return 'leader'
   const started = slots.filter((slot) => slotLevel(slot, slotContent(progress, slot, others)) > 0).length
   if (progress.onboardingDone && started >= 2) return 'nomad'

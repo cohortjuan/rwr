@@ -52,6 +52,15 @@ prophet: nothing in the game promises a job or an outcome.
 - The mane grows in three sizes with the Mane upgrade, starting with a crest on top at level 1.
   Mane colours unlock at that point, and buying one changes only the colour (the lock on his
   forehead included), never the size
+- Fur and mane come in matching sets built on colour theory: every coat has a mane of the same
+  name, a deeper and stronger step from the coat's own colour, the way the natural mane sits
+  with the golden coat. The two are separate pieces, so it takes one of each to match, and any
+  coat can still be worn with any mane. The lookbook shows the six sets
+- Accounts: log in, sign up, and a "Forgot password?" link that emails a reset link. A signed-in
+  player can also change their password from the Privacy page
+- Dev tools (`/dev`): for an account marked as a dev account, switches to unlock every
+  accessory, pick the mane size and form, switch the roar on or off, and jump to any screen,
+  so the game can be shown and tested without playing up to each stage
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader

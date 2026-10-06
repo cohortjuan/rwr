@@ -32,7 +32,7 @@ flowchart LR
   real-world trail steps (2 each), and 7 from one-off milestones (finish Quest 1, set a goal,
   write all four claims, send a cheer, and the roar, worth 3). `powerParts` in
   `lib/progress.ts` holds the sum.
-- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from cheers received (5 each,
+- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from cheers received (1 each,
   once per friend per day, only from someone in the pride) and interviews logged (25 each).
   They buy accessories, one worn per category. Guests can look but only a signed-in player
   can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the
@@ -41,7 +41,31 @@ flowchart LR
   outline) in four sizes: its size follows the Mane upgrade's level and its colour is the one
   thing a purchase changes. Each accessory has colour options, passed around as `id~colour`
   tokens, so a friend's card shows the same outfit.
+- **Matching sets** (`lib/colour.ts`, `setMane` in `lib/accessories.ts`): every fur has a mane
+  of the same name. Its two colours are the natural mane's colours put through that fur's
+  filter (the same maths the browser uses), so each set repeats the golden cub's own scheme:
+  the mane is the coat's colour a step round the wheel, deeper and stronger. It also matches
+  the tail tip the filter has already tinted on the sprite. Fur and mane are bought
+  separately, so a new fur alone does not match until its mane is bought too. Three manes
+  (white, purple, teal) belong to no set. The mane layer is drawn only from Mane level 1 up.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
+
+## Accounts
+
+- `lib/account.ts` keeps one watcher on the Supabase session and feeds every screen.
+- **Forgotten passwords**: "Forgot password?" in the login box (and CHANGE PASSWORD on
+  `/privacy`) asks Supabase to email a reset link. The link logs the player in and Supabase
+  reports a password recovery, and `AccountWatch` (in the layout) opens the new password box
+  on whatever page they land. The reply is the same whether or not the email has an account.
+  In the Supabase dashboard (Authentication, URL Configuration) the Site URL must be the live
+  site, and the Redirect URLs must include the live site and `http://localhost:3000`.
+- **Dev account**: an account marked `dev` in its app metadata gets a DEV chip and the dev
+  tools at `/dev`. App metadata is set by the project owner in Supabase, and a player cannot
+  set it on themselves. Dev tools are stored with the lion in play (`progress.dev`): unlock
+  every accessory, choose the mane size, choose the form. They change looks and ownership only
+  and never add to Pride Power. For guests, and on any account that is not a dev account,
+  `AccountWatch` switches them off. Like the rest of the game's progress this is checked in
+  the browser, so it guards against accidents, not against someone editing their own saved game.
 
 ## My Pride (friends without a backend)
 

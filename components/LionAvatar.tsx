@@ -68,8 +68,9 @@ export default function LionAvatar({
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
   const fur = worn.find((entry) => entry.item.category === 'fur')?.item
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
-  // The cub's own tuft is left alone unless the mane has been given a colour.
-  const maneShape = mane > 0 || maneColour ? maneArt[Math.min(Math.max(mane, 0), maneArt.length - 1)] : null
+  // Before the mane starts to grow there is nothing to colour: the cub's own tuft is part of
+  // the sprite and is left alone.
+  const maneShape = mane > 0 ? maneArt[Math.min(mane, maneArt.length - 1)] : null
   const [base, shade] = maneColour ?? NATURAL_MANE
 
   const drawn = worn.filter((entry) => entry.item.art)

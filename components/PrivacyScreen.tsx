@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
-import { deleteAccount, logOut, useAccountEmail } from '@/lib/account'
+import { deleteAccount, logOut, requestPasswordReset, useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { clearProgress, saveProgress, setSaveOnDevice, useLionText, useProgress } from '@/lib/progress'
 import { saveSettings, useHydrated, useSettings } from '@/lib/settings'
@@ -15,7 +15,7 @@ export default function PrivacyScreen() {
   const settings = useSettings()
   const progress = useProgress()
   const lion = useLionText()
-  const email = useAccountEmail()
+  const { email, dev } = useAccount()
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -29,6 +29,15 @@ export default function PrivacyScreen() {
     } else {
       setStatus((await deleteAccount()) ? lines.privacy.deletedAccount : lines.privacy.deleteFailed)
     }
+    setBusy(false)
+  }
+
+  // A signed-in player changes their password the same way a forgotten one is reset: by a
+  // link sent to their own email.
+  async function changePassword() {
+    if (!email) return
+    setBusy(true)
+    setStatus((await requestPasswordReset(email)) ? lines.reset.changeSent(email) : lines.reset.failed)
     setBusy(false)
   }
 
@@ -92,6 +101,14 @@ export default function PrivacyScreen() {
               <button type="button" className="btn btn-quiet" onClick={logOut}>
                 {lines.account.logOut}
               </button>
+              <button type="button" className="btn btn-quiet" disabled={busy} onClick={changePassword}>
+                {lines.reset.change}
+              </button>
+              {dev && (
+                <Link className="btn btn-quiet" href="/dev">
+                  {lines.dev.heading}
+                </Link>
+              )}
             </p>
           )}
         </section>

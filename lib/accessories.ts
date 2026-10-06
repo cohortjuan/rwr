@@ -1,3 +1,4 @@
+import { applyFilter } from '@/lib/colour'
 import { crownArt, lionPendant } from '@/lib/maneArt'
 import {
   countedCheers,
@@ -15,6 +16,12 @@ import { slotLevel, slots } from '@/lib/upgrades'
 //
 // Buying never changes how grown the lion looks. A mane colour changes only the mane's
 // colour: its size comes from the Mane upgrade's level (see maneSize).
+//
+// Fur and mane are separate groups that come in sets: every fur has a mane of the same name.
+// The golden cub's mane is his coat's colour turned a step round the colour wheel, deepened
+// and strengthened, and each set repeats that same relationship (see setMane), so a set
+// always sits together. The two pieces are bought one at a time: a new fur alone leaves the
+// mane as it was, and it takes one of each to match.
 //
 // Art is drawn on the seated sprite's own grid. One cell is 3 sprite pixels, so the sprite is
 // 51 cells wide and 58 tall. `x` and `y` are where the art's top-left cell goes, and `y` can
@@ -117,24 +124,34 @@ const mane = (id: string, price: number, colours: readonly [string, string]): Ac
   mane: [colours[0], colours[1]],
 })
 
-export const accessories: Accessory[] = [
-  // Fur: the coat's colour. The mane is drawn on top in its own colour, so the two combine.
+// Fur: the coat's colour. Each tint keeps the sprite's own light-to-dark steps, so a coat
+// stays one colour family from highlight to shadow.
+const furs: Accessory[] = [
   { id: 'golden', category: 'fur', price: 0 },
   { id: 'snow', category: 'fur', price: 25, filter: 'grayscale(1) brightness(1.35) contrast(0.9)' },
   { id: 'shadow', category: 'fur', price: 25, filter: 'grayscale(0.85) brightness(0.55) contrast(1.15)' },
   { id: 'ember', category: 'fur', price: 25, filter: 'hue-rotate(-22deg) saturate(1.5)' },
   { id: 'rose', category: 'fur', price: 25, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
   { id: 'sky', category: 'fur', price: 35, filter: 'hue-rotate(170deg) saturate(0.9)' },
+]
 
-  // Mane colours. Only the colour is bought: the size follows the Mane upgrade.
+// The mane that completes a fur's set: the natural mane's two colours put through that fur's
+// tint. It stands to its coat exactly as the natural mane stands to the golden coat, and it
+// matches the tail tip the tint has already coloured on the sprite.
+const setMane = (fur: Accessory): Accessory =>
+  mane(fur.id, 25, [applyFilter(NATURAL_MANE[0], fur.filter), applyFilter(NATURAL_MANE[1], fur.filter)])
+
+export const accessories: Accessory[] = [
+  ...furs,
+
+  // Mane colours. Only the colour is bought: the size follows the Mane upgrade. The natural
+  // mane is the golden coat's partner, then comes one for each other fur, then three that
+  // belong to no set: white, and two cool colours that sit opposite the warm coats.
   { id: 'mane-natural', category: 'mane', price: 0, mane: NATURAL_MANE },
-  mane('black', 25, tone.black),
+  ...furs.filter((fur) => fur.filter).map(setMane),
   mane('white', 25, tone.white),
-  mane('red', 25, tone.red),
-  mane('blue', 25, tone.blue),
   mane('purple', 25, tone.purple),
   mane('teal', 25, tone.teal),
-  mane('pink', 25, tone.pink),
 
   {
     id: 'cap',
@@ -463,10 +480,17 @@ export function accessory(token: string): Accessory | undefined {
   return parseToken(token)?.item
 }
 
-// The mane's size, 0 to 3. It follows the Mane upgrade's level and nothing else.
+// The mane that makes a set with a fur: the one of the same name, or the natural mane for
+// the golden coat.
+export function partnerMane(fur: Accessory): Accessory | undefined {
+  return byId.get(fur.id === defaults.fur ? (defaults.mane ?? '') : `mane-${fur.id}`)
+}
+
+// The mane's size, 0 to 3. It follows the Mane upgrade's level and nothing else (dev tools aside).
 const maneSlot = slots.find((slot) => slot.id === 'mane')
 
 export function maneSize(progress: Progress): number {
+  if (typeof progress.dev?.mane === 'number') return progress.dev.mane
   return maneSlot ? slotLevel(maneSlot, progress.upgrades.mane ?? '') : 0
 }
 
@@ -487,6 +511,7 @@ function giftEarned(item: Accessory, progress: Progress, others: Progress[]): bo
 }
 
 export function owns(progress: Progress, item: Accessory, others: Progress[] = []): boolean {
+  if (progress.dev?.unlockAll) return true
   if (item.gift) return giftEarned(item, progress, others)
   return item.price === 0 || progress.bought.includes(item.id)
 }

@@ -19,7 +19,7 @@ import {
   wornToken,
   type Accessory,
 } from '@/lib/accessories'
-import { useAccountEmail } from '@/lib/account'
+import { useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -41,7 +41,8 @@ export default function WardrobeScreen() {
   const { sound } = useSettings()
   const keptLions = useKeptLions()
   // Guests can look, but only a player with an account can own or wear accessories.
-  const signedIn = Boolean(useAccountEmail())
+  const account = useAccount()
+  const signedIn = Boolean(account.email)
   const [loginOpen, setLoginOpen] = useState(false)
   const [status, setStatus] = useState('')
 
@@ -114,6 +115,11 @@ export default function WardrobeScreen() {
               <Link className="btn btn-quiet" href="/lookbook">
                 {lines.lookbook.open}
               </Link>
+              {account.dev && (
+                <Link className="btn btn-quiet" href="/dev">
+                  {lines.dev.heading}
+                </Link>
+              )}
             </div>
             <p className={styles.status} role="status">
               {status}
@@ -146,9 +152,12 @@ export default function WardrobeScreen() {
                   const colour = item.variants?.find((option) => option.id === progress.tones[item.id]) ?? item.variants?.[0]
                   // Each card shows the lion as it is now, with this piece swapped in.
                   const rest = wearing.filter((token) => accessory(token)?.category !== category)
+                  // A mane colour is shown on the first mane there is to colour, even before
+                  // the lion has grown one.
+                  const shownMane = Math.max(mane, item.needsMane ?? 0)
                   return (
                     <li key={item.id} className={worn ? styles.cardWorn : styles.card}>
-                      <LionAvatar className={styles.thumb} wearing={[...rest, wornToken(item, colour?.id)]} mane={mane} />
+                      <LionAvatar className={styles.thumb} wearing={[...rest, wornToken(item, colour?.id)]} mane={shownMane} />
                       <p className={styles.itemName}>{itemName(item)}</p>
                       {item.variants && (
                         <div className={styles.swatches} role="group" aria-label={itemName(item)}>

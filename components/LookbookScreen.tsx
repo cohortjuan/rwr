@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
-import { accessories, categories, wornToken, type Accessory } from '@/lib/accessories'
+import { accessories, categories, partnerMane, wornToken, type Accessory } from '@/lib/accessories'
 import { lines } from '@/lib/lines'
 import styles from './LookbookScreen.module.css'
 
@@ -10,6 +10,7 @@ type ColourId = keyof typeof lines.wardrobe.colours
 const itemName = (item: Accessory) => lines.wardrobe.items[item.id as ItemId] ?? item.id
 const colourName = (id: string) => lines.wardrobe.colours[id as ColourId] ?? id
 const maneLevels = [1, 2, 3]
+const furs = accessories.filter((item) => item.category === 'fur')
 
 function cost(item: Accessory): string {
   if (item.gift) return lines.wardrobe.gifts[item.gift]
@@ -74,6 +75,22 @@ export default function LookbookScreen() {
               ))}
           </section>
         ))}
+
+        {/* The sets: each fur with the mane of the same name, which is bought separately. */}
+        <section className={styles.group}>
+          <h2 className={styles.subheading}>{lines.lookbook.setsHeading}</h2>
+          <p className={styles.intro}>{lines.lookbook.setsIntro}</p>
+          <div className={styles.piece}>
+            <ul className={styles.tiles}>
+              {furs.map((fur) => (
+                <li key={fur.id}>
+                  <LionAvatar className={styles.lion} wearing={[fur.id, partnerMane(fur)?.id ?? '']} mane={3} />
+                  <span>{itemName(fur)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
         <p className={styles.footer}>
           <Link className="btn btn-quiet" href="/wardrobe">

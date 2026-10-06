@@ -73,3 +73,32 @@
   padding-top: 16px;
   border-top: 3px dashed var(--teal);
 }
+
+/* "Forgot password?" sits under the password box, as a plain link. */
+.forgot {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--gold-bright);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.forgot:hover {
+  color: var(--cream);
+}
+
+.resetIntro {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+}
+
+.submitRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

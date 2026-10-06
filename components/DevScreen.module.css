@@ -1,0 +1,71 @@
+.header {
+  margin-bottom: 18px;
+}
+
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0 0 16px;
+  max-width: 62ch;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.look {
+  text-align: center;
+}
+
+.preview {
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+}
+
+.formName {
+  margin: 10px 0 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+}
+
+.controls > .subheading:first-child {
+  margin-top: 0;
+}
+
+.subheading {
+  margin: 18px 0 10px;
+  font-size: 0.7rem;
+  color: var(--gold-bright);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fine {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.group {
+  margin-top: 22px;
+}
+
+@media (max-width: 560px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+}
