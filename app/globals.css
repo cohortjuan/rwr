@@ -26,6 +26,21 @@ body {
   min-height: 100%;
 }
 
+html {
+  /* Phones: keep text at the size we set, and no grey flash on tap. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Phones: no double-tap zoom delay on controls. */
+button,
+a,
+input,
+textarea {
+  touch-action: manipulation;
+}
+
 body {
   background: var(--indigo-deep);
   color: var(--cream);
@@ -71,6 +86,15 @@ textarea {
 .screen-inner {
   width: 100%;
   max-width: 880px;
+}
+
+/* Short, wide screens (phone held sideways): keep content clear of the stacked settings bar. */
+@media (max-height: 480px) and (min-width: 641px) {
+  .screen {
+    padding-top: 22px;
+    padding-right: 150px;
+    padding-bottom: 28px;
+  }
 }
 
 /* Chunky retro panel. */

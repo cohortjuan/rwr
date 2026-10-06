@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Press_Start_2P } from 'next/font/google'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: 'RWR: 16-bit Career Adventure',
   description:
     'A retro 16-bit game that helps you explore what you love, what you are good at, what the world needs, and what you can be paid for.',
+}
+
+// Phones: fit the screen width and tint the browser bar to match the TV bezel.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#17161b',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

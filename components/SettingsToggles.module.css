@@ -27,7 +27,7 @@
   .bar {
     left: 0;
     right: 0;
-    bottom: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
     justify-content: center;
     gap: 6px;
   }
@@ -35,5 +35,21 @@
   .toggle {
     font-size: 0.5rem;
     padding: 7px 6px;
+  }
+}
+
+/* Short, wide screens (phone held sideways): stack the bar so it clears centered prompts. */
+@media (max-height: 480px) and (min-width: 641px) {
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px));
+  }
+
+  .toggle {
+    font-size: 0.5rem;
+    padding: 6px;
+    text-align: center;
   }
 }

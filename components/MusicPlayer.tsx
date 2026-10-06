@@ -22,11 +22,11 @@ export default function MusicPlayer() {
       audio?.play().catch(() => {})
     }
     start()
-    window.addEventListener('pointerdown', start, { once: true })
-    window.addEventListener('keydown', start, { once: true })
+    // Phones only allow audio to start from a tap, so listen for touch and click too.
+    const gestures = ['pointerdown', 'touchend', 'click', 'keydown']
+    gestures.forEach((gesture) => window.addEventListener(gesture, start, { once: true }))
     return () => {
-      window.removeEventListener('pointerdown', start)
-      window.removeEventListener('keydown', start)
+      gestures.forEach((gesture) => window.removeEventListener(gesture, start))
     }
   }, [sound])
 
