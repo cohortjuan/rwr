@@ -1,3 +1,4 @@
+import { accessory, categories, wornIds } from '@/lib/accessories'
 import { lines } from '@/lib/lines'
 import { isNameAllowed, LION_NAME_MAX } from '@/lib/names'
 import { pridePower, todahForm, type PrideCard, type Progress, type TodahForm } from '@/lib/progress'
@@ -42,6 +43,7 @@ export function buildCard(progress: Progress, now: number, others: Progress[] = 
     goal: showGoal ? progress.goalText.trim().slice(0, GOAL_MAX) : '',
     reached: showGoal && Boolean(progress.goalAchievedAt),
     at: new Date(now).toISOString(),
+    wear: wornIds(progress, others),
   }
 }
 
@@ -61,7 +63,18 @@ function fromBase64Url(data: string): string {
 // Packed as a plain list to keep the link, and so the QR code, small.
 function pack(card: PrideCard): unknown[] {
   const minutes = Math.floor(new Date(card.at).getTime() / 60000)
-  return [card.id, card.name, card.lion, forms.indexOf(card.form), card.power, card.max, card.goal, card.reached ? 1 : 0, minutes]
+  return [
+    card.id,
+    card.name,
+    card.lion,
+    forms.indexOf(card.form),
+    card.power,
+    card.max,
+    card.goal,
+    card.reached ? 1 : 0,
+    minutes,
+    card.wear ?? [],
+  ]
 }
 
 export function cardLink(origin: string, card: PrideCard): string {
@@ -76,7 +89,7 @@ export function cheerLink(origin: string, card: PrideCard, cheer: CheerId): stri
 // Anyone can write a link by hand, so nothing in one is trusted: every field is checked,
 // trimmed to size, and run through the name filter before it is shown or saved.
 function unpack(fields: unknown[]): PrideCard | null {
-  const [id, name, lion, form, power, max, goal, reached, minutes] = fields
+  const [id, name, lion, form, power, max, goal, reached, minutes, wear] = fields
   if (typeof id !== 'string' || !/^[a-z0-9]{6,16}$/.test(id)) return null
   if (typeof name !== 'string' || typeof lion !== 'string' || typeof goal !== 'string') return null
   if (typeof form !== 'number' || !forms[form]) return null
@@ -100,6 +113,10 @@ function unpack(fields: unknown[]): PrideCard | null {
     goal: goalOk ? cleanGoal : '',
     reached: goalOk && reached === 1,
     at: made.toISOString(),
+    // Only accessories that exist, and no more than one per category.
+    wear: Array.isArray(wear)
+      ? wear.filter((item): item is string => typeof item === 'string' && accessory(item) !== undefined).slice(0, categories.length)
+      : [],
   }
 }
 

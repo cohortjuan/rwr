@@ -1,0 +1,69 @@
+/* The grid is 51 cells wide and 64 tall: 58 for the sprite and 6 of headroom for hats. */
+.stage {
+  position: relative;
+  aspect-ratio: 51 / 64;
+}
+
+/* The sprite fills everything below the headroom. */
+.lion {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100% * 58 / 64);
+}
+
+.sprite,
+.happy,
+.blink,
+.mouth {
+  position: absolute;
+  inset: 0;
+  background: url('/sprites/todah-sit.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.happy {
+  background-image: url('/sprites/todah-sit-happy.png');
+}
+
+/* Eyes-closed frame, shown for a moment every few seconds. */
+.blink {
+  background-image: url('/sprites/todah-sit-blink.png');
+  opacity: 0;
+  animation: blinkEyes 4.4s steps(1) 1s infinite;
+}
+
+/* Mouth-open frame, flapped on and off while a line types out. */
+.mouth {
+  background-image: url('/sprites/todah-sit-talk.png');
+  opacity: 0;
+  animation: talk 0.26s steps(2, jump-none) infinite;
+}
+
+@keyframes blinkEyes {
+  0%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes talk {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wear {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}

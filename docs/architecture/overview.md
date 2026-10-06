@@ -26,13 +26,17 @@ flowchart LR
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.
 - **Den** counts career paths: lions that have a main goal and at least 3 evidence points.
-- **Pride** counts connections: friends in My Pride, outreach the player logs (self-reported),
-  and cheers received. A cheer counts once per friend per day and only from someone already in
-  the pride. Levels need 3, 10 and 25. With no accounts these are an honour system; checking
-  who sent a cheer would need sign-in and a server-side record.
-- **Pride Power** runs to 40: 18 from the six live slots, 12 from trail map evidence, 5 from
-  real-world trail steps, and 5 from one-off milestones (finish Quest 1, set a goal, write all
-  four claims, send a cheer, and the roar). `powerParts` in `lib/progress.ts` holds the sum.
+- **Pride** counts connections: friends in My Pride and outreach the player logs
+  (self-reported). Levels need 3, 10 and 25. With no accounts this is an honour system.
+- **Pride Power** runs to 50: 21 from the seven slots, 12 from trail map evidence, 10 from
+  real-world trail steps (2 each), and 7 from one-off milestones (finish Quest 1, set a goal,
+  write all four claims, send a cheer, and the roar, worth 3). `powerParts` in
+  `lib/progress.ts` holds the sum.
+- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from cheers received (5 each,
+  once per friend per day, only from someone in the pride) and interviews logged (25 each).
+  They buy accessories, one worn per category. `LionAvatar` draws the seated sprite and the
+  accessories on one 51 by 64 grid, so they line up at any size. Fur colours are CSS filters
+  over the whole sprite; a true two-colour coat needs the mane as its own art layer.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
 
 ## My Pride (friends without a backend)

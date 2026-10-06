@@ -71,3 +71,13 @@
   font-size: 0.85rem;
   overflow-wrap: anywhere;
 }
+
+.lionFace {
+  flex: 0 0 auto;
+  width: 52px;
+}
+
+.lionText {
+  flex: 1 1 150px;
+  min-width: 0;
+}

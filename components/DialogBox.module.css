@@ -27,14 +27,26 @@
   width: 100px;
   height: 100px;
   background-color: var(--teal);
-  background-image: url('/sprites/todah-sit.png');
-  /* Zoom in on the face. */
-  background-size: 118% auto;
-  background-position: 50% 8%;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
   border: 3px solid var(--gold);
   position: relative;
+  overflow: hidden;
+}
+
+/* Zoom in on the face: the lion is drawn a little wider than the frame and shifted up, past
+   the headroom kept for hats. */
+.face,
+.faceWithHat {
+  position: absolute;
+  left: -9%;
+  top: -16.5%;
+  width: 118%;
+}
+
+/* Pulled back so the hat fits in the frame. */
+.faceWithHat {
+  left: -3%;
+  top: -3%;
+  width: 106%;
 }
 
 .neutral {
@@ -42,7 +54,6 @@
 }
 
 .happy {
-  background-image: url('/sprites/todah-sit-happy.png');
   animation: hop 0.5s steps(2, jump-none) 3 alternate;
 }
 
@@ -65,48 +76,6 @@
   }
   to {
     transform: rotate(5deg);
-  }
-}
-
-/* Overlays share the portrait's framing, so only the eyes or mouth appear to change. */
-.mouth,
-.blink {
-  position: absolute;
-  inset: 0;
-  background-size: 118% auto;
-  background-position: 50% 8%;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  opacity: 0;
-}
-
-.mouth {
-  background-image: url('/sprites/todah-sit-talk.png');
-  animation: talk 0.26s steps(2, jump-none) infinite;
-}
-
-.blink {
-  background-image: url('/sprites/todah-sit-blink.png');
-  animation: blinkEyes 4.2s steps(1) 1.5s infinite;
-}
-
-@keyframes blinkEyes {
-  0%,
-  94% {
-    opacity: 0;
-  }
-  95%,
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes talk {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
+import LionAvatar from '@/components/LionAvatar'
 import QrCode from '@/components/QrCode'
 import { lines } from '@/lib/lines'
 import {
@@ -53,6 +54,7 @@ function shortDate(iso: string): string {
 function CardFace({ card, children }: { card: PrideCard, children?: React.ReactNode }) {
   return (
     <div className={styles.face}>
+      <LionAvatar className={styles.faceLion} wearing={card.wear ?? []} />
       <p className={styles.faceName}>{lines.pride.cardWith(card.name, card.lion)}</p>
       <p className={styles.faceForm}>{formLabel[card.form]}</p>
       <p className={styles.facePower}>{lines.pride.power(card.power, card.max)}</p>
@@ -228,7 +230,7 @@ export default function PrideScreen() {
             <strong>{lines.pride.slot(level, MAX_LEVEL)}</strong>{' '}
             {nextAt ? lines.pride.slotNext(nextAt - made.total) : lines.pride.slotFull}
           </p>
-          <p className={styles.tally}>{lines.pride.tally(made.friends, made.outreach, made.cheers)}</p>
+          <p className={styles.tally}>{lines.pride.tally(made.friends, made.outreach)}</p>
         </header>
 
         {incoming && !isOwn && (incoming.kind === 'cheer' || !known) && (

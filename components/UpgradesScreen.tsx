@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import LionAvatar from '@/components/LionAvatar'
 import { lines } from '@/lib/lines'
+import { sparks, wornIds } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
 import {
   isPath,
@@ -43,6 +45,7 @@ function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalM
     unpaid: !progress.upgrades.paws,
     pride: progress.pride.length === 0,
     den: !isPath(progress),
+    wardrobe: progress.bought.length === 0,
     map: compassTotal(progress).score === 0,
     goal: !progress.goalText,
     device: true,
@@ -161,8 +164,17 @@ export default function UpgradesScreen() {
 
         <div className={styles.top}>
           <section className={`panel ${styles.todah}`} aria-label={lion('Todah')}>
-            <div className={leveledUp ? styles.portraitHappy : styles.portrait} aria-hidden="true">
-              {!leveledUp && <div className={styles.blink} />}
+            <div className={styles.dressing}>
+              <LionAvatar
+                className={styles.portrait}
+                wearing={wornIds(progress, others)}
+                mood={leveledUp ? 'happy' : 'neutral'}
+                blink
+              />
+              <p className={styles.sparks}>{lines.upgrades.sparks(sparks(progress).balance)}</p>
+              <Link className="btn btn-quiet" href="/wardrobe">
+                {lines.upgrades.toWardrobe}
+              </Link>
             </div>
             <div>
               <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[form]))}</p>

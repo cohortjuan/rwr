@@ -33,40 +33,25 @@
   min-width: 0;
 }
 
-.portrait,
-.portraitHappy {
-  position: relative;
+.dressing {
   flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.portrait {
   width: 96px;
-  height: 108px;
-  background: var(--teal) url('/sprites/todah-sit.png') center / contain no-repeat;
-  image-rendering: pixelated;
+  background: var(--teal);
   border: 3px solid var(--gold);
 }
 
-/* A level-up earns a smile. */
-.portraitHappy {
-  background-image: url('/sprites/todah-sit-happy.png');
-}
-
-.blink {
-  position: absolute;
-  inset: 0;
-  background: url('/sprites/todah-sit-blink.png') center / contain no-repeat;
-  image-rendering: pixelated;
-  opacity: 0;
-  animation: blinkEyes 4.4s steps(1) 1s infinite;
-}
-
-@keyframes blinkEyes {
-  0%,
-  94% {
-    opacity: 0;
-  }
-  95%,
-  100% {
-    opacity: 1;
-  }
+.sparks {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  color: var(--gold-bright);
 }
 
 .formName,

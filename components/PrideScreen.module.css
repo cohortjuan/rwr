@@ -101,6 +101,13 @@
   border: 3px solid var(--gold);
 }
 
+/* The friend's lion, dressed as they dressed it, sits at the right of the card. */
+.faceLion {
+  float: right;
+  width: 56px;
+  margin: 0 0 6px 10px;
+}
+
 .faceName {
   margin: 0 0 8px;
   font-family: var(--font-pixel), monospace;
@@ -118,6 +125,7 @@
 }
 
 .bar {
+  clear: both;
   height: 10px;
   margin-bottom: 10px;
   background: var(--ink);

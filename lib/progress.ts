@@ -29,6 +29,8 @@ export type PrideCard = {
   goal: string
   reached: boolean
   at: string
+  // Ids of the accessories the lion is wearing. Missing on cards made before the wardrobe.
+  wear?: string[]
 }
 
 // The four Ikigai circles, in the order of the levels: Heart, Craft, Cause, Coin.
@@ -38,9 +40,12 @@ export type Circle = 'heart' | 'craft' | 'cause' | 'coin'
 export type CircleEntry = { claim: string, evidence: string[] }
 
 // One piece of real-world outreach the player logged: a LinkedIn connection, an email or
-// message about a job, or a real conversation. RWR cannot see any of these, so the log is
-// the player's own word. The note is theirs alone and stays on this device.
-export type OutreachKind = 'linkedin' | 'message' | 'talk'
+// message about a job, a real conversation, or a job interview landed. RWR cannot see any of
+// these, so the log is the player's own word. The note is theirs alone and stays on this device.
+export type OutreachKind = 'linkedin' | 'message' | 'talk' | 'interview'
+
+// The lion's wardrobe. One accessory from each category can be worn at a time.
+export type AccessoryCategory = 'fur' | 'claws' | 'hat' | 'shades' | 'neck'
 export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
 
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
@@ -68,6 +73,9 @@ export type Progress = {
   cheersReceived: CheerReceived[]
   cheersSent: number
   outreach: Outreach[]
+  // Accessories bought with sparks, and the one worn in each category (see lib/accessories.ts).
+  bought: string[]
+  wearing: Partial<Record<AccessoryCategory, string>>
   // The trail map (see lib/compass.ts): a claim and its evidence for each circle, the needs
   // the player picked for Cause, and the real-world steps they have done.
   compass: Record<Circle, CircleEntry>
@@ -98,6 +106,8 @@ export const emptyProgress: Progress = {
   cheersReceived: [],
   cheersSent: 0,
   outreach: [],
+  bought: [],
+  wearing: {},
   compass: {
     heart: { claim: '', evidence: [] },
     craft: { claim: '', evidence: [] },
@@ -294,12 +304,12 @@ export function useLionText(): (text: string) => string {
   return (text) => withLionName(text, lionName)
 }
 
-// A real conversation is worth more than a message sent.
-const outreachWorth: Record<OutreachKind, number> = { linkedin: 1, message: 1, talk: 2 }
+// A real conversation or an interview is worth more than a message sent.
+export const outreachWorth: Record<OutreachKind, number> = { linkedin: 1, message: 1, talk: 2, interview: 2 }
 
-// Cheers that count toward the pride. To make farming pointless, a cheer counts only from
-// someone whose card is in the pride, and once per friend per day.
-function countedCheers(progress: Progress): number {
+// Cheers that earn sparks. To make farming pointless, a cheer counts only from someone whose
+// card is in the pride, and once per friend per day.
+export function countedCheers(progress: Progress): number {
   const friends = new Set(progress.pride.map((card) => card.id))
   const counted = new Set<string>()
   for (const cheer of progress.cheersReceived) {
@@ -309,12 +319,12 @@ function countedCheers(progress: Progress): number {
   return counted.size
 }
 
-// The connections behind the Pride slot: friends who joined, outreach logged, cheers received.
-export function connections(progress: Progress): { friends: number, outreach: number, cheers: number, total: number } {
+// The connections behind the Pride slot: friends who joined and outreach logged. Cheers do
+// not count here. They earn sparks for the wardrobe instead.
+export function connections(progress: Progress): { friends: number, outreach: number, total: number } {
   const friends = progress.pride.length
   const outreach = progress.outreach.reduce((sum, entry) => sum + (outreachWorth[entry.kind] ?? 0), 0)
-  const cheers = countedCheers(progress)
-  return { friends, outreach, cheers, total: friends + outreach + cheers }
+  return { friends, outreach, total: friends + outreach }
 }
 
 // A lion is a career path explored once it has a main goal and some evidence on its trail
@@ -336,20 +346,23 @@ export function slotContent(progress: Progress, slot: Slot, others: Progress[] =
   return progress.upgrades[slot.id] ?? ''
 }
 
-// One-off milestones, each worth one Pride Power. The last is the roar itself.
+// One-off milestones. The last is the roar itself, and it is worth the most.
 export const milestones = [
-  { id: 'quest', met: (progress: Progress) => progress.onboardingDone },
-  { id: 'goal', met: (progress: Progress) => progress.goalText.trim().length > 0 },
-  { id: 'claims', met: (progress: Progress) => circles.every((circle) => progress.compass[circle].claim.trim().length > 0) },
-  { id: 'cheer', met: (progress: Progress) => progress.cheersSent > 0 },
-  { id: 'roar', met: (progress: Progress) => Boolean(progress.goalAchievedAt) },
+  { id: 'quest', worth: 1, met: (progress: Progress) => progress.onboardingDone },
+  { id: 'goal', worth: 1, met: (progress: Progress) => progress.goalText.trim().length > 0 },
+  { id: 'claims', worth: 1, met: (progress: Progress) => circles.every((circle) => progress.compass[circle].claim.trim().length > 0) },
+  { id: 'cheer', worth: 1, met: (progress: Progress) => progress.cheersSent > 0 },
+  { id: 'roar', worth: 3, met: (progress: Progress) => Boolean(progress.goalAchievedAt) },
 ] as const
+
+// A real-world trail step is worth more than a level typed at a desk.
+export const STEP_WORTH = 2
 
 export type PowerPart = { id: 'slots' | 'map' | 'steps' | 'milestones', level: number, max: number }
 
-// Where Pride Power comes from. With six live slots it adds up to 40:
-// 18 from upgrade levels, 12 from trail map evidence, 5 from real-world steps, 5 from milestones.
-// Unlocking another slot later adds 3 to the total.
+// Where Pride Power comes from. With all seven slots live it adds up to 50:
+// 21 from upgrade levels, 12 from trail map evidence, 10 from real-world steps (2 each),
+// and 7 from milestones (the roar is worth 3).
 export function powerParts(progress: Progress, others: Progress[] = []): PowerPart[] {
   const live = slots.filter((slot) => !slot.locked)
   const map = compassTotal(progress)
@@ -360,8 +373,12 @@ export function powerParts(progress: Progress, others: Progress[] = []): PowerPa
       max: live.length * MAX_LEVEL,
     },
     { id: 'map', level: map.score, max: map.max },
-    { id: 'steps', level: stepsDone(progress), max: trailSteps.length },
-    { id: 'milestones', level: milestones.filter((milestone) => milestone.met(progress)).length, max: milestones.length },
+    { id: 'steps', level: stepsDone(progress) * STEP_WORTH, max: trailSteps.length * STEP_WORTH },
+    {
+      id: 'milestones',
+      level: milestones.reduce((sum, milestone) => sum + (milestone.met(progress) ? milestone.worth : 0), 0),
+      max: milestones.reduce((sum, milestone) => sum + milestone.worth, 0),
+    },
   ]
 }
 

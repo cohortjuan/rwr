@@ -1,0 +1,120 @@
+.header {
+  margin-bottom: 20px;
+}
+
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 10px;
+}
+
+.intro {
+  margin: 0;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.preview {
+  flex: 0 0 auto;
+  width: min(200px, 60vw);
+  background: var(--teal);
+  border: 4px solid var(--gold);
+}
+
+.top > div:last-child {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.sparks {
+  margin: 0 0 14px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.9rem;
+  color: var(--gold-bright);
+}
+
+.subheading {
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+  margin-bottom: 8px;
+}
+
+.earn {
+  margin: 0 0 8px;
+  padding-left: 1.1em;
+  font-size: 0.95rem;
+}
+
+.fine {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  color: var(--gold-bright);
+}
+
+.group {
+  margin-bottom: 28px;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.card,
+.cardWorn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+  background: var(--teal-deep);
+  border: 4px solid var(--ink);
+}
+
+.cardWorn {
+  border-color: var(--gold);
+}
+
+.thumb {
+  width: 84px;
+}
+
+.itemName {
+  margin: 0;
+  font-weight: 600;
+}
+
+.itemState {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  line-height: 1.6;
+  color: var(--gold-bright);
+}
+
+.card .fine,
+.cardWorn .fine {
+  margin: 0;
+}
+
+.footer {
+  margin: 0;
+}

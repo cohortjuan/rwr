@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
+import LionAvatar from '@/components/LionAvatar'
 import LionsBox from '@/components/LionsBox'
 import LoginBox from '@/components/LoginBox'
 import NameLionBox from '@/components/NameLionBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
 import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
+import { wornIds } from '@/lib/accessories'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
@@ -126,13 +128,14 @@ export default function TitleScreen() {
         )}
 
         {!started ? null : seated && SEATED_SPRITE ? (
-          <div
-            className={styles.cubFacing}
-            style={{ backgroundImage: `url(${SEATED_SPRITE})` }}
-            role="img"
-            aria-label="Todah, a lion cub, sitting and facing you"
-          >
-            <div className={styles.blink} />
+          <div className={styles.cubFacing} role="img" aria-label="Todah, a lion cub, sitting and facing you">
+            <LionAvatar
+              wearing={wornIds(
+                progress,
+                keptLions.map((kept) => kept.progress),
+              )}
+              blink
+            />
           </div>
         ) : (
           <div

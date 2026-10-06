@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useLionText } from '@/lib/progress'
+import LionAvatar from '@/components/LionAvatar'
+import { accessory, wornIds } from '@/lib/accessories'
+import { useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { useReducedMotion } from '@/lib/settings'
 import styles from './DialogBox.module.css'
 
@@ -30,6 +32,14 @@ export default function DialogBox({ text, speaker = 'TODAH', ...rest }: Props) {
 
 function TypedBox({ text, speaker, mood = 'neutral', children }: Props) {
   const reducedMotion = useReducedMotion()
+  const progress = useProgress()
+  const keptLions = useKeptLions()
+  const wearing = wornIds(
+    progress,
+    keptLions.map((kept) => kept.progress),
+  )
+  // A hat sits above the head, so the frame pulls back a little to keep it in view.
+  const hasHat = wearing.some((id) => accessory(id)?.category === 'hat')
   const [count, setCount] = useState(0)
   const done = reducedMotion || mood === 'thinking' || count >= text.length
 
@@ -48,9 +58,14 @@ function TypedBox({ text, speaker, mood = 'neutral', children }: Props) {
   return (
     <section className={styles.box} onClick={finish}>
       <div className={`${styles.portrait} ${styles[mood]}`} aria-hidden="true">
-        {mood !== 'happy' && <div className={styles.blink} />}
-        {/* Mouth-open frame, flapped on and off while the line types out. */}
-        {!done && <div className={styles.mouth} />}
+        {/* The same lion as everywhere else, accessories and all, framed on the face. */}
+        <LionAvatar
+          className={hasHat ? styles.faceWithHat : styles.face}
+          wearing={wearing}
+          mood={mood === 'happy' ? 'happy' : 'neutral'}
+          talking={!done}
+          blink
+        />
       </div>
       <div className={styles.body}>
         <p className={styles.speaker}>{speaker}</p>

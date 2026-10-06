@@ -37,7 +37,8 @@ export const PRIDE_LEVELS = [3, 10, 25]
 
 const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length
 const sentences = (text: string) => text.split(/[.!?]+/).filter((part) => words(part) >= 3).length
-const chips = (content: string) => content.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+// Skills are separated by commas or new lines. A comma inside brackets belongs to the proof.
+const chips = (content: string) => content.split(/,(?![^(]*\))|\n/).map((s) => s.trim()).filter(Boolean)
 const entries = (content: string) => content.split('\n').map((s) => s.trim()).filter(Boolean)
 
 // A number that measures something. Years (1990, 2024) are dates, not results.
@@ -45,8 +46,10 @@ const hasResult = (text: string) => /\d/.test(text.replace(/\b(19|20)\d{2}\b/g, 
 const hasYear = (text: string) => /\b(19|20)\d{2}\b/.test(text)
 // Proof in brackets after a skill, such as "SQL (weekly sales reports)".
 const hasProof = (text: string) => /\([^)]*\S+\s+\S+[^)]*\)/.test(text)
-
-const never: Check = { rule: '', met: () => false }
+const proven = (content: string) => chips(content).filter(hasProof).length
+// A full job line names the role and place and gives the years.
+const fullJob = (line: string) => hasYear(line) && words(line) >= 4
+const count = (content: string, test: (line: string) => boolean) => entries(content).filter(test).length
 
 export const slots: Slot[] = [
   {
@@ -73,11 +76,11 @@ export const slots: Slot[] = [
     resumeTerm: 'Hard skills',
     locked: false,
     prompt: 'List your hard skills, separated by commas.',
-    placeholder: 'Spreadsheets, SQL (weekly sales reports), Figma',
+    placeholder: 'Spreadsheets, SQL (weekly sales reports), Figma (redesigned our intake form)',
     checks: [
-      { rule: 'List one skill.', met: (content) => chips(content).length >= 1 },
       { rule: 'List three skills.', met: (content) => chips(content).length >= 3 },
-      { rule: 'Back one skill with proof in brackets, like "SQL (weekly sales reports)".', met: hasProof },
+      { rule: 'Back two of them with proof in brackets, like "SQL (weekly sales reports)".', met: (content) => proven(content) >= 2 },
+      { rule: 'List five skills, with proof for three.', met: (content) => chips(content).length >= 5 && proven(content) >= 3 },
     ],
     growth: 'The claws sharpen and start to glow.',
     suggestions: [
@@ -93,9 +96,9 @@ export const slots: Slot[] = [
     prompt: 'One job per line: role, place, years. Then what you did and what came of it.',
     placeholder: 'Shift lead, Corner Cafe, 2022-2024. Trained 6 new starters.',
     checks: [
-      { rule: 'Add one job: role, place, years.', met: (content) => entries(content).length >= 1 },
-      { rule: 'On one job, say what you did there.', met: (content) => entries(content).some((line) => words(line) >= 8) },
-      { rule: 'Add a result with a number, like "trained 6 new starters".', met: (content) => entries(content).some(hasResult) },
+      { rule: 'Add two jobs, each with role, place and years.', met: (content) => count(content, fullJob) >= 2 },
+      { rule: 'On both, say what you did there.', met: (content) => count(content, (line) => words(line) >= 10) >= 2 },
+      { rule: 'Give two jobs a result with a number, like "trained 6 new starters".', met: (content) => count(content, hasResult) >= 2 },
     ],
     growth: 'Bigger, steadier paws for the ground you have covered.',
     suggestions: [
@@ -111,9 +114,12 @@ export const slots: Slot[] = [
     prompt: 'One course, degree, or certificate per line.',
     placeholder: 'Google UX Certificate, 2025. Ran my first usability test.',
     checks: [
-      { rule: 'Add one course, degree, or certificate.', met: (content) => entries(content).length >= 1 },
-      { rule: 'Add the year to one of them.', met: (content) => entries(content).some(hasYear) },
-      { rule: 'On one, say what it lets you do now.', met: (content) => entries(content).some((line) => words(line) >= 8) },
+      { rule: 'Add two courses, degrees or certificates, each with its year.', met: (content) => count(content, hasYear) >= 2 },
+      { rule: 'On two of them, say what it lets you do now.', met: (content) => count(content, (line) => words(line) >= 8) >= 2 },
+      {
+        rule: 'Add a third, with its year and what it lets you do.',
+        met: (content) => count(content, (line) => hasYear(line) && words(line) >= 8) >= 3,
+      },
     ],
     growth: 'A longer trail of prints behind him.',
     suggestions: [
@@ -125,12 +131,19 @@ export const slots: Slot[] = [
     id: 'instincts',
     name: 'INSTINCTS',
     resumeTerm: 'Soft skills and communication',
-    locked: true,
-    prompt: '',
-    placeholder: '',
-    checks: [never, never, never],
+    locked: false,
+    prompt: 'List your soft skills, each with a moment that shows it.',
+    placeholder: 'Patience (calmed an upset caller), Clear writing (rewrote our help page)',
+    checks: [
+      { rule: 'List two soft skills.', met: (content) => chips(content).length >= 2 },
+      { rule: 'Back one with a moment in brackets, like "Patience (calmed an upset caller)".', met: (content) => proven(content) >= 1 },
+      { rule: 'List three soft skills, with a moment for two of them.', met: (content) => chips(content).length >= 3 && proven(content) >= 2 },
+    ],
     growth: 'Eyes and ears sharpen.',
-    suggestions: [],
+    suggestions: [
+      'Think of a time someone thanked you. What did you do that helped?',
+      'A moment is one short story: what happened and what you did.',
+    ],
   },
   {
     // Levelled from the career paths explored across the player's lions (see slotContent).
