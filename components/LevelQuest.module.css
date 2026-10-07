@@ -1,0 +1,65 @@
+/* The form where the player checks what goes on the trail map. */
+.review {
+  margin-top: 18px;
+}
+
+.heading {
+  margin-bottom: 14px;
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+}
+
+.small {
+  margin: 12px 0 8px;
+  font-size: 0.9rem;
+}
+
+.ticks {
+  display: grid;
+  gap: 8px;
+}
+
+.tick,
+.tickOn {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  width: 100%;
+  padding: 8px;
+  font: inherit;
+  text-align: left;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.45);
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tick:hover,
+.tickOn:hover,
+.tickOn {
+  border-color: var(--gold);
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--ink);
+  border: 2px solid var(--gold);
+}
+
+.tickOn .box {
+  background: var(--gold-bright);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

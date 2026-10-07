@@ -102,7 +102,15 @@ export async function generateReply(system: string, messages: LlmMessage[]): Pro
 
   if (groqKey) {
     try {
-      return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
+      try {
+        return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
+      } catch (error) {
+        // A server error or an empty reply is usually a blip, so it gets one more try.
+        // A rate limit does not: asking again at once only makes it worse.
+        if (!(error instanceof ProviderError) || error.status < 500) throw error
+        console.warn('[llm] Groq failed once, trying again:', error.message)
+        return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
+      }
     } catch (error) {
       // Log the status only. Never log keys, prompts, or player answers.
       console.warn('[llm] Groq failed:', error instanceof Error ? error.message : 'unknown error')

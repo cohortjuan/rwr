@@ -386,7 +386,10 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
               text={[withName(closingLine, name), lines.onboarding.complete(name)].filter(Boolean).join(' ')}
               mood="happy"
             >
-              <Link className="btn" href="/map">
+              <Link className="btn" href="/level/heart">
+                {lines.onboarding.toLevel}
+              </Link>
+              <Link className="btn btn-quiet" href="/map">
                 {lines.onboarding.toMap}
               </Link>
               <Link className="btn btn-quiet" href="/upgrades">

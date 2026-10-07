@@ -1,7 +1,7 @@
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
-import { phases, type Phase } from '@/lib/levels'
-import { buildSystemPrompt, COMPLETE_TOKENS, type TodahMode } from '@/lib/prompts'
+import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
+import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
 
 // The only place the app talks to an LLM. Keys stay on the server.
@@ -13,7 +13,11 @@ const MAX_TEXT_LENGTH = 1000
 // Onboarding is a warm-up question plus two follow-ups, so three answers end it.
 const ONBOARDING_ANSWERS = 3
 
-const modes: TodahMode[] = ['onboarding', 'interview', 'help']
+// The most a claim written by the AI may run to before the player edits it.
+const CLAIM_MAX = 160
+
+const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'help']
+const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
 type IncomingMessage = { role: 'user' | 'todah', text: string }
@@ -39,6 +43,32 @@ function stripCompleteToken(text: string): { reply: string, complete: boolean } 
     }
   }
   return { reply: reply.trim(), complete }
+}
+
+// The level a circle belongs to, or undefined when that level's interview is not built yet.
+function phaseOf(circle: unknown): Phase | undefined {
+  if (!liveLevels.includes(circle as LiveLevel)) return undefined
+  return levels[circleOrder.indexOf(circle as string)]?.name
+}
+
+// The summary comes back as JSON. Anything that is not exactly what was asked for is dropped,
+// so a confused reply can only ever produce an empty form for the player to fill in.
+function readSummary(text: string, phase: Phase): { claim: string, evidence: string[] } {
+  const empty = { claim: '', evidence: [] }
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end <= start) return empty
+  try {
+    const form: unknown = JSON.parse(text.slice(start, end + 1))
+    if (typeof form !== 'object' || form === null) return empty
+    const fields = form as Record<string, unknown>
+    const claim = typeof fields.claim === 'string' ? scrub(fields.claim).trim().slice(0, CLAIM_MAX) : ''
+    if (!claim) return empty
+    const evidence = Object.keys(levelBriefs[phase]?.evidence ?? {}).filter((key) => fields[key] === true)
+    return { claim, evidence }
+  } catch {
+    return empty
+  }
 }
 
 // Only the game's own pages may call this route. It is not a full defence (headers can be
@@ -70,11 +100,35 @@ export async function POST(request: Request) {
   if (!incoming.every(isIncomingMessage)) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (incoming.length >= SESSION_MESSAGE_CAP) return Response.json({ error: 'cap' }, { status: 429 })
 
+  const phase = phaseOf(body.circle)
+  const answers = incoming.filter((message) => message.role === 'user').length
+  // A level's interview and its summary both need a level that is built.
+  if ((mode === 'interview' || mode === 'summary') && !phase) {
+    return Response.json({ error: 'bad_request' }, { status: 400 })
+  }
+
   const system = buildSystemPrompt({
     mode,
     entryChoice: entryChoices.includes(body.entryChoice as EntryChoice) ? (body.entryChoice as EntryChoice) : null,
-    phase: phases.includes(body.phase as Phase) ? (body.phase as Phase) : undefined,
+    phase,
+    answers,
   })
+
+  // The summary reads the whole talk as one piece of text, so the AI fills in a form about it
+  // instead of carrying the conversation on.
+  if (mode === 'summary' && phase) {
+    if (answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
+    const transcript = (incoming as IncomingMessage[])
+      .map((message) => (message.role === 'user' ? `Player: ${scrub(message.text)}` : `Guide: ${message.text}`))
+      .join('\n')
+    try {
+      const result = await generateReply(system, [{ role: 'user', text: `The interview:\n${transcript}` }])
+      return Response.json({ ...readSummary(result.text, phase), provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
 
   const messages: LlmMessage[] = (incoming as IncomingMessage[]).map((message) => ({
     role: message.role === 'todah' ? 'assistant' : 'user',
@@ -88,8 +142,9 @@ export async function POST(request: Request) {
   try {
     const result = await generateReply(system, messages)
     const { reply, complete } = stripCompleteToken(result.text)
-    const answers = incoming.filter((message) => message.role === 'user').length
-    const done = complete || (mode === 'onboarding' && answers >= ONBOARDING_ANSWERS)
+    // A level always runs its full length, so the map gets every kind of evidence asked about.
+    const done =
+      mode === 'interview' ? answers >= LEVEL_ANSWERS : complete || (mode === 'onboarding' && answers >= ONBOARDING_ANSWERS)
     return Response.json({ reply, complete: done, provider: result.provider })
   } catch (error) {
     if (error instanceof LlmUnavailableError) return Response.json({ error: 'unavailable' }, { status: 503 })

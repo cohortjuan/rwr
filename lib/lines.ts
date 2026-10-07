@@ -129,6 +129,7 @@ export const lines = {
     send: 'SEND',
     complete: (name: string) =>
       `Quest 1 complete. Thank you for walking with me, ${name}. Next is your trail map. We look for evidence in each of the four circles, starting with ${levels[0].name}: ${levels[0].circle}.`,
+    toLevel: 'START LEVEL 1: HEART',
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     toTitle: 'BACK TO TITLE',
@@ -365,6 +366,48 @@ export const lines = {
     back: 'BACK TO WARDROBE',
   },
 
+  // The level interviews. Each level opens with a scripted question, then three follow-ups
+  // (from the AI, or from `scripted` when the AI is off or down), then a claim and its
+  // evidence go on the trail map. Rules that must survive edits: Todah asks for real moments,
+  // never grades an answer, and never says what the answers mean for a career.
+  level: {
+    locked: 'Walk Quest 1 with me first, so I know what to call you.',
+    toQuest: 'GO TO QUEST 1',
+    progress: (done: number, total: number) => `Level progress: ${done} of ${total}`,
+    summing: 'Todah is marking the map...',
+    reviewHeading: 'WHAT TODAH HEARD',
+    review: (name: string) =>
+      `Here is what I heard, ${name}. It goes on your trail map, so change anything that is not right. It is your map, not mine.`,
+    reviewScripted: (name: string) =>
+      `Now put it in your own words, ${name}. One sentence below, then tick only what is true. It goes on your trail map.`,
+    emptyClaim: 'Write one sentence first, so the evidence has something to back.',
+    save: 'MARK MY MAP',
+    again: 'ANSWER AGAIN',
+    replay: 'WALK THIS LEVEL AGAIN',
+    replaceNote: 'This replaces what your trail map says for this circle now.',
+    done: (name: string, score: number, max: number) =>
+      `Marked, ${name}. This circle has ${score} of ${max} evidence. Whatever the number, it is a place to start from, not a grade.`,
+    toMap: 'OPEN MY TRAIL MAP',
+    toUpgrades: 'SEE LION UPGRADES',
+    fromMap: 'WALK THIS LEVEL WITH TODAH',
+    circles: {
+      heart: {
+        name: 'LEVEL 1: HEART',
+        banner: 'LEVEL 1 COMPLETE',
+        start: 'START LEVEL 1',
+        intro:
+          'Level 1: Heart. This one is about what you love. Four questions, no wrong answers, no timer. I will ask for real moments, because one moment tells me more than a wish does.',
+        opener: 'Think of the last time you lost track of time doing something. What were you doing?',
+        scripted: [
+          'When did you last do that? A rough date is fine.',
+          'Do you ever do it when nobody is paying you or watching? Tell me about one time.',
+          'Everything we love has dull parts. What is the dull part of this, and how do you feel about it on those days?',
+        ],
+        scriptedClose: 'Thank you. That is plenty to mark the map with.',
+      },
+    },
+  },
+
   // Forgotten passwords: asking for a reset link, and choosing the new password.
   reset: {
     forgot: 'Forgot password?',
@@ -409,6 +452,7 @@ export const lines = {
     screens: {
       '/': 'TITLE',
       '/quest': 'QUEST 1',
+      '/level/heart': 'LEVEL 1',
       '/upgrades': 'UPGRADES',
       '/map': 'TRAIL MAP',
       '/pride': 'MY PRIDE',

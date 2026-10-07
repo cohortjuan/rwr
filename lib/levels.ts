@@ -18,6 +18,15 @@ export type Phase = LevelName | 'Crossroads'
 
 export const phases: Phase[] = [...levels.map((level) => level.name), 'Crossroads']
 
+// A level's interview is a scripted opening question and then this many follow-ups from the
+// AI (or from the script), so this many answers plus one end it.
+export const LEVEL_FOLLOW_UPS = 3
+export const LEVEL_ANSWERS = LEVEL_FOLLOW_UPS + 1
+
+// The circles whose level interview is built. The rest are still filled in on the trail map.
+export const liveLevels = ['heart'] as const
+export type LiveLevel = (typeof liveLevels)[number]
+
 // "Heart (what you love)", for prompts and labels.
 export function describePhase(phase: Phase): string {
   const level = levels.find((candidate) => candidate.name === phase)

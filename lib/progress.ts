@@ -95,6 +95,10 @@ export type Progress = {
   compass: Record<Circle, CircleEntry>
   needs: string[]
   stepsDone: string[]
+  // The level interviews (see components/LevelQuest.tsx): what was said in each, and which
+  // are finished. Like the Quest 1 chat, this stays on the device.
+  levelChat: Partial<Record<Circle, ChatMessage[]>>
+  levelsDone: Circle[]
   // null in every game except one a dev account has switched dev tools on for.
   dev: DevOverrides | null
 }
@@ -133,6 +137,8 @@ export const emptyProgress: Progress = {
   },
   needs: [],
   stepsDone: [],
+  levelChat: {},
+  levelsDone: [],
   dev: null,
 }
 

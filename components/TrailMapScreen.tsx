@@ -13,7 +13,7 @@ import {
   trailSteps,
   type TrailStep,
 } from '@/lib/compass'
-import { levels } from '@/lib/levels'
+import { levels, liveLevels, type LiveLevel } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { saveProgress, useLionText, useProgress, type Circle } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -145,6 +145,14 @@ export default function TrailMapScreen() {
                   <Pips score={circleScore(progress, circle)} />
                 </h2>
                 <p className={styles.circleMeaning}>{levelOf(circle).circle}</p>
+
+                {liveLevels.includes(circle as LiveLevel) && (
+                  <p>
+                    <Link className="btn btn-quiet" href={`/level/${circle}`}>
+                      {lion(lines.level.fromMap)}
+                    </Link>
+                  </p>
+                )}
 
                 {circle === 'heart' && questAnswers.length > 0 && (
                   <div className={styles.quotes}>
