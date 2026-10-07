@@ -52,10 +52,11 @@ prophet: nothing in the game promises a job or an outcome.
 - The mane grows in three sizes with the Mane upgrade, starting with a crest on top at level 1.
   Mane colours unlock at that point, and buying one changes only the colour (the lock on his
   forehead included), never the size
-- Level 1, Heart (`/level/heart`): Todah opens with a scripted question, asks three follow-ups
-  about real moments (how recently, with nobody watching, on the boring days), and then the
-  talk becomes one claim and its evidence. The player checks and corrects that before it is
-  marked on the trail map. Without AI consent the same level runs from scripted questions
+- Levels 1 to 4, Heart, Craft, Cause and Coin (`/level/heart` and so on): in each, Todah opens
+  with a scripted question, asks three follow-ups about real moments, and then the talk
+  becomes one claim and its evidence. The player checks and corrects that before it is marked
+  on the trail map. Cause also asks the player to pick the needs they care about, and Coin
+  never estimates pay. Without AI consent the same levels run from scripted questions
 - Fur and mane come in matching sets built on colour theory: every coat has a mane of the same
   name, a deeper and stronger step from the coat's own colour, the way the natural mane sits
   with the golden coat. The two are separate pieces, so it takes one of each to match, and any
@@ -73,8 +74,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
-Not built yet: the AI interviews for levels 2 to 4 (the trail map is their scripted first
-version), crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
+Not built yet: crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
 the database.
 
 ## Technologies

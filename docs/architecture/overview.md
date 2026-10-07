@@ -22,15 +22,15 @@ flowchart LR
   writes a claim and ticks the evidence that is true of it; a claim with no evidence scores 0.
   The map shows the strongest and thinnest circle and one real-world step for the thinnest. It
   never ranks careers.
-- **Level interviews** (`/level/heart`, `components/LevelQuest.tsx`): a scripted opener, then
+- **Level interviews** (`/level/heart`, `/level/craft`, `/level/cause`, `/level/coin`, `components/LevelQuest.tsx`): a scripted opener, then
   three follow-ups from `/api/todah` in `interview` mode. The server counts the answers, tells
   the model which follow-up it is on, and ends the level after the fourth answer. Each
   follow-up looks for one of the circle's three kinds of evidence (`levelBriefs` in
   `lib/prompts.ts`). A second call in `summary` mode returns a small JSON form, a claim and
   three true-or-false answers, which the server checks field by field. The player edits that
   form and only then is it saved to the trail map. If the AI is off, down, or returns
-  anything unexpected, the level falls back to scripted questions and an empty form. Only
-  Heart is live (`liveLevels` in `lib/levels.ts`): the other circles are filled in on the map.
+  anything unexpected, the level falls back to scripted questions and an empty form. All four
+  levels share this one component: a level is its brief in `lib/prompts.ts` and its lines.
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.

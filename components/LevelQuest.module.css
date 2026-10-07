@@ -63,3 +63,47 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip,
+.chipOn {
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--cream);
+  background: transparent;
+  border: 2px solid var(--cream);
+  cursor: pointer;
+}
+
+.chipOn {
+  color: var(--ink);
+  background: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fine {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.sources ul {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.9rem;
+}
+
+.sources a {
+  color: var(--gold-bright);
+}

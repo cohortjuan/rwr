@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
-import { circleScore, EVIDENCE_MAX } from '@/lib/compass'
-import { LEVEL_ANSWERS, type LiveLevel } from '@/lib/levels'
+import { circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
+import { LEVEL_ANSWERS, liveLevels, type LiveLevel } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { withLionName } from '@/lib/names'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
@@ -26,6 +26,7 @@ type Summary = { claim: string, evidence: string[], scripted: boolean }
 
 const CLAIM_MAX = 300
 const noChat: ChatMessage[] = []
+const needIds = Object.keys(lines.map.needs) as (keyof typeof lines.map.needs)[]
 
 const answersIn = (chat: ChatMessage[]) => chat.filter((message) => message.role === 'user').length
 
@@ -133,6 +134,8 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
   const awaitingAnswer = chat.length > 0 && chat[chat.length - 1].role === 'todah' && !isFinished(chat)
   const name = progress.playerName || 'traveler'
   const lion = (line: string) => withLionName(line, progress.lionName)
+  // The level that follows this one, if there is one.
+  const nextLevel = liveLevels[liveLevels.indexOf(circle) + 1]
 
   const saveChat = useCallback(
     (next: ChatMessage[]) => saveProgress({ levelChat: { ...progress.levelChat, [circle]: next } }),
@@ -224,6 +227,15 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
   function toggleEvidence(id: string) {
     playSfx('select', sound)
     setEvidence(evidence.includes(id) ? evidence.filter((item) => item !== id) : [...evidence, id])
+  }
+
+  // Cause also asks which of the world's needs the player cares about most. That is theirs to
+  // pick: the AI never chooses it for them.
+  function toggleNeed(id: string) {
+    const picked = progress.needs.includes(id)
+    if (!picked && progress.needs.length >= NEEDS_MAX) return
+    playSfx('select', sound)
+    saveProgress({ needs: picked ? progress.needs.filter((need) => need !== id) : [...progress.needs, id] })
   }
 
   // Only what the player has seen and agreed to goes on the map.
@@ -402,6 +414,44 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                   )
                 })}
               </div>
+              {circle === 'cause' && (
+                <>
+                  <p className={styles.small}>{lines.map.needsHeading(NEEDS_MAX)}</p>
+                  <div className={styles.chips}>
+                    {needIds.map((id) => {
+                      const picked = progress.needs.includes(id)
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className={picked ? styles.chipOn : styles.chip}
+                          aria-pressed={picked}
+                          disabled={!picked && progress.needs.length >= NEEDS_MAX}
+                          onClick={() => toggleNeed(id)}
+                        >
+                          {lines.map.needs[id]}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <p className={styles.fine}>{lines.map.needsSource}</p>
+                </>
+              )}
+              {(circle === 'cause' || circle === 'coin') && (
+                <div className={styles.sources}>
+                  <p className={styles.small}>{lines.map.outsideHeading}</p>
+                  <ul>
+                    {lines.map.sources[circle].map((source) => (
+                      <li key={source.label}>
+                        <a href={source.url} target="_blank" rel="noopener noreferrer">
+                          {source.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className={styles.fine}>{lines.map.outsideNote}</p>
+                </div>
+              )}
               {progress.compass[circle].claim.trim() && <p className={styles.small}>{lines.level.replaceNote}</p>}
               <p className={quest.notice} role="alert">
                 {notice}
@@ -421,8 +471,18 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
         {step === 'done' && (
           <>
             <p className={quest.banner}>{text.banner}</p>
-            <DialogBox text={lines.level.done(name, circleScore(progress, circle), EVIDENCE_MAX)} mood="happy">
-              <Link className="btn" href="/map">
+            <DialogBox
+              text={[lines.level.done(name, circleScore(progress, circle), EVIDENCE_MAX), nextLevel ? '' : lines.level.allDone]
+                .filter(Boolean)
+                .join(' ')}
+              mood="happy"
+            >
+              {nextLevel && (
+                <Link className="btn" href={`/level/${nextLevel}`}>
+                  {lines.level.next(lines.level.circles[nextLevel].name)}
+                </Link>
+              )}
+              <Link className={nextLevel ? 'btn btn-quiet' : 'btn'} href="/map">
                 {lines.level.toMap}
               </Link>
               <Link className="btn btn-quiet" href="/upgrades">

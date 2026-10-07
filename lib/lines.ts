@@ -390,6 +390,8 @@ export const lines = {
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     fromMap: 'WALK THIS LEVEL WITH TODAH',
+    next: (level: string) => `ON TO ${level}`,
+    allDone: 'All four circles are walked. Your trail map shows where the evidence is strong and where it is thin.',
     circles: {
       heart: {
         name: 'LEVEL 1: HEART',
@@ -404,6 +406,48 @@ export const lines = {
           'Everything we love has dull parts. What is the dull part of this, and how do you feel about it on those days?',
         ],
         scriptedClose: 'Thank you. That is plenty to mark the map with.',
+      },
+      craft: {
+        name: 'LEVEL 2: CRAFT',
+        banner: 'LEVEL 2 COMPLETE',
+        start: 'START LEVEL 2',
+        intro:
+          'Level 2: Craft. This one is about what you are good at, which is not always what you love. Four questions again. Small things count, so do not be modest with me.',
+        opener: 'Tell me about something you did well lately. Something you were a little proud of.',
+        scripted: [
+          'Does anyone come to you for help with that? Who, and what do they ask for?',
+          'What is one thing you made, fixed, or improved with that skill that you could point to?',
+          'How long have you been doing it? A rough guess is fine.',
+        ],
+        scriptedClose: 'Thank you. Skill leaves tracks, and you just showed me some.',
+      },
+      cause: {
+        name: 'LEVEL 3: CAUSE',
+        banner: 'LEVEL 3 COMPLETE',
+        start: 'START LEVEL 3',
+        intro:
+          'Level 3: Cause. This one is about who your work is for. Nobody can tell you what the world needs, so we start with real people you have already helped.',
+        opener: 'Think of a time your work or your help made things easier for someone. Who was it, and what did you do?',
+        scripted: [
+          'Who would you most want your work to help? A person or a group, as plainly as you can name them.',
+          'Has anyone asked you for that kind of help, or thanked you for it? Tell me about one time.',
+          'Have you checked anywhere outside your own head that the need is real? A report, some numbers, or asking the people themselves all count.',
+        ],
+        scriptedClose: 'Thank you. A need with a face on it is easier to walk toward.',
+      },
+      coin: {
+        name: 'LEVEL 4: COIN',
+        banner: 'LEVEL 4 COMPLETE',
+        start: 'START LEVEL 4',
+        intro:
+          'Level 4: Coin. This one is about what you can be paid for. I cannot promise anyone a job or a wage, and I will not guess at numbers. We only look at what you already know and what is worth looking up.',
+        opener: 'What is one kind of work you could picture someone paying you for?',
+        scripted: [
+          'Do you know of real people, job titles, or businesses that are paid for that work today? Name one if you can.',
+          'Have you ever been paid for it yourself, even once, even a little?',
+          'Have you looked up what it pays? If you have, would it cover what you need?',
+        ],
+        scriptedClose: 'Thank you. Coin is the circle most worth checking outside your own head, and now you know what to check.',
       },
     },
   },
@@ -453,6 +497,9 @@ export const lines = {
       '/': 'TITLE',
       '/quest': 'QUEST 1',
       '/level/heart': 'LEVEL 1',
+      '/level/craft': 'LEVEL 2',
+      '/level/cause': 'LEVEL 3',
+      '/level/coin': 'LEVEL 4',
       '/upgrades': 'UPGRADES',
       '/map': 'TRAIL MAP',
       '/pride': 'MY PRIDE',

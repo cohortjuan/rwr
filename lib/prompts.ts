@@ -60,6 +60,8 @@ ${guardrails}`
 // `evidence` says what the player must have said for that box to be ticked.
 type LevelBrief = {
   opener: string
+  // What the player's answers are a claim about, to finish "Treat ... as a claim to explore".
+  about: string
   probes: string[]
   claim: string
   evidence: Record<string, string>
@@ -68,6 +70,7 @@ type LevelBrief = {
 export const levelBriefs: Partial<Record<Phase, LevelBrief>> = {
   Heart: {
     opener: 'the last time they lost track of time doing something',
+    about: 'what they say they love',
     probes: [
       'how recently they last did it (ask for a recent moment or a rough date)',
       'whether they do it when nobody is paying them or watching (ask for one real time)',
@@ -78,6 +81,51 @@ export const levelBriefs: Partial<Record<Phase, LevelBrief>> = {
       recent: 'The player said they did it within about the last month.',
       unpaid: 'The player described doing it when nobody was paying them or watching.',
       boring: 'The player said they still like it, or keep at it, on the boring or hard days.',
+    },
+  },
+  Craft: {
+    opener: 'something they did well lately that they were a little proud of',
+    about: 'what they say they are good at',
+    probes: [
+      'whether other people come to them for help with this (ask who, and for what)',
+      'one thing they made, fixed, or improved with this skill that they could point to',
+      'how long they have been doing or practising it',
+    ],
+    claim: 'what the player is good at, as one short sentence in the first person that starts with "I am good at"',
+    evidence: {
+      asked: 'The player said other people come to them for help with this.',
+      made: 'The player named a specific thing they made, fixed, or improved.',
+      practiced: 'The player said they have done or practised it for a year or more.',
+    },
+  },
+  Cause: {
+    opener: 'a time their work or help made things easier for someone',
+    about: 'who or what they say they want their work to help',
+    probes: [
+      'the real person or group this helps (ask them to name who, without asking for full names)',
+      'whether anyone has asked them for this help, or thanked them for it (ask for one time)',
+      'whether they have checked anywhere outside their own head that the need is real, such as a report, numbers, or asking the people themselves',
+    ],
+    claim: 'who or what the player wants their work to help, as one short sentence in the first person that starts with "I want my work to help"',
+    evidence: {
+      named: 'The player named a real person or a real group this helps.',
+      thanked: 'The player said someone asked them for this help or thanked them for it.',
+      checked: 'The player said they checked a source outside their own head and found the need is real.',
+    },
+  },
+  Coin: {
+    opener: 'one kind of work they could picture someone paying them for',
+    about: 'what they say they could be paid for',
+    probes: [
+      'whether they know of real people, job titles, or businesses being paid for this work today',
+      'whether they themselves have ever been paid for it, even once, even a little',
+      'whether they have looked up what it pays, and whether that would cover what they need',
+    ],
+    claim: 'what the player could be paid for, as one short sentence in the first person that starts with "I could be paid for"',
+    evidence: {
+      market: 'The player said people are paid for this work today and gave an example.',
+      paid: 'The player said they have been paid for it at least once.',
+      enough: 'The player said they looked up what it pays and that it covers what they need.',
     },
   },
 }
@@ -104,9 +152,11 @@ ${turn}
 
 Rules:
 - Keep every message under 80 words.
-- Treat what they say they love as a claim to explore, never as something to grade. Ask for real
+- Treat ${brief.about} as a claim to explore, never as something to grade. Ask for real
   moments, not opinions.
-- An honest "not lately" or "I hate that part" is useful. Receive it warmly and never argue.
+- An honest "no", "not yet" or "I have not checked" is useful. Receive it warmly and never argue.
+- Never estimate pay, demand for a job, or their chances. If they ask, say it is worth looking up
+  and move on.
 - If they say "I don't know," normalize it and offer a smaller question.
 - Never tell them they are wrong, and never say what the answers mean for their career.
 
