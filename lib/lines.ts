@@ -66,6 +66,9 @@ export const lines = {
     tvNote: 'The old TV set is drawn round the game on a wide screen.',
     privacy: 'PRIVACY AND YOUR DATA',
     close: 'CLOSE',
+    // On ABOUT, PRIVACY and DEV, which are reached from every screen. It returns to the
+    // screen the player was on, so it does not name one.
+    back: 'BACK',
     motionOn: 'MOTION: ON',
     motionOff: 'MOTION: OFF',
     // The old TV set drawn round the game on a wide screen.
@@ -206,7 +209,6 @@ export const lines = {
     deleted: 'Done. Your game data is gone from this device.',
     deletedAccount: 'Done. Your game data is gone from this device and your account is deleted.',
     deleteFailed: 'Your device copy is deleted, but the account could not be reached. Please try again.',
-    back: 'BACK TO TITLE',
     link: 'PRIVACY',
   },
 
@@ -740,7 +742,6 @@ export const lines = {
       { label: 'The Venn diagram of purpose and its history (Ikigai Tribe)', url: 'https://ikigaitribe.com/blogpost/the-venn-diagram-of-purpose/' },
     ],
     toPrivacy: 'HOW RWR HANDLES YOUR DATA',
-    back: 'BACK TO TITLE',
   },
 
   // The road: what might get in the way, an if-then plan for it, and three small experiments.

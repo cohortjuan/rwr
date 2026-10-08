@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import BackLink from '@/components/BackLink'
 import LionAvatar from '@/components/LionAvatar'
 import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { useAccount } from '@/lib/account'
@@ -48,9 +49,7 @@ export default function DevScreen() {
         <div className="screen-inner">
           <h1 className={styles.heading}>{lines.dev.heading}</h1>
           <p className={styles.intro}>{account.checked ? lines.dev.locked : lines.dev.checking}</p>
-          <Link className="btn btn-quiet" href="/">
-            {lines.privacy.back}
-          </Link>
+          <BackLink />
         </div>
       </main>
     )
@@ -191,6 +190,10 @@ export default function DevScreen() {
             {lines.dev.off}
           </button>
           <p className={styles.fine}>{lines.dev.offNote}</p>
+        </section>
+
+        <section className={styles.group}>
+          <BackLink />
         </section>
       </div>
     </main>

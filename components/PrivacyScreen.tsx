@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import BackLink from '@/components/BackLink'
 import ConfirmBox from '@/components/ConfirmBox'
 import { deleteAccount, logOut, requestPasswordReset, useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
@@ -114,9 +115,7 @@ export default function PrivacyScreen() {
         </section>
 
         <p className={styles.footer}>
-          <Link className="btn btn-quiet" href="/">
-            {lines.privacy.back}
-          </Link>{' '}
+          <BackLink />{' '}
           <Link className="btn btn-quiet" href="/about">
             {lines.about.heading}
           </Link>

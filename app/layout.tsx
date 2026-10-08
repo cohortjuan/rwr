@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Atkinson_Hyperlegible, Kalam, Pixelify_Sans, Press_Start_2P } from 'next/font/google'
 import AccountWatch from '@/components/AccountWatch'
+import LastScreen from '@/components/LastScreen'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
 import TvFrame from '@/components/TvFrame'
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <MusicPlayer />
         <SettingsToggles />
         <AccountWatch />
+        <LastScreen />
       </body>
     </html>
   )

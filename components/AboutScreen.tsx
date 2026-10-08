@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import BackLink from '@/components/BackLink'
 import { lines } from '@/lib/lines'
 import styles from './AboutScreen.module.css'
 
@@ -40,9 +41,7 @@ export default function AboutScreen() {
         </section>
 
         <p className={styles.footer}>
-          <Link className="btn btn-quiet" href="/">
-            {lines.about.back}
-          </Link>{' '}
+          <BackLink />{' '}
           <Link className="btn btn-quiet" href="/privacy">
             {lines.about.toPrivacy}
           </Link>
