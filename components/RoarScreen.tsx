@@ -11,7 +11,7 @@ import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { capsuleDue, countedCheers, saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { setRoaring } from '@/lib/roarSound'
-import { LOW_VOLUME, useHydrated, useSettings } from '@/lib/settings'
+import { LOW_VOLUME, useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './RoarScreen.module.css'
 
@@ -46,6 +46,7 @@ export default function RoarScreen() {
   const keptLions = useKeptLions()
   const lion = useLionText()
   const { sound, quiet } = useSettings()
+  const reducedMotion = useReducedMotion()
   const confirmRef = useRef<HTMLDialogElement>(null)
   const roarRef = useRef<HTMLAudioElement>(null)
   const [goalDraft, setGoalDraft] = useState('')
@@ -75,32 +76,59 @@ export default function RoarScreen() {
   useEffect(() => {
     const dialog = creditsRef.current
     if (!dialog) return
-    if (rolling && !dialog.open) dialog.showModal()
+    if (rolling && !dialog.open) {
+      dialog.showModal()
+      // Focus goes to the box itself, without scrolling anything, so keys reach it.
+      dialog.focus({ preventScroll: true })
+    }
     if (!rolling && dialog.open) dialog.close()
-    // Once the lines are on the screen their length is known, and so is how far they must
-    // rise: their own height and the height of the window they rise through.
     const roll = rollRef.current
     const frame = roll?.parentElement
-    if (!rolling || !roll || !frame) return
-    roll.style.setProperty('--window', `${frame.clientHeight}px`)
-    roll.style.animationDuration = `${Math.round((roll.offsetHeight + frame.clientHeight) / CREDITS_PACE)}s`
+    // With motion off nothing rises: the lines are a list to scroll (see the stylesheet).
+    if (!rolling || !roll || !frame || reducedMotion) return
 
-    // The scroll wheel speeds the credits up or slows them down. Each notch changes the pace
-    // by a small share and the lines never jump: only how fast they rise changes. Listened
-    // for directly so the page behind does not scroll too.
-    // The pace is kept here and not read back from the animation, which takes a moment to
-    // take a new one on: several notches in one go would each start from the old pace.
+    // The game moves the lines itself, a little every frame, from just below the window until
+    // the last has left the top. A browser animation is not used here: changing its speed
+    // while it runs left the picture out of step with where the lines really were.
+    const distance = roll.offsetHeight + frame.clientHeight
+    // The window must start, and stay, unscrolled: the lines are moved, not the window.
+    frame.scrollTop = 0
+    let risen = 0
+    // `wanted` is the pace the scroll wheel has asked for, as a share of the normal one, and
+    // `pace` follows it gradually, so the roll eases faster or slower and never lurches.
+    let wanted = 1
     let pace = 1
+    let last = performance.now()
+    let frameId = 0
+
+    function rise(now: number) {
+      // A long gap (a hidden tab, a stalled frame) counts as one short step, not a leap.
+      const seconds = Math.min(0.05, (now - last) / 1000)
+      last = now
+      pace += (wanted - pace) * Math.min(1, seconds * 6)
+      risen += CREDITS_PACE * pace * seconds
+      if (roll) roll.style.transform = `translateY(${-risen}px)`
+      if (frame && frame.scrollTop !== 0) frame.scrollTop = 0
+      if (risen >= distance) {
+        setRolling(false)
+        return
+      }
+      frameId = requestAnimationFrame(rise)
+    }
+    frameId = requestAnimationFrame(rise)
+
+    // The scroll wheel speeds the credits up or slows them down. Listened for directly so
+    // the page behind does not scroll too.
     function changePace(event: WheelEvent) {
       event.preventDefault()
-      const roller = roll?.getAnimations()[0]
-      if (!roller) return
-      pace = Math.max(SLOWEST, Math.min(FASTEST, pace * Math.exp(event.deltaY * 0.0012)))
-      roller.updatePlaybackRate(pace)
+      wanted = Math.max(SLOWEST, Math.min(FASTEST, wanted * Math.exp(event.deltaY * 0.0012)))
     }
     dialog.addEventListener('wheel', changePace, { passive: false })
-    return () => dialog.removeEventListener('wheel', changePace)
-  }, [rolling])
+    return () => {
+      cancelAnimationFrame(frameId)
+      dialog.removeEventListener('wheel', changePace)
+    }
+  }, [rolling, reducedMotion])
 
   // While the roar sounds the music is silent (see MusicPlayer). It is told when the roar
   // starts and when it is over, however it ends.
@@ -205,6 +233,10 @@ export default function RoarScreen() {
           href={lines.about.creditUrl}
           target="_blank"
           rel="noopener noreferrer"
+          // Kept out of the keyboard's reach: opening the credits would otherwise put focus
+          // on this link, and the browser would scroll the window straight to the end to
+          // show it. Any key leaves the credits anyway, so it is for a click or a tap.
+          tabIndex={-1}
           onClick={(event) => event.stopPropagation()}
         >
           {lines.roar.credits.makerMore}
@@ -365,6 +397,7 @@ export default function RoarScreen() {
           key, a click or a tap stops them and goes back, and so does reaching the end. */}
       <dialog
         ref={creditsRef}
+        tabIndex={-1}
         className={styles.cinema}
         aria-label={lines.roar.credits.heading}
         onClose={() => setRolling(false)}
@@ -378,7 +411,7 @@ export default function RoarScreen() {
           <>
             <p className={styles.cinemaTitle}>{lines.roar.credits.heading}</p>
             <div className={styles.cinemaWindow}>
-              <dl ref={rollRef} className={styles.cinemaRoll} onAnimationEnd={() => setRolling(false)}>
+              <dl ref={rollRef} className={styles.cinemaRoll}>
                 {creditLines}
                 {makerCredit}
               </dl>

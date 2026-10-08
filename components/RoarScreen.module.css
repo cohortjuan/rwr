@@ -291,6 +291,11 @@
   flex-direction: column;
 }
 
+/* It holds the keyboard's focus while it is open, and needs no ring to say so. */
+.cinema:focus {
+  outline: none;
+}
+
 .cinema::backdrop {
   background: #05040f;
 }
@@ -320,9 +325,8 @@
   mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
 }
 
-/* The lines start just below the window and rise until the last has left the top. How far
-   that is (--window) and how long it takes are set on the element once it has been measured
-   (see CREDITS_PACE in RoarScreen.tsx). */
+/* The lines start just below the window. The game moves them up itself, a little every frame
+   (see RoarScreen.tsx), so there is no animation here. */
 .cinemaRoll {
   position: absolute;
   top: 100%;
@@ -330,7 +334,7 @@
   right: 0;
   margin: 0;
   padding: 0 20px;
-  animation: cinemaRoll 90s linear forwards;
+  will-change: transform;
 }
 
 .cinemaRoll .credit {
@@ -343,15 +347,6 @@
 
 .cinemaRoll .credit dd {
   font-size: 1.35rem;
-}
-
-@keyframes cinemaRoll {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(calc(-100% - var(--window, 100dvh)));
-  }
 }
 
 /* With motion off nothing rises, so the lines are simply there to scroll through. */
