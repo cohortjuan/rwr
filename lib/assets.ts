@@ -12,6 +12,9 @@ export const MUSIC_BACKGROUND_TRACK: string | null = '/audio/background-loop.mp3
 // Volumes from 0 to 1, and how long the crossfade takes.
 export const MUSIC_VOLUME = 0.25
 export const MUSIC_BACKGROUND_VOLUME = 0.12
+// After the roar the background track comes back quieter than usual, and slowly.
+export const MUSIC_REWARD_VOLUME = 0.07
+export const MUSIC_REWARD_FADE_SECONDS = 3
 export const MUSIC_FADE_SECONDS = 1.5
 // The music drops out this fast when Todah roars, so the roar is the only sound.
 export const MUSIC_CUT_SECONDS = 0.15

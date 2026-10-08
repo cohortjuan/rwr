@@ -224,8 +224,17 @@
   margin: 0;
 }
 
+/* How long the roll takes is set on the element, from how many lines there are (see
+   CREDIT_SECONDS in RoarScreen.tsx). This is only the fallback. */
 .roll {
-  animation: roll 26s linear;
+  animation: roll 90s linear;
+}
+
+/* An emoji beside small pixel lettering, sized up so it reads. */
+.mark {
+  font-size: 1.9em;
+  line-height: 1;
+  vertical-align: -0.2em;
 }
 
 @keyframes roll {

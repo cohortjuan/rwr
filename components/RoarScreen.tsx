@@ -8,6 +8,7 @@ import { circles } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { capsuleDue, countedCheers, saveProgress, useLionText, useProgress } from '@/lib/progress'
+import { setRoaring } from '@/lib/roarSound'
 import { LOW_VOLUME, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './RoarScreen.module.css'
@@ -16,6 +17,12 @@ const ROAR_SOUND = '/audio/roar-reward.mp3'
 // How long the player holds to let the roar out.
 const HOLD_MS = 1500
 const CLIP = 110
+// The credits rise slowly enough to read every line: this long for each line, and never
+// faster than the shortest roll.
+const CREDIT_SECONDS = 7
+const CREDITS_SHORTEST = 60
+// If the roar's sound never reports that it ended, the music comes back after this long.
+const ROAR_LONGEST_MS = 10000
 
 const clip = (text: string) => {
   const clean = text.trim().replace(/\s+/g, ' ')
@@ -54,13 +61,28 @@ export default function RoarScreen() {
     if (!confirming && dialog.open) dialog.close()
   }, [confirming])
 
+  // While the roar sounds the music is silent (see MusicPlayer). It is told when the roar
+  // starts and when it is over, however it ends.
+  const roarTimer = useRef<number | undefined>(undefined)
+
+  function roarOver() {
+    window.clearTimeout(roarTimer.current)
+    setRoaring(false)
+  }
+
   function playRoar() {
     const audio = roarRef.current
     if (!sound || !audio) return
     audio.currentTime = 0
     audio.volume = quiet ? LOW_VOLUME : 1
-    audio.play().catch(() => {})
+    setRoaring(true)
+    window.clearTimeout(roarTimer.current)
+    roarTimer.current = window.setTimeout(roarOver, ROAR_LONGEST_MS)
+    audio.play().catch(roarOver)
   }
+
+  // Leaving the screen mid-roar must not leave the music silenced.
+  useEffect(() => roarOver, [])
 
   function saveGoal(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -91,24 +113,30 @@ export default function RoarScreen() {
   }
 
   // The credits: every line is the player's own. Lines with nothing to show are left out.
-  function credits(): { label: string, text: string }[] {
+  function credits(): { mark: string, label: string, text: string }[] {
     const say = lines.roar.credits
     const warmup = progress.onboardingChat.find((message) => message.role === 'user')?.text
     const path = progress.paths?.chosen ? progress.paths.list.find((idea) => idea.kind === progress.paths?.chosen) : undefined
     const done = (progress.road?.steps ?? []).filter((step) => step.doneAt)
     const cheers = countedCheers(progress)
+    const marks = say.marks
     return [
-      { label: say.starring, text: progress.playerName || say.noName },
-      { label: say.with, text: progress.lionName },
-      { label: say.began, text: warmup ? clip(warmup) : '' },
-      ...circles.map((circle) => ({ label: levels[circles.indexOf(circle)].name.toUpperCase(), text: clip(progress.compass[circle].claim) })),
-      { label: say.path, text: path?.name ?? '' },
-      { label: say.goal, text: progress.goalText },
-      { label: say.obstacle, text: progress.road?.obstacle ? clip(progress.road.obstacle) : '' },
-      ...done.map((step) => ({ label: say.experiment, text: clip(step.text) })),
-      { label: say.witnesses, text: progress.witnesses.map((witness) => witness.name).join(', ') },
-      { label: say.cheers, text: cheers > 0 ? say.cheerCount(cheers) : '' },
+      { mark: marks.starring, label: say.starring, text: progress.playerName || say.noName },
+      { mark: marks.with, label: say.with, text: progress.lionName },
+      { mark: marks.began, label: say.began, text: warmup ? clip(warmup) : '' },
+      ...circles.map((circle) => ({
+        mark: lines.card.marks[circle],
+        label: levels[circles.indexOf(circle)].name.toUpperCase(),
+        text: clip(progress.compass[circle].claim),
+      })),
+      { mark: marks.path, label: say.path, text: path?.name ?? '' },
+      { mark: marks.goal, label: say.goal, text: progress.goalText },
+      { mark: marks.obstacle, label: say.obstacle, text: progress.road?.obstacle ? clip(progress.road.obstacle) : '' },
+      ...done.map((step) => ({ mark: marks.experiment, label: say.experiment, text: clip(step.text) })),
+      { mark: marks.witnesses, label: say.witnesses, text: progress.witnesses.map((witness) => witness.name).join(', ') },
+      { mark: marks.cheers, label: say.cheers, text: cheers > 0 ? say.cheerCount(cheers) : '' },
       {
+        mark: marks.reached,
         label: say.reached,
         text: progress.goalAchievedAt
           ? new Date(progress.goalAchievedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -124,7 +152,7 @@ export default function RoarScreen() {
       {/* The sun comes up behind everything as the roar goes out. */}
       {justRoared && <div className={styles.sunrise} aria-hidden="true" />}
       {/* Loaded with the screen, so the roar starts the moment the goal is confirmed. */}
-      <audio ref={roarRef} src={ROAR_SOUND} preload="auto" />
+      <audio ref={roarRef} src={ROAR_SOUND} preload="auto" onEnded={roarOver} />
       <div className="screen-inner">
         <h1 className={achieved ? styles.logoLit : styles.logo}>{lines.title.name}</h1>
 
@@ -165,10 +193,19 @@ export default function RoarScreen() {
           <section className={`panel ${styles.creditsPanel}`} aria-label={lines.roar.credits.heading}>
             <h2 className={styles.heading}>{lines.roar.credits.heading}</h2>
             <div className={styles.credits} tabIndex={0}>
-              <dl key={creditsRun} className={justRoared || creditsRun > 0 ? styles.roll : undefined}>
+              <dl
+                key={creditsRun}
+                className={justRoared || creditsRun > 0 ? styles.roll : undefined}
+                style={{ animationDuration: `${Math.max(CREDITS_SHORTEST, credits().length * CREDIT_SECONDS)}s` }}
+              >
                 {credits().map((line, index) => (
                   <div key={index} className={styles.credit}>
-                    <dt>{line.label}</dt>
+                    <dt>
+                      <span className={styles.mark} aria-hidden="true">
+                        {line.mark}
+                      </span>{' '}
+                      {line.label}
+                    </dt>
                     <dd>{line.text}</dd>
                   </div>
                 ))}

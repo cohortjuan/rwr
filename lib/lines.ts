@@ -464,7 +464,7 @@ export const lines = {
   // A letter to yourself, sealed until a date the player picks. A draft Juan is deciding whether
   // to keep (2026-10-09). It never leaves the device, and Todah never reads it.
   capsule: {
-    heading: 'A LETTER TO YOURSELF',
+    heading: '✉️ A LETTER TO YOURSELF',
     intro:
       'Before you go: write a few lines to the you who will read this later. What do you hope is true by then? What should that you remember about today? I will seal it and keep it until its day.',
     label: 'Dear future me',
@@ -474,12 +474,12 @@ export const lines = {
     days: (n: number) => `IN ${n} DAYS`,
     seal: 'SEAL IT',
     privacy: 'It stays on this device. Nobody reads it but you, not even Todah.',
-    sealed: (date: string) => `Sealed. It opens on ${date}.`,
-    sealedGoal: 'Sealed. It opens when you reach your goal.',
+    sealed: (date: string) => `🔒 Sealed. It opens on ${date}.`,
+    sealedGoal: '🔒 Sealed. It opens when you reach your goal.',
     keeping: 'Todah is keeping it safe. No peeking: come back on its day.',
     keepingGoal: 'Todah is keeping it safe. No peeking: it is yours the moment he roars.',
     sealedOn: (date: string) => `You wrote it on ${date}.`,
-    arrived: 'YOUR LETTER HAS ARRIVED',
+    arrived: '📬 YOUR LETTER HAS ARRIVED',
     arrivedBody: (date: string) => `You wrote this to yourself on ${date}. Its day has come.`,
     open: 'OPEN IT',
     after: 'That was you, not so long ago. How does it read now? Whatever has changed, the trail is still here.',
@@ -1161,12 +1161,25 @@ export const lines = {
     confirmNo: 'NOT YET',
     // The roar is let out by pressing and holding. A draft Juan is deciding whether to keep
     // (2026-10-09), with the credits below.
-    hold: 'HOLD TO ROAR',
+    hold: '🦁 HOLD TO ROAR',
     holdHint: 'Press and hold until it is full. This one is yours to let out.',
     // The credits after the roar. Every line under these labels is the player's own.
     credits: {
-      heading: 'THE TRAIL BEHIND YOU',
-      again: 'ROLL THE CREDITS',
+      heading: '🎬 THE TRAIL BEHIND YOU',
+      again: '🎬 ROLL THE CREDITS',
+      // One emoji beside each label in the credits.
+      marks: {
+        starring: '🌟',
+        with: '🦁',
+        began: '🌱',
+        path: '🧭',
+        goal: '🎯',
+        obstacle: '🪨',
+        experiment: '🧪',
+        witnesses: '👀',
+        cheers: '📣',
+        reached: '🏁',
+      },
       starring: 'STARRING',
       noName: 'A traveler',
       with: 'WITH',
@@ -1179,12 +1192,12 @@ export const lines = {
       cheers: 'CHEERED ON',
       cheerCount: (n: number) => (n === 1 ? 'once, by a friend' : `${n} times, by friends`),
       reached: 'GOAL REACHED',
-      end: 'THE END. AND THE BEGINNING.',
+      end: '🌅 THE END. AND THE BEGINNING.',
     },
-    rewardTitle: 'PRIDE LEADER',
+    rewardTitle: '👑 PRIDE LEADER',
     rewardBody: (name: string) =>
       name ? `You did this, ${name}. I only walked beside you.` : 'You did this. I only walked beside you.',
-    replay: 'HEAR THE ROAR AGAIN',
+    replay: '🔊 HEAR THE ROAR AGAIN',
     changeGoal: 'CHANGE GOAL',
     back: 'BACK TO UPGRADES',
     rewardAlt: 'Todah as a grown lion, roaring over a city skyline at sunset',

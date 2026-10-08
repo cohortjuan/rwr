@@ -7,19 +7,23 @@ import {
   MUSIC_BACKGROUND_VOLUME,
   MUSIC_CUT_SECONDS,
   MUSIC_FADE_SECONDS,
+  MUSIC_REWARD_FADE_SECONDS,
+  MUSIC_REWARD_VOLUME,
   MUSIC_TRACK,
   MUSIC_VOLUME,
 } from '@/lib/assets'
 import { setAudioGate } from '@/lib/audioGate'
 import { useProgress } from '@/lib/progress'
+import { useRoaring } from '@/lib/roarSound'
 import { LOW_VOLUME, useSettings } from '@/lib/settings'
 
 // Taps, clicks, and key presses that browsers accept as permission to start audio.
 const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
 
 // Two looping tracks while sound is on: the theme on the title screen, and a soft background
-// track everywhere after it, with a crossfade between them. On the reward screen, once Todah
-// has roared, both go silent so the roar is the only sound.
+// track everywhere after it, with a crossfade between them. On the reward screen both go
+// silent while Todah roars, so the roar is the only sound, and then the background track
+// comes back in softly, quieter than it is elsewhere.
 //
 // Browsers block audio until the player interacts with the page, and phones want each track
 // started from a tap. So both tracks start on the first interaction and keep playing; only
@@ -33,6 +37,7 @@ export default function MusicPlayer() {
   const onTitle = pathname === '/'
   const { goalAchievedAt } = useProgress()
   const onReward = pathname === '/roar' && Boolean(goalAchievedAt)
+  const roaring = useRoaring()
   const themeRef = useRef<HTMLAudioElement>(null)
   const backgroundRef = useRef<HTMLAudioElement>(null)
   const contextRef = useRef<AudioContext | null>(null)
@@ -40,11 +45,13 @@ export default function MusicPlayer() {
   const levelsRef = useRef<number[]>([0, 0])
 
   // With no background track, the theme itself drops to background level after the title.
-  const quietLevel = onReward ? 0 : MUSIC_BACKGROUND_VOLUME * loud
+  const rewardLevel = roaring ? 0 : MUSIC_REWARD_VOLUME * loud
+  const quietLevel = onReward ? rewardLevel : MUSIC_BACKGROUND_VOLUME * loud
   const themeLevel = onTitle ? MUSIC_VOLUME * loud : MUSIC_BACKGROUND_TRACK ? 0 : quietLevel
   const backgroundLevel = onTitle ? 0 : quietLevel
   // The roar must not start over the music, so that change is a quick cut, not a crossfade.
-  const fadeSeconds = onReward ? MUSIC_CUT_SECONDS : MUSIC_FADE_SECONDS
+  // Once the roar has finished, the music comes back slowly.
+  const fadeSeconds = !onReward ? MUSIC_FADE_SECONDS : roaring ? MUSIC_CUT_SECONDS : MUSIC_REWARD_FADE_SECONDS
 
   // Crossfade to the levels for the current screen.
   useEffect(() => {
