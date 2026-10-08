@@ -488,27 +488,29 @@ export const lines = {
     devNote: 'Makes a sealed letter arrive today, so the opening can be shown without waiting.',
   },
 
-  // The trail card: a keepsake from the first sitting, made of the player's own words. It is a
-  // draft Juan is deciding whether to keep (2026-10-09).
+  // The trail card: a keepsake from the first sitting, made of the player's own words. Juan
+  // liked it and asked for emoji in its text (2026-10-09). Emoji stay on the card: Todah's own
+  // speech is plain text everywhere else.
   card: {
     name: 'TRAIL CARD',
-    brand: 'RWR · TRAIL CARD',
+    brand: '🦁 RWR · TRAIL CARD',
+    marks: { heart: '❤️', craft: '🛠️', cause: '🌍', coin: '🪙' },
     noName: 'A traveler',
     alt: (name: string) => `The trail card of ${name}`,
-    walkingWith: (lion: string) => `walking with ${lion}`,
+    walkingWith: (lion: string) => `🐾 walking with ${lion}`,
     noClaim: 'Not walked yet',
-    path: 'THE PATH I AM TESTING',
-    goal: 'MY GOAL',
-    step: 'MY FIRST STEP',
+    path: '🧭 THE PATH I AM TESTING',
+    goal: '🎯 MY GOAL',
+    step: '👣 MY FIRST STEP',
     noStep: 'Not planned yet. Plan the road to add it.',
-    footer: 'A SEASON OF CHANGE · RWR',
+    footer: '🍂 A SEASON OF CHANGE · RWR 🍂',
     locked: 'Your trail card is made once you have set a goal at the Crossroads.',
     toCrossroads: 'GO TO THE CROSSROADS',
-    draftNote: 'This is yours to keep: your lion, your words, your goal. (Draft: saving it as a picture and sending it come next if this stays.)',
+    draftNote: 'This is yours to keep: your lion, your words, your goal. ✨',
     toRoad: 'BACK TO THE ROAD',
     planRoad: 'PLAN THE ROAD',
     back: 'BACK TO THE CROSSROADS',
-    open: 'SEE MY TRAIL CARD',
+    open: '🎴 SEE MY TRAIL CARD',
   },
 
   // The level interviews. Each level opens with a scripted question, then three follow-ups

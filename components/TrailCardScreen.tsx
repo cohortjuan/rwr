@@ -19,6 +19,20 @@ import styles from './TrailCardScreen.module.css'
 
 const levelOf = (circle: Circle) => levels[circles.indexOf(circle)]
 
+// A label that starts with an emoji: the emoji is drawn larger than the small pixel lettering
+// beside it, so it can be made out.
+function Marked({ text }: { text: string }) {
+  const [mark, ...rest] = text.split(' ')
+  return (
+    <>
+      <span className={styles.mark} aria-hidden="true">
+        {mark}
+      </span>{' '}
+      {rest.join(' ')}
+    </>
+  )
+}
+
 export default function TrailCardScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
@@ -53,7 +67,9 @@ export default function TrailCardScreen() {
           <>
             <article className={styles.card} aria-label={lines.card.alt(name)}>
               <header className={styles.top}>
-                <span className={styles.brand}>{lines.card.brand}</span>
+                <span className={styles.brand}>
+                  <Marked text={lines.card.brand} />
+                </span>
                 <span className={styles.date}>{today}</span>
               </header>
 
@@ -80,7 +96,9 @@ export default function TrailCardScreen() {
                 {circles.map((circle) => (
                   <li key={circle}>
                     <span className={styles.circleName}>
-                      {levelOf(circle).name.toUpperCase()}
+                      <span>
+                        <Marked text={`${lines.card.marks[circle]} ${levelOf(circle).name.toUpperCase()}`} />
+                      </span>
                       <span className={styles.pips} aria-label={lines.map.circleScore(circleScore(progress, circle), EVIDENCE_MAX)}>
                         {Array.from({ length: EVIDENCE_MAX }, (_, index) => (
                           <span key={index} className={index < circleScore(progress, circle) ? styles.pipOn : styles.pip} />
@@ -95,13 +113,19 @@ export default function TrailCardScreen() {
               <dl className={styles.facts}>
                 {path && (
                   <>
-                    <dt>{lines.card.path}</dt>
+                    <dt>
+                      <Marked text={lines.card.path} />
+                    </dt>
                     <dd>{path.name}</dd>
                   </>
                 )}
-                <dt>{lines.card.goal}</dt>
+                <dt>
+                  <Marked text={lines.card.goal} />
+                </dt>
                 <dd className={styles.goal}>{progress.goalText}</dd>
-                <dt>{lines.card.step}</dt>
+                <dt>
+                  <Marked text={lines.card.step} />
+                </dt>
                 <dd>{firstStep || lines.card.noStep}</dd>
               </dl>
 

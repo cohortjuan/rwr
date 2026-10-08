@@ -146,3 +146,10 @@
   gap: 10px;
   margin-top: 14px;
 }
+
+/* An emoji beside small pixel lettering, sized up so it reads. */
+.mark {
+  font-size: 1.9em;
+  line-height: 1;
+  vertical-align: -0.2em;
+}
