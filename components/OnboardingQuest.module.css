@@ -8,8 +8,15 @@
 }
 
 .questName {
+  flex: 1;
   font-size: 0.75rem;
   color: var(--gold-bright);
+}
+
+/* A small way out, top left. Progress is saved, so leaving loses nothing. */
+.back {
+  padding: 6px 10px;
+  font-size: 0.55rem;
 }
 
 .pips {

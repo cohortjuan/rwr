@@ -181,6 +181,9 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     <main className="screen">
       <div className="screen-inner">
         <header className={styles.hud}>
+          <Link className={`btn btn-quiet ${styles.back}`} href="/" aria-label={lines.onboarding.backLabel}>
+            {lines.onboarding.back}
+          </Link>
           <h1 className={styles.questName}>{lines.onboarding.questName}</h1>
           <ol className={styles.pips} aria-label={`Trail progress: ${Math.min(answers, ANSWERS_NEEDED)} of ${ANSWERS_NEEDED}`}>
             {Array.from({ length: ANSWERS_NEEDED }, (_, index) => (

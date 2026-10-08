@@ -130,6 +130,8 @@ export const lines = {
     complete: (name: string) =>
       `Quest 1 complete. Thank you for walking with me, ${name}. Next is your trail map. We look for evidence in each of the four circles, starting with ${levels[0].name}: ${levels[0].circle}.`,
     toLevel: 'START LEVEL 1: HEART',
+    back: 'BACK',
+    backLabel: 'Back to the title screen. Your answers so far are kept.',
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     toTitle: 'BACK TO TITLE',
@@ -390,6 +392,8 @@ export const lines = {
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     fromMap: 'WALK THIS LEVEL WITH TODAH',
+    back: 'BACK',
+    backLabel: 'Back to the trail map. Your answers so far are kept.',
     next: (level: string) => `ON TO ${level}`,
     allDone: 'All four circles are walked. Your trail map shows where the evidence is strong and where it is thin.',
     circles: {
