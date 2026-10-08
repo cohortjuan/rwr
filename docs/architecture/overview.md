@@ -111,6 +111,16 @@ flowchart LR
   the tail tip the filter has already tinted on the sprite. Fur and mane are bought
   separately, so a new fur alone does not match until its mane is bought too. Three manes
   (white, purple, teal) belong to no set. The mane layer is drawn only from Mane level 1 up.
+- **Picture pieces**: accessories marked `image` in `lib/accessories.ts` are PNGs in
+  `public/wardrobe`, one per colour (`<id>--<colour>.png`), the size of the lion's stage with
+  only the piece on it. `LionAvatar` draws them as SVG images in `drawOrder` (a costume
+  first, then shoes and jackets, what hangs over them, and last what sits on the face and
+  head), mixed in with the older letter-drawn pieces. `scripts/wardrobe-from-sheet.py` makes
+  them: it registers each sheet cell's lion against the game's sprite by outline, keeps the
+  pixels whose colour is not found there or next to it, and repaints the piece from the
+  shared ramps in `scripts/wardrobe_manifest.py`, giving each pixel a ramp step by its rank
+  from dark to light. One palette for every piece is what makes any combination sit together.
+  A piece with `hidesMane` (the shishi transformation) replaces the lion's own mane.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
 
 ## Accounts

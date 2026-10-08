@@ -200,6 +200,13 @@ To be completed before submission. Running notes:
   ([docs/design/source/poses-sheet.jpg](docs/design/source/poses-sheet.jpg)) by
   [scripts/poses-from-sheet.py](scripts/poses-from-sheet.py), repainted in the same ten
   colours. The first drawings are kept in [docs/design/source](docs/design/source)
+- The newer wardrobe pieces (jackets and vests, bags, shoes, earrings, a cap, a silk bandana,
+  shield shades, two chains, and a shishi transformation) are pictures cut from a sheet the
+  image model drew ([docs/design/source/wardrobe-b.jpg](docs/design/source/wardrobe-b.jpg)) by
+  [scripts/wardrobe-from-sheet.py](scripts/wardrobe-from-sheet.py). It finds each cell's lion,
+  keeps only what is not lion, and repaints every piece from one shared set of colour ramps
+  ([scripts/wardrobe_manifest.py](scripts/wardrobe_manifest.py)), so the same reds, blues,
+  greens and blacks run through the whole wardrobe and any two pieces can be worn together
 - New wardrobe art is drawn by the image model over
   [docs/design/accessory-base.png](docs/design/accessory-base.png) with the prompts in
   [docs/design/nano-banana-prompts.md](docs/design/nano-banana-prompts.md)

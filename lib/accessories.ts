@@ -1,5 +1,5 @@
 import { applyFilter } from '@/lib/colour'
-import { crownArt, lionPendant } from '@/lib/maneArt'
+import { crownArt } from '@/lib/maneArt'
 import {
   countedCheers,
   pridePower,
@@ -59,6 +59,11 @@ export type Accessory = {
   variants?: Variant[]
   // Glints that twinkle over the piece, in cells.
   sparkles?: { x: number, y: number }[]
+  // A piece that is a picture, not rows of letters: cut from a sheet drawn by an image model
+  // (see scripts/wardrobe-from-sheet.py). Its files are in public/wardrobe, one per colour.
+  image?: boolean
+  // A whole costume with a mane of its own, so the lion's grown mane is not drawn under it.
+  hidesMane?: boolean
 }
 
 // Cells of headroom above the sprite, for hats and the mane's crest.
@@ -70,7 +75,10 @@ export const INTERVIEW_SPARKS = 25
 // Walking a level of the interview, once its claim is marked on the trail map.
 export const LEVEL_SPARKS = 5
 
-export const categories: AccessoryCategory[] = ['fur', 'mane', 'hat', 'shades', 'neck']
+export const categories: AccessoryCategory[] = ['fur', 'mane', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'feet', 'outfit']
+// The order pieces are drawn in, bottom first: a costume under everything, then shoes and
+// jackets, what hangs over them, and last what sits on the face and head.
+export const drawOrder: AccessoryCategory[] = ['outfit', 'feet', 'body', 'neck', 'bag', 'shades', 'ears', 'hat']
 // What the lion has in a category when nothing else is chosen.
 export const defaults: Partial<Record<AccessoryCategory, string>> = { fur: 'golden', mane: 'mane-natural' }
 export const NATURAL_MANE: [string, string] = ['#c9601b', '#8f3f12']
@@ -104,6 +112,18 @@ type Tone = keyof typeof tone
 // One colour option per tone, with `paint` saying which letters of the art take its two colours.
 const options = (tones: Tone[], paint: (main: string, second: string) => Record<string, string>): Variant[] =>
   tones.map((id) => ({ id, swatch: tone[id][0], palette: paint(tone[id][0], tone[id][1]) }))
+
+// The colours a picture piece is sold in. Every picture piece is repainted from one shared set
+// of colour ramps (scripts/wardrobe_manifest.py), so a red cap and red sneakers are the same
+// red and the blacks, whites and metals sit with all of it. That is what lets any two pieces
+// be worn together.
+const shades = (ids: Tone[]): Variant[] => ids.map((id) => ({ id, swatch: tone[id][0], palette: {} }))
+
+// Where a picture piece's file is, in the colour chosen.
+export function pieceImage(item: Accessory, variant?: Variant): string {
+  const colour = variant ?? item.variants?.[0]
+  return `/wardrobe/${item.id}${colour ? `--${colour.id}` : ''}.png`
+}
 
 // Two lenses over the eyes and a bar across the top. F is the frame, L the lens, W a glint.
 const shadesRows = [
@@ -427,37 +447,50 @@ export const accessories: Accessory[] = [
     ],
   },
   {
-    // Gold on golden fur disappears, so the links carry a dark edge, and the pendant is a dark
-    // medallion with a lion's head in side view, drawn at twice the grid's detail.
+    // A gold chain with a lion's head on the pendant.
     id: 'chain',
     category: 'neck',
     price: 35,
     needsPower: 15,
-    variants: options(['gold', 'silver', 'rose'], (main, bright) => ({ G: main, Y: bright, R: main })),
-    sparkles: [{ x: 21, y: 38 }],
-    art: [
-      {
-        x: 12,
-        y: 31,
-        rows: [
-          'YG.......................GY',
-          'KYG.....................GYK',
-          '.KYGG.................GGYK.',
-          '..KKYGG.............GGYKK..',
-          '....KKYGGG.......GGGYKK....',
-          '......KKYGGGGGGGGGYKK......',
-        ],
-        palette: { G: GOLD, Y: GOLD_BRIGHT, K: INK },
-      },
-      {
-        x: 19.5,
-        y: 36.5,
-        cell: 0.5,
-        rows: lionPendant,
-        // R rim, K field, M and D mane, G and Y face, E eye, nose and mouth.
-        palette: { R: GOLD, K: INK, M: '#c9601b', D: '#8f3f12', G: GOLD, Y: GOLD_BRIGHT, E: INK },
-      },
+    image: true,
+    variants: shades(['gold', 'silver', 'rose']),
+    sparkles: [{ x: 26, y: 42 }],
+  },
+  { id: 'cuban-chain', category: 'neck', price: 35, image: true, variants: shades(['silver', 'gold', 'rose', 'black']) },
+
+  { id: 'lion-cap', category: 'hat', price: 30, image: true, variants: shades(['black', 'red', 'blue', 'green', 'white']) },
+  {
+    // Two colours each: the pattern and its ground.
+    id: 'head-bandana',
+    category: 'hat',
+    price: 25,
+    image: true,
+    variants: [
+      { id: 'blue', swatch: tone.gold[0], palette: {} },
+      { id: 'red', swatch: tone.red[0], palette: {} },
+      { id: 'green', swatch: tone.green[0], palette: {} },
+      { id: 'purple', swatch: tone.pink[0], palette: {} },
+      { id: 'black', swatch: tone.black[0], palette: {} },
     ],
+  },
+  { id: 'shield-shades', category: 'shades', price: 30, image: true, variants: shades(['black', 'blue', 'red', 'teal']) },
+  { id: 'hoop-earrings', category: 'ears', price: 25, image: true, variants: shades(['gold', 'silver', 'rose']) },
+
+  { id: 'puffer-vest', category: 'body', price: 40, image: true, variants: shades(['black', 'red', 'blue', 'green', 'purple', 'white']) },
+  { id: 'aviator-jacket', category: 'body', price: 45, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
+  { id: 'indigo-jacket', category: 'body', price: 40, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
+  { id: 'micro-bag', category: 'bag', price: 30, image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
+  { id: 'sneakers', category: 'feet', price: 30, image: true, variants: shades(['white', 'black', 'red', 'blue', 'green']) },
+
+  {
+    // A transformation, not a piece: the whole lion redrawn as a shishi, the guardian lion of
+    // East Asia. It has its own curled mane.
+    id: 'shishi',
+    category: 'outfit',
+    price: 60,
+    needsPower: 20,
+    image: true,
+    hidesMane: true,
   },
 ]
 

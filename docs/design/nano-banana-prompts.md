@@ -81,7 +81,9 @@ Every cell is the attached lion, unchanged, wearing ONE item:
 1. A gold chain with a round gold pendant showing a lion's head.
 2. Oversized black wraparound shield sunglasses.
 3. A chunky silver Cuban link chain with a plain round pendant.
-4. An open black puffer vest with armholes, a tiny paw-print badge on the chest.
+4. A fitted black puffer vest, zipped up, with a tiny paw-print badge on the chest. It covers
+   only his shoulders and chest, comes to a point between his front legs, and wraps a little
+   round each side. Both front legs and paws are in front of the vest and fully visible.
 5. An open black leather aviator jacket with a cream shearling collar.
 6. A small bright blue handbag worn across his body on a thin strap.
 7. A pair of small gold hoop earrings, one on each ear.

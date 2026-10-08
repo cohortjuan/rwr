@@ -1,4 +1,14 @@
-import { GRID, HEADROOM, NATURAL_MANE, parseToken, type Accessory, type AccessoryArt, type Variant } from '@/lib/accessories'
+import {
+  drawOrder,
+  GRID,
+  HEADROOM,
+  NATURAL_MANE,
+  parseToken,
+  pieceImage,
+  type Accessory,
+  type AccessoryArt,
+  type Variant,
+} from '@/lib/accessories'
 import { applyFilter } from '@/lib/colour'
 import { maneArt } from '@/lib/maneArt'
 
@@ -37,7 +47,6 @@ const STAMP = '#7d1f24'
 // The lion is put together at this many screen pixels per grid cell before he is enlarged.
 // The sprite is 89 pixels across 51 cells, so 7 per cell draws it at four times its own size.
 const CELL = 7
-const drawOrder = ['neck', 'shades', 'hat']
 
 type Context = CanvasRenderingContext2D
 
@@ -108,7 +117,12 @@ function drawArt(context: Context, art: AccessoryArt) {
 
 // The lion exactly as the game shows it, at its own pixel size: sprite, coat colour, mane and
 // accessories.
-function composeLion(sprite: HTMLImageElement, tail: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
+function composeLion(
+  sprite: HTMLImageElement,
+  tail: HTMLImageElement,
+  pieces: Map<string, HTMLImageElement>,
+  picture: LetterPicture,
+): HTMLCanvasElement {
   const { canvas, context } = sheet(sprite.width * 4 + 1, Math.round(((GRID.height + HEADROOM) * sprite.width * 4) / GRID.width))
   const worn = picture.wearing
     .map(parseToken)
@@ -143,14 +157,17 @@ function composeLion(sprite: HTMLImageElement, tail: HTMLImageElement, picture: 
     context.putImageData(pixels, 0, 0)
   }
 
-  if (picture.mane > 0) {
+  if (picture.mane > 0 && !worn.some((entry) => entry.item.hidesMane)) {
     const shape = maneArt[Math.min(picture.mane, maneArt.length - 1)]
     const [base, shade] = maneColour ?? NATURAL_MANE
     drawArt(context, { ...shape, palette: { M: base, D: shade } })
   }
-  const drawn = worn.filter((entry) => entry.item.art)
+  const drawn = worn.filter((entry) => entry.item.art || entry.item.image)
   drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category))
   for (const { item, variant } of drawn) {
+    // A picture piece covers the whole stage, headroom included.
+    const piece = item.image ? pieces.get(pieceImage(item, variant)) : undefined
+    if (piece) context.drawImage(piece, 0, 0, canvas.width, canvas.height)
     for (const art of item.art ?? []) drawArt(context, { ...art, palette: { ...art.palette, ...variant?.palette } })
   }
   return canvas
@@ -205,8 +222,13 @@ function enlarge(source: HTMLCanvasElement): HTMLCanvasElement {
 // soft-focus copy is laid under the sharp one so the pixel steps melt into each other the way
 // they would in a printed photo, and last he is given light from the top left and shade at the
 // bottom right so he has some body to him.
-function portraitLion(sprite: HTMLImageElement, tail: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
-  const sharp = enlarge(composeLion(sprite, tail, picture))
+function portraitLion(
+  sprite: HTMLImageElement,
+  tail: HTMLImageElement,
+  pieces: Map<string, HTMLImageElement>,
+  picture: LetterPicture,
+): HTMLCanvasElement {
+  const sharp = enlarge(composeLion(sprite, tail, pieces, picture))
   // Shrinking a picture and stretching it back is a blur every browser can do.
   const small = sheet(Math.round(sharp.width / 7), Math.round(sharp.height / 7))
   small.context.imageSmoothingEnabled = true
@@ -483,8 +505,18 @@ export async function renderLetter(picture: LetterPicture): Promise<Blob> {
   const font = `${TEXT}px ${picture.font}`
   await Promise.all([document.fonts.load(font), document.fonts.load(`bold ${font}`)]).catch(() => {})
   const [sprite, tail] = await Promise.all([loadImage('/sprites/todah-sit-happy.png'), loadImage('/sprites/todah-tail.png')])
+  // The pictures of whatever he is wearing, loaded before he is drawn.
+  const paths = picture.wearing
+    .map(parseToken)
+    .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined && Boolean(entry.item.image))
+    .map((entry) => pieceImage(entry.item, entry.variant))
+  const loaded = await Promise.all(paths.map((path) => loadImage(path).catch(() => null)))
+  const pieces = new Map<string, HTMLImageElement>()
+  loaded.forEach((image, index) => {
+    if (image) pieces.set(paths[index], image)
+  })
   const random = seeded(picture.seed)
-  const lion = portraitLion(sprite, tail, picture)
+  const lion = portraitLion(sprite, tail, pieces, picture)
 
   // Lay the note out first, so the paper is as tall as the words need.
   const measure = sheet(10, 10).context

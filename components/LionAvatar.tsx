@@ -1,8 +1,10 @@
 import {
+  drawOrder,
   GRID,
   HEADROOM,
   NATURAL_MANE,
   parseToken,
+  pieceImage,
   type Accessory,
   type AccessoryArt,
   type Variant,
@@ -21,9 +23,6 @@ type Props = {
   blink?: boolean
   className?: string
 }
-
-// Later entries are drawn on top: neck first, the hat last.
-const drawOrder = ['neck', 'shades', 'hat']
 
 // One rectangle per run of the same colour in each row of a piece of art.
 function rects(art: AccessoryArt, key: string) {
@@ -70,10 +69,12 @@ export default function LionAvatar({
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
   // Before the mane starts to grow there is nothing to colour: the cub's own tuft is part of
   // the sprite and is left alone.
-  const maneShape = mane > 0 ? maneArt[Math.min(mane, maneArt.length - 1)] : null
+  // A costume with a mane of its own replaces his.
+  const ownMane = worn.some((entry) => entry.item.hidesMane)
+  const maneShape = mane > 0 && !ownMane ? maneArt[Math.min(mane, maneArt.length - 1)] : null
   const [base, shade] = maneColour ?? NATURAL_MANE
 
-  const drawn = worn.filter((entry) => entry.item.art)
+  const drawn = worn.filter((entry) => entry.item.art || entry.item.image)
   drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category))
 
   return (
@@ -95,6 +96,17 @@ export default function LionAvatar({
         {maneShape && <g>{rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}</g>}
         {drawn.map(({ item, variant }) => (
           <g key={item.id}>
+            {item.image && (
+              <image
+                className={styles.piece}
+                href={pieceImage(item, variant)}
+                x={0}
+                y={0}
+                width={GRID.width}
+                height={GRID.height + HEADROOM}
+                preserveAspectRatio="none"
+              />
+            )}
             {item.art?.map((art, layer) =>
               rects({ ...art, palette: { ...art.palette, ...variant?.palette } }, `${item.id}-${layer}`),
             )}

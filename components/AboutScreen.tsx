@@ -20,6 +20,13 @@ export default function AboutScreen() {
         ))}
 
         <section className={styles.section}>
+          <h2 className={styles.subheading}>{lines.about.shishi.title}</h2>
+          {lines.about.shishi.body.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </section>
+
+        <section className={styles.section}>
           <h2 className={styles.subheading}>{lines.about.sourcesHeading}</h2>
           <ul className={styles.sources}>
             {lines.about.sources.map((source) => (

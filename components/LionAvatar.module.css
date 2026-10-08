@@ -96,6 +96,11 @@
   height: 100%;
 }
 
+/* A wardrobe piece that is a picture: drawn with hard pixel edges, like the lion. */
+.piece {
+  image-rendering: pixelated;
+}
+
 /* A glint on something shiny. With motion off it simply stays lit. */
 .sparkle {
   opacity: 0.9;
