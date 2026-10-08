@@ -14,6 +14,7 @@ import {
   type TrailStep,
 } from '@/lib/compass'
 import { levels } from '@/lib/levels'
+import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { saveProgress, useLionText, useProgress, type Circle } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -225,6 +226,7 @@ export default function TrailMapScreen() {
                       value={entry.claim}
                       onChange={(event) => setClaim(circle, event.target.value)}
                     />
+                    <MicButton value={entry.claim} onChange={(text) => setClaim(circle, text)} maxLength={300} />
                   </div>
 
                   <p className={styles.small}>{hasClaim ? lines.map.evidenceHeading : lines.map.claimHint}</p>

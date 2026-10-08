@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import IkigaiWheel, { type WheelFocus } from '@/components/IkigaiWheel'
+import MicButton from '@/components/MicButton'
 import { lines, type EntryChoice } from '@/lib/lines'
 import { isNameAllowed, PLAYER_NAME_MAX, withLionName } from '@/lib/names'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
@@ -399,9 +400,12 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
                       }
                     }}
                   />
-                  <button type="submit" className="btn">
-                    {lines.onboarding.send}
-                  </button>
+                  <div className={styles.answerActions}>
+                    <button type="submit" className="btn">
+                      {lines.onboarding.send}
+                    </button>
+                    <MicButton value={answerDraft} onChange={setAnswerDraft} maxLength={1000} />
+                  </div>
                 </form>
               </DialogBox>
             )}

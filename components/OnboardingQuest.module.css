@@ -77,6 +77,15 @@
   width: 100%;
 }
 
+/* SEND, with SPEAK beside it. */
+.answerActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  width: 100%;
+}
+
 .input {
   flex: 1;
   min-width: 0;

@@ -2,8 +2,10 @@
 
 import { useSyncExternalStore } from 'react'
 
-// Sound, motion, saving, tips, day/night and the old TV set, kept per browser.
+// Sound, motion, saving, tips, day/night, the old TV set and the mic, kept per browser.
 // Sound has three settings: full (`sound` on), low (`sound` on and `quiet` on), and off.
+// `mic` is on once the player has been told where the sound of their voice goes and has
+// agreed to speak their answers (see components/MicButton.tsx).
 
 export type Settings = {
   sound: boolean
@@ -13,6 +15,7 @@ export type Settings = {
   night: boolean
   tips: boolean
   tv: boolean
+  mic: boolean
 }
 
 // How loud everything is on the low setting, as a share of full.
@@ -20,7 +23,7 @@ export const LOW_VOLUME = 0.35
 
 export const SETTINGS_KEY = 'rwr.settings.v1'
 const KEY = SETTINGS_KEY
-const defaults: Settings = { sound: true, quiet: false, motionOff: false, saveOnDevice: true, night: false, tips: true, tv: true }
+const defaults: Settings = { sound: true, quiet: false, motionOff: false, saveOnDevice: true, night: false, tips: true, tv: true, mic: false }
 
 const listeners = new Set<() => void>()
 let cachedRaw: string | null = null

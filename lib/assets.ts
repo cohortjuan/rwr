@@ -18,6 +18,8 @@ export const MUSIC_REWARD_FADE_SECONDS = 3
 export const MUSIC_FADE_SECONDS = 1.5
 // The music drops out this fast when Todah roars, so the roar is the only sound.
 export const MUSIC_CUT_SECONDS = 0.15
+// And this fast when the player presses SPEAK, so the mic hears them and not the tune.
+export const MUSIC_HUSH_SECONDS = 0.3
 
 // Played when a lion upgrade gains a level. Set to null to use the built-in chime instead.
 export const LEVEL_UP_SOUND: string | null = '/audio/level-up.mp3'

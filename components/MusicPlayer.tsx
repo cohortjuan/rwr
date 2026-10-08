@@ -7,6 +7,7 @@ import {
   MUSIC_BACKGROUND_VOLUME,
   MUSIC_CUT_SECONDS,
   MUSIC_FADE_SECONDS,
+  MUSIC_HUSH_SECONDS,
   MUSIC_REWARD_FADE_SECONDS,
   MUSIC_REWARD_VOLUME,
   MUSIC_TRACK,
@@ -16,6 +17,7 @@ import { setAudioGate } from '@/lib/audioGate'
 import { useProgress } from '@/lib/progress'
 import { useRoaring } from '@/lib/roarSound'
 import { LOW_VOLUME, useSettings } from '@/lib/settings'
+import { useListening } from '@/lib/speech'
 
 // Taps, clicks, and key presses that browsers accept as permission to start audio.
 const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
@@ -31,8 +33,10 @@ const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
 // audio element's own volume setting.
 export default function MusicPlayer() {
   const { sound, quiet } = useSettings()
+  // While the player is speaking an answer the music goes quiet, so the mic hears them.
+  const listening = useListening()
   // The low sound setting turns the music down with everything else.
-  const loud = quiet ? LOW_VOLUME : 1
+  const loud = listening ? 0 : quiet ? LOW_VOLUME : 1
   const pathname = usePathname()
   const onTitle = pathname === '/'
   const { goalAchievedAt } = useProgress()
@@ -51,7 +55,7 @@ export default function MusicPlayer() {
   const backgroundLevel = onTitle ? 0 : quietLevel
   // The roar must not start over the music, so that change is a quick cut, not a crossfade.
   // Once the roar has finished, the music comes back slowly.
-  const fadeSeconds = !onReward ? MUSIC_FADE_SECONDS : roaring ? MUSIC_CUT_SECONDS : MUSIC_REWARD_FADE_SECONDS
+  const fadeSeconds = listening ? MUSIC_HUSH_SECONDS : !onReward ? MUSIC_FADE_SECONDS : roaring ? MUSIC_CUT_SECONDS : MUSIC_REWARD_FADE_SECONDS
 
   // Crossfade to the levels for the current screen.
   useEffect(() => {

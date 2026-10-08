@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import PawPrint from '@/components/PawPrint'
+import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { capsuleDue, saveProgress, useLionText, useProgress } from '@/lib/progress'
 import { useSettings } from '@/lib/settings'
@@ -74,6 +75,7 @@ export default function SealedLetter() {
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
             />
+            <MicButton value={draft} onChange={setDraft} maxLength={LETTER_MAX} />
           </div>
           <div className={styles.waits} role="group" aria-label={lines.capsule.waitLabel}>
             <span className={styles.waitLabel}>{lines.capsule.waitLabel}</span>

@@ -1,0 +1,39 @@
+/* SPEAK and the line beside it. They sit in a row and wrap on a narrow screen. */
+.mic {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.button {
+  /* One pixel of the mic icon. */
+  --px: 2px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  font-size: 0.6rem;
+}
+
+/* While it is listening the mic blinks. With motion off it simply stays lit. */
+.iconOn {
+  animation: hearing 1s steps(2, jump-none) infinite;
+}
+
+@keyframes hearing {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.25;
+  }
+}
+
+.note {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}

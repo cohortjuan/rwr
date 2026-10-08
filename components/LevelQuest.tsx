@@ -6,6 +6,7 @@ import DialogBox from '@/components/DialogBox'
 import { LEVEL_SPARKS } from '@/lib/accessories'
 import { circles, circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
 import { LEVEL_ANSWERS, liveLevels, type LiveLevel } from '@/lib/levels'
+import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { withLionName } from '@/lib/names'
 import { saveProgress, useProgress, type ChatMessage, type Progress } from '@/lib/progress'
@@ -418,9 +419,12 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                       }
                     }}
                   />
-                  <button type="submit" className="btn">
-                    {lines.onboarding.send}
-                  </button>
+                  <div className={quest.answerActions}>
+                    <button type="submit" className="btn">
+                      {lines.onboarding.send}
+                    </button>
+                    <MicButton value={answerDraft} onChange={setAnswerDraft} maxLength={1000} />
+                  </div>
                 </form>
               </DialogBox>
             )}
@@ -453,6 +457,14 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                     setClaim(event.target.value)
                     setNotice('')
                   }}
+                />
+                <MicButton
+                  value={claim}
+                  onChange={(text) => {
+                    setClaim(text)
+                    setNotice('')
+                  }}
+                  maxLength={CLAIM_MAX}
                 />
               </div>
               <p className={styles.small}>{lines.map.evidenceHeading}</p>

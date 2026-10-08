@@ -25,7 +25,17 @@ export default function ConfirmBox({ open, text, yes, no, onYes, onNo }: Props) 
   }, [open])
 
   return (
-    <dialog ref={dialogRef} className={styles.box} aria-labelledby="confirm-text" onClose={onNo}>
+    <dialog
+      ref={dialogRef}
+      className={styles.box}
+      aria-labelledby="confirm-text"
+      onClose={(event) => {
+        // In React a dialog's close is also heard by any dialog this box sits inside, which
+        // would take it for its own and shut. It stops here.
+        event.stopPropagation()
+        onNo()
+      }}
+    >
       <p id="confirm-text" className={styles.text}>
         {text}
       </p>

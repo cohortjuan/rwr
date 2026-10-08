@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
+import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { auraSize, maneSize, sparks, wornIds } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
@@ -387,6 +388,7 @@ export default function UpgradesScreen() {
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
               />
+              <MicButton value={draft} onChange={setDraft} maxLength={2000} />
             </div>
 
             <p className={styles.preview}>

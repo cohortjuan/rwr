@@ -6,6 +6,7 @@ import DialogBox from '@/components/DialogBox'
 import SealedLetter from '@/components/SealedLetter'
 import { circles, circleScore, EVIDENCE_MAX, strongestCircle, thinnestCircle } from '@/lib/compass'
 import { levels } from '@/lib/levels'
+import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { isNameAllowed } from '@/lib/names'
 import { saveProgress, useLionText, useProgress, type Circle, type PathIdea, type Progress } from '@/lib/progress'
@@ -349,6 +350,14 @@ export default function CrossroadsScreen() {
                           setGoalDraft(event.target.value)
                           setNotice('')
                         }}
+                      />
+                      <MicButton
+                        value={goalDraft}
+                        onChange={(text) => {
+                          setGoalDraft(text)
+                          setNotice('')
+                        }}
+                        maxLength={GOAL_MAX}
                       />
                     </div>
                     <p className={quest.notice} role="alert">

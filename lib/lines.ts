@@ -183,6 +183,28 @@ export const lines = {
     nameBlocked: 'That name is not welcome on this trail. Please pick another one.',
   },
 
+  // Speaking an answer in place of typing it. The browser turns the speech into words, so
+  // the player is told where the sound goes before the first use. Never say that RWR hears,
+  // records or keeps the sound: it does not, and it never receives it.
+  mic: {
+    start: 'SPEAK',
+    stop: 'STOP',
+    startLabel: 'Speak your answer',
+    stopLabel: 'Stop listening',
+    listening: 'Listening. Press STOP when you are done. You can fix the words before you send them.',
+    ask: 'Speak your answers? Your browser turns your voice into words. To do that, most browsers send the sound to their maker\'s speech service, such as Google for Chrome or Apple for Safari. RWR never gets the sound, only the words, and you can change them before you send them.',
+    askYes: 'USE THE MIC',
+    askNo: 'I WILL TYPE',
+    problem: 'The mic did not work that time. You can type your answer.',
+    problems: {
+      'not-allowed': 'Your browser is not letting this page use the microphone. Allow it in the browser\'s settings for this site, or type your answer.',
+      'service-not-allowed': 'Your browser is not letting this page use the microphone. Allow it in the browser\'s settings for this site, or type your answer.',
+      'audio-capture': 'No microphone was found. You can type your answer.',
+      'no-speech': 'Nothing was heard. Press SPEAK and try again, or type your answer.',
+      network: 'The speech service could not be reached. You can type your answer.',
+    } as Record<string, string>,
+  },
+
   privacy: {
     heading: 'YOUR DATA',
     intro: 'Some answers in RWR are personal. Here is exactly where they go, and how to remove them.',
@@ -195,6 +217,7 @@ export const lines = {
       { title: 'The road', body: 'Your goal, the obstacle you name, your plan, and what you tell Todah about each experiment are saved on this device like your other answers. With AI replies on, they are sent to the AI service to write the plan and Todah\'s reply, with the same protections.' },
       { title: "Todah's note", body: 'When your goal is reached, Todah leaves you a note made from what you said along the way. With AI replies on, those words are sent to the AI service to write it, with the same protections. The note is saved on this device. If you save it as a picture or send it to someone, that is your choice and RWR is not involved.' },
       { title: 'Wardrobe ideas', body: 'If you send an idea for a new wardrobe piece, the words you type are emailed to the person who makes RWR, with whether your lion is a lion or a lioness. Email addresses, links, and phone numbers are removed first. Your name, your account, and your game are not sent. One small cookie counts the ideas this browser has sent today.' },
+      { title: 'Speaking your answers', body: 'If you press SPEAK, your browser listens through the microphone and turns your voice into words. Most browsers do that by sending the sound to their maker\'s speech service, such as Google for Chrome or Apple for Safari, under that company\'s own terms. RWR never receives or stores the sound. The words go into the answer box, where you can change them, and from there they are treated like anything you type. You are asked before the first use, and you can always type.' },
       { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
     ],

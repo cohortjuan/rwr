@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import ConfirmBox from '@/components/ConfirmBox'
 import DialogBox from '@/components/DialogBox'
+import MicButton from '@/components/MicButton'
 import { circles, circleScore } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
@@ -233,9 +234,19 @@ export default function RoadScreen() {
                   setNotice('')
                 }}
               />
-              <button type="submit" className="btn">
-                {lines.road.obstacleSend}
-              </button>
+              <div className={quest.answerActions}>
+                <button type="submit" className="btn">
+                  {lines.road.obstacleSend}
+                </button>
+                <MicButton
+                  value={obstacle}
+                  onChange={(text) => {
+                    setObstacle(text)
+                    setNotice('')
+                  }}
+                  maxLength={300}
+                />
+              </div>
               <p className={quest.notice} role="alert">
                 {notice}
               </p>
@@ -278,6 +289,14 @@ export default function RoadScreen() {
                 <span id="road-plan-hint" className="note">
                   {lines.road.planHint}
                 </span>
+                <MicButton
+                  value={draft.plan}
+                  onChange={(plan) => {
+                    setDraft({ ...draft, plan })
+                    setNotice('')
+                  }}
+                  maxLength={PLAN_MAX}
+                />
               </div>
 
               <h2 className={styles.heading}>{lines.road.stepsHeading}</h2>
@@ -292,6 +311,7 @@ export default function RoadScreen() {
                     value={step.text}
                     onChange={(event) => editStep(index, event.target.value)}
                   />
+                  <MicButton value={step.text} onChange={(text) => editStep(index, text)} maxLength={STEP_MAX} />
                 </div>
               ))}
               <p className={quest.notice} role="alert">
@@ -369,6 +389,14 @@ export default function RoadScreen() {
                               {lines.road.howCancel}
                             </button>
                           </div>
+                          <MicButton
+                            value={report}
+                            onChange={(text) => {
+                              setReport(text)
+                              setNotice('')
+                            }}
+                            maxLength={1000}
+                          />
                         </form>
                       )}
 
