@@ -39,3 +39,14 @@
 .footer {
   margin: 24px 0 0;
 }
+
+/* The one credit, centred at the foot of the page. */
+.credit {
+  margin: 28px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.credit a {
+  color: var(--gold-bright);
+}

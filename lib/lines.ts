@@ -81,15 +81,15 @@ export const lines = {
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
     ikigaiBrief:
-      'Four circles mark this trail: Heart (what you love), Craft (what you are good at), Cause (what the world needs), and Coin (what can pay). Some call the picture Ikigai. Truth is, it is a Western map for careers. Real Ikigai is gentler: the small things that make a day worth waking for. We will borrow just that. Small, true moments.',
+      'Four circles mark this trail: Heart (what you love), Craft (what you are good at), Cause (what the world needs), and Coin (what can pay). Two ideas shaped it. The circles come from a Western picture of purpose. The spirit comes from Ikigai, a Japanese idea about the small things that make a day worth waking for. So that is what we look for: small, true moments.',
     ikigaiGotIt: 'GOT IT',
     ikigaiMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
     ikigaiDeep: [
-      'The four circles are a picture of purpose. Andres Zuzunaga drew it in Spain in 2011. In 2014 a blogger, Marc Winn, wrote the Japanese word Ikigai in the middle, and off it went around the world. So: Spanish, and new. Not ancient, and not Japanese.',
-      'Where two circles meet, the picture gives a name: Passion, Mission, Vocation, Profession. Miss a circle and work can feel off. Paid but not in love: comfy, yet empty. In love but unpaid: joyful, yet broke. A handy way to think about work, and that is all it is.',
-      'Ikigai (say ee-kee-guy) is iki, life, plus gai, worth. A garden. A grandchild. The first tea of the morning. Mieko Kamiya, a Japanese doctor, wrote the book on it in 1966. It lives in small things, never asks about pay, and does not have to be a job.',
-      'So this game and Ikigai are cousins, not twins. We are about work, we count Coin, and we end in a goal. Ikigai is about a whole life, and nobody wins it. One thing I keep from Kamiya: it has to be lived to be understood. So we count what you have lived, not what you wish. More on the ABOUT page.',
+      'First influence: the four circles. They are a picture of purpose that Andres Zuzunaga drew in Spain in 2011. In 2014 a blogger, Marc Winn, wrote the Japanese word Ikigai in the middle, and off it went around the world. From it we took our shape: four circles, one level each.',
+      'Where two circles meet, the picture gives a name: Passion, Mission, Vocation, Profession. Miss a circle and work can feel off. Paid but not in love: comfy, yet empty. In love but unpaid: joyful, yet broke. From this we took our map, which shows where your evidence is strong and where it is thin.',
+      'Second influence: Ikigai itself (say ee-kee-guy). Iki is life, gai is worth. A garden. A grandchild. The first tea of the morning. Mieko Kamiya, a Japanese doctor, wrote the book on it in 1966. It lives in small things, never asks about pay, and does not have to be a job.',
+      'From Ikigai we took our way of asking. Kamiya wrote that it has to be lived to be understood, so I ask about moments you have lived, not things you wish. Where we part ways: this game is about work and counts Coin. Ikigai is about a whole life. More on the ABOUT page.',
       `We walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. I ask, you bring the evidence, and you decide what it means. I will never tell you what to be, and nothing here is a promise about any job.`,
     ],
     ikigaiNextPage: 'NEXT',
@@ -513,45 +513,42 @@ export const lines = {
         title: 'WHAT THIS IS',
         body: [
           'RWR is a short, free game for thinking about work. A lion cub called Todah asks about real moments from your life, and together you mark the evidence on a map: what you love, what you are good at, who it helps, and what it can pay. Then you set one goal of your own. Todah roars only when you say you have reached it.',
-          'It is a place to think, not a test. It does not score you against anyone, name a career for you, or promise a job or any outcome.',
+          'It is a place to think, not a test. It does not name a career for you or promise a job or any outcome.',
         ],
       },
       {
         title: 'WHAT THE AI DOES',
         body: [
-          'If you allow it, an AI service writes what Todah says. It asks questions and reflects back what you said. You bring the evidence and you decide what it means. Before anything is marked on your map, you see it and can change every word.',
-          'The AI is told never to tell you what to be, never to guess at pay or your chances, and to stop and respond with care if you are having a hard time. If you would rather not use it, the whole game runs from written questions and nothing you type leaves your device.',
+          'If you allow it, an AI service writes what Todah says. It asks and reflects back. You bring the evidence and decide what it means, and you can change every word before it is marked on your map.',
+          'It is told never to tell you what to be, never to guess at pay or your chances, and to respond with care if you are having a hard time. Without it, the whole game runs from written questions and nothing you type leaves your device.',
         ],
       },
       {
-        title: 'WHERE THE FOUR CIRCLES COME FROM',
+        title: 'WHAT SHAPED RWR',
         body: [
-          'The four circles are a diagram of purpose drawn in 2011 by Andres Zuzunaga, a Spanish writer. His four parts were what you love, what you are good at, what the world needs, and what you can be rewarded for. It first appeared in print in 2012, in a book by Borja Vilaseca.',
-          'In 2014 a blogger, Marc Winn, replaced the word "purpose" in the middle with the Japanese word "ikigai". That version spread around the world, and many people now believe the diagram is an old Japanese idea. It is not. RWR uses the diagram because it is a clear way to think about a career, and calls it what it is: the purpose diagram.',
+          'The purpose diagram gave RWR its shape. Its four circles became four levels (Heart, Craft, Cause, Coin), and its overlaps became the trail map, which shows where your evidence is strong and where it is thin.',
+          'Ikigai gave RWR its way of asking. It is a Japanese idea about what makes life worth living, found in small, ordinary things. So Todah asks about small moments you have actually lived, and the map counts what you have done, not what you wish.',
+          'Old 16-bit adventure games gave RWR its heart: a companion who grows as you do, and a journey you take at your own pace.',
         ],
       },
       {
-        title: 'WHAT IKIGAI MEANS IN JAPAN',
+        title: 'A SHORT HISTORY OF THE DIAGRAM',
         body: [
-          'Ikigai joins two words: iki, life, and gai, worth or value. It is what makes life feel worth living. For many people in Japan that is something small and daily: time with family, a craft, a garden, a morning routine. It can be work, but it does not have to be, and it has nothing to do with being paid.',
-          'The best-known writing on it is by Mieko Kamiya, a psychiatrist, in her 1966 book Ikigai-ni-tsuite ("On the meaning of life"). She described two sides of it: the things that give a life meaning, and the feeling itself that life is worth living. She wrote that it has to be lived to be understood.',
+          'The four circles were drawn in 2011 by Andres Zuzunaga, a Spanish writer, as a diagram of purpose: what you love, what you are good at, what the world needs, and what you can be rewarded for. It first appeared in print in 2012, in a book by Borja Vilaseca.',
+          'In 2014 a blogger, Marc Winn, replaced the word "purpose" in the middle with the Japanese word "ikigai". That version spread around the world, and many people now think the diagram is an old Japanese idea. It is not, so the middle of ours says PURPOSE, the word its author put there.',
         ],
       },
       {
-        title: 'HOW RWR RELATES TO IKIGAI',
+        title: 'IKIGAI IN JAPAN',
         body: [
-          'Where it differs: RWR is about work, and one of its four circles is pay. Ikigai is about a whole life and asks nothing about money. RWR looks for four things at once. Ikigai can be one small thing. RWR ends with a goal to reach. Ikigai is not something to achieve: it is already there in ordinary days.',
-          'Where it tries to stay close: Todah asks for small, real moments, such as the last time you lost track of time, and not for big ambitions. Nothing counts until you have lived it, which is why the map marks evidence and not wishes. And the game never says work must be the thing that makes your life worth living. For many people it is not, and that is fine.',
-          'So RWR does not teach ikigai and is not a guide to it. The middle of our diagram says PURPOSE, the word its author put there. We mention ikigai only because the diagram is so often given that name, and we would rather say so plainly than borrow a word from a culture that is not ours. If we have described it badly, we would like to be corrected.',
-        ],
-      },
-      {
-        title: 'WHO MADE THIS',
-        body: [
-          'RWR was made by Juan for the 2026 Good Soil Fall Code Jam, working with an AI coding assistant. It is free, has no adverts, and does not sell anything you tell it. How your answers are handled is on the privacy page.',
+          'Ikigai joins iki, life, and gai, worth. For many people in Japan it is something small and daily: family, a craft, a garden, a morning routine. It can be work, but it does not have to be, and it has nothing to do with being paid.',
+          'The best-known writing on it is the 1966 book Ikigai-ni-tsuite by Mieko Kamiya, a psychiatrist. She described the things that give a life meaning and the feeling itself that life is worth living, and wrote that it has to be lived to be understood.',
+          'RWR is influenced by ikigai. It does not teach it. Ours is about work and counts pay, and ikigai is about a whole life. If we have described it badly, we would like to be corrected.',
         ],
       },
     ],
+    credit: 'Made by cohortjuan',
+    creditUrl: 'https://github.com/cohortjuan',
     sourcesHeading: 'WHERE TO READ MORE',
     sources: [
       { label: 'Ikigai (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Ikigai' },

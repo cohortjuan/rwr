@@ -40,6 +40,12 @@ export default function AboutScreen() {
             {lines.about.toPrivacy}
           </Link>
         </p>
+
+        <p className={styles.credit}>
+          <a href={lines.about.creditUrl} target="_blank" rel="noopener noreferrer">
+            {lines.about.credit}
+          </a>
+        </p>
       </div>
     </main>
   )
