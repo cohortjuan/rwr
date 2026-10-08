@@ -188,9 +188,6 @@ export default function CrossroadsScreen() {
     <main className="screen">
       <div className="screen-inner">
         <header className={quest.hud}>
-          <Link className={`btn btn-quiet ${quest.back}`} href="/map" aria-label={lines.crossroads.toMap}>
-            {lines.level.back}
-          </Link>
           <h1 className={quest.questName}>{lines.crossroads.name}</h1>
         </header>
 

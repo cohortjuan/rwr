@@ -202,9 +202,6 @@ export default function RoadScreen() {
     <main className="screen">
       <div className="screen-inner">
         <header className={quest.hud}>
-          <Link className={`btn btn-quiet ${quest.back}`} href="/crossroads" aria-label={lines.road.toCrossroads}>
-            {lines.level.back}
-          </Link>
           <h1 className={quest.questName}>{lines.road.name}</h1>
         </header>
 

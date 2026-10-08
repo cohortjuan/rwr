@@ -203,9 +203,6 @@ export default function LetterScreen() {
     <main className="screen">
       <div className="screen-inner">
         <header className={quest.hud}>
-          <Link className={`btn btn-quiet ${quest.back}`} href="/roar" aria-label={lines.letter.back}>
-            {lines.level.back}
-          </Link>
           <h1 className={quest.questName}>{lion(lines.letter.name)}</h1>
         </header>
 

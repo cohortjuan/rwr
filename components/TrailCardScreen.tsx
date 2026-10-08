@@ -50,9 +50,6 @@ export default function TrailCardScreen() {
     <main className="screen">
       <div className="screen-inner">
         <header className={quest.hud}>
-          <Link className={`btn btn-quiet ${quest.back}`} href="/crossroads" aria-label={lines.card.back}>
-            {lines.level.back}
-          </Link>
           <h1 className={quest.questName}>{lines.card.name}</h1>
         </header>
 

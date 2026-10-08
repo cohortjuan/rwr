@@ -69,6 +69,11 @@ export const lines = {
     // On ABOUT, PRIVACY and DEV, which are reached from every screen. It returns to the
     // screen the player was on, so it does not name one.
     back: 'BACK',
+    // The arrow and the house in the corner of every screen. They are pictures, so these
+    // are what a screen reader says and what shows when the pointer rests on them.
+    navLabel: 'Ways out of this screen',
+    goBack: 'Back to the screen before',
+    goHome: 'Home: the title screen',
     motionOn: 'MOTION: ON',
     motionOff: 'MOTION: OFF',
     // The old TV set drawn round the game on a wide screen.
@@ -157,8 +162,6 @@ export const lines = {
     toLevel: 'START LEVEL 1: HEART',
     change: 'CHANGE',
     changeLabel: 'Change this answer. Any questions after it are asked again.',
-    back: 'BACK',
-    backLabel: 'Back to the title screen. Your answers so far are kept.',
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     toTitle: 'BACK TO TITLE',
@@ -548,8 +551,6 @@ export const lines = {
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     fromMap: 'WALK THIS LEVEL WITH TODAH',
-    back: 'BACK',
-    backLabel: 'Back to the trail map. Your answers so far are kept.',
     next: (level: string) => `ON TO ${level}`,
     allDone: 'All four circles are walked. Your trail map shows where the evidence is strong and where it is thin.',
     circles: {
@@ -677,7 +678,6 @@ export const lines = {
     toRoad: 'PLAN THE ROAD',
     toRoar: 'GO TO THE ROAR',
     toUpgrades: 'BUILD MY LION',
-    toMap: 'BACK TO MY TRAIL MAP',
   },
 
   // The About page. Rules that must survive edits: credit the four circles to the people who

@@ -2,9 +2,10 @@
 
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import PixelArt from '@/components/PixelArt'
 import { logOut, useAccount } from '@/lib/account'
+import { historyLeadsTo, noteStepBack, screenBefore } from '@/lib/lastScreen'
 import { lines } from '@/lib/lines'
 import { LOW_VOLUME, saveSettings, useSettings } from '@/lib/settings'
 import { setSfxLoudness } from '@/lib/sfx'
@@ -22,15 +23,51 @@ const moon = [
   '...####..',
 ]
 
-// The controls that sit over every screen: the day and night button, the signed-in badge
-// with LOG OUT, and one small bar holding ABOUT, DEV (for a dev account) and SETTINGS.
-// SETTINGS opens a box with sound, motion, the TV set and the way to PRIVACY, so the corner
-// holds a few buttons and none of them can sit on top of another.
+const backArrow = [
+  '...#.....',
+  '..##.....',
+  '.########',
+  '#########',
+  '.########',
+  '..##.....',
+  '...#.....',
+]
+
+const house = [
+  '....#....',
+  '...###...',
+  '..#####..',
+  '.#######.',
+  '#########',
+  '.#######.',
+  '.###.###.',
+  '.###.###.',
+  '.###.###.',
+]
+
+// The controls that sit over every screen: the back arrow and the way home, the day and
+// night button, the signed-in badge with LOG OUT, and one small bar holding ABOUT, DEV (for
+// a dev account) and SETTINGS. SETTINGS opens a box with sound, motion, the TV set and the
+// way to PRIVACY, so the corner holds a few buttons and none of them can sit on top of
+// another.
 export default function SettingsToggles() {
   const settings = useSettings()
   const { email, dev } = useAccount()
   const pathname = usePathname()
+  const router = useRouter()
   const menuRef = useRef<HTMLDialogElement>(null)
+  // The title is where the trail starts: there is nowhere to go back to and it is home.
+  const onTitle = pathname === '/'
+
+  // Back to the screen the player was on before this one, or to the screen above this one
+  // when there was none. Where the browser's history holds that same screen one step back,
+  // the step is taken there, so it comes back as it was left. Otherwise it is opened anew.
+  function goBack() {
+    const target = screenBefore(pathname)
+    noteStepBack()
+    if (historyLeadsTo(target)) router.back()
+    else router.push(target)
+  }
 
   useEffect(() => {
     document.documentElement.dataset.reduceMotion = settings.motionOff ? 'true' : 'false'
@@ -58,6 +95,18 @@ export default function SettingsToggles() {
 
   return (
     <>
+      {/* On every screen but the title: back to the screen before, and home to the title. */}
+      {!onTitle && (
+        <nav className={styles.nav} aria-label={lines.settings.navLabel}>
+          <button type="button" className={styles.navButton} aria-label={lines.settings.goBack} title={lines.settings.goBack} onClick={goBack}>
+            <PixelArt rows={backArrow} />
+          </button>
+          <Link className={styles.navButton} href="/" aria-label={lines.settings.goHome} title={lines.settings.goHome}>
+            <PixelArt rows={house} />
+          </Link>
+        </nav>
+      )}
+
       <button
         type="button"
         className={settings.night ? styles.moonOn : styles.moon}
@@ -71,7 +120,7 @@ export default function SettingsToggles() {
 
       {/* Shown on every screen while signed in, so logging out is never hidden. */}
       {email && (
-        <div className={styles.account}>
+        <div className={onTitle ? styles.account : `${styles.account} ${styles.accountAfterNav}`}>
           <span className={styles.email}>{lines.account.signedInAs(email)}</span>
           <button type="button" className={styles.toggle} onClick={logOut}>
             {lines.account.logOut}

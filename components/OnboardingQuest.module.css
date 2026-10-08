@@ -31,12 +31,6 @@
   color: var(--cream);
 }
 
-/* A small way out, top left. Progress is saved, so leaving loses nothing. */
-.back {
-  padding: 6px 10px;
-  font-size: 0.55rem;
-}
-
 .pips {
   display: flex;
   gap: 8px;

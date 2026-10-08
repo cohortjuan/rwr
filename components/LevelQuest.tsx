@@ -321,9 +321,6 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
       <main className="screen">
         <div className="screen-inner">
           <header className={quest.hud}>
-            <Link className={`btn btn-quiet ${quest.back}`} href="/map" aria-label={lines.level.backLabel}>
-              {lines.level.back}
-            </Link>
             <h1 className={quest.questName}>{text.name}</h1>
           </header>
           <DialogBox text={lion(lines.level.locked)}>
@@ -340,9 +337,6 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
     <main className="screen">
       <div className="screen-inner">
         <header className={quest.hud}>
-          <Link className={`btn btn-quiet ${quest.back}`} href="/map" aria-label={lines.level.backLabel}>
-            {lines.level.back}
-          </Link>
           <h1 className={quest.questName}>{text.name}</h1>
           <ol className={quest.pips} aria-label={lines.level.progress(Math.min(answers, LEVEL_ANSWERS), LEVEL_ANSWERS)}>
             {Array.from({ length: LEVEL_ANSWERS }, (_, index) => (

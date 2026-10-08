@@ -143,7 +143,9 @@ textarea {
 @media (max-height: 480px) and (min-width: 641px) {
   .screen {
     padding-top: 22px;
-    padding-right: 150px;
+    /* Clear of the column in the corner: the moon with the back arrow and the way home
+       beside it, and the stacked bar below them. */
+    padding-right: 176px;
     padding-bottom: 28px;
   }
 }
