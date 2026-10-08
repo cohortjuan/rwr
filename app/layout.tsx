@@ -45,11 +45,11 @@ const applySavedSettings =
   'try{var s=JSON.parse(localStorage.getItem("rwr.settings.v1")||"{}"),d=document.documentElement;' +
   'd.dataset.theme=s.night?"night":"day";d.dataset.reduceMotion=s.motionOff?"true":"false"}catch(e){}'
 
-// Phones: fit the screen width and tint the browser bar to match the TV bezel.
+// Phones: fit the screen width and tint the browser bar to match the top of the screen.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#17161b',
+  themeColor: '#1b1740',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

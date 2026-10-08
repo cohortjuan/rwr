@@ -1,7 +1,7 @@
 import styles from './TvFrame.module.css'
 
-// Old-school TV set around every screen: bezel, curved glass corners, scanlines, vignette.
-// Purely decorative and click-through.
+// Old-school TV glass over every screen: scanlines, a little glare and a vignette, edge to
+// edge with no bezel. Purely decorative and click-through.
 export default function TvFrame() {
   return (
     <div className={styles.frame} aria-hidden="true">

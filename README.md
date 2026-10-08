@@ -101,7 +101,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Several lions: NEW GAME keeps the old lion under MY LIONS and starts a fresh one, which the
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
-- Looping music, sound effects, and an old-school TV frame around every screen, with TV static
+- Looping music, sound effects, and old-school TV scanlines over every screen, with TV static
   behind POWER ON
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data

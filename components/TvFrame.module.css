@@ -1,24 +1,13 @@
 .frame {
-  --bezel: clamp(8px, 1.4vw, 18px);
-  --curve: clamp(18px, 3.2vw, 44px);
-
   position: fixed;
   inset: 0;
   z-index: 10;
   pointer-events: none;
-  border: var(--bezel) solid #2b2a30;
-  border-radius: calc(var(--curve) + var(--bezel));
-  /* Fills the square corners outside the rounded bezel, plus a lit inner edge. */
-  box-shadow:
-    0 0 0 60px #17161b,
-    inset 0 0 0 2px #5d5b66,
-    inset 0 0 0 5px #121116;
 }
 
 .glass {
   position: absolute;
   inset: 0;
-  border-radius: var(--curve);
   background:
     /* scanlines */
     repeating-linear-gradient(
