@@ -81,7 +81,7 @@ export const lines = {
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
     ikigaiBrief:
-      'This trail follows a picture of four circles: what you love (Heart), what you are good at (Craft), what the world needs (Cause), and what you can be paid for (Coin). You may have seen it called Ikigai. That is a Japanese word, and in Japan it means something different, so let me be straight with you about where this comes from.',
+      'This trail follows four circles: what you love (Heart), what you are good at (Craft), what the world needs (Cause), and what you can be paid for (Coin). You may know the picture as Ikigai. It is really a Western picture of purpose, made for careers. Ikigai is a Japanese idea of what makes life worth living. Mieko Kamiya, who wrote the book on it, found it in small daily things, and it asks nothing about pay. From her we borrow one habit: we look at small, real moments from your days. The rest is a career tool, and I will not pretend otherwise.',
     ikigaiGotIt: 'GOT IT',
     ikigaiMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
@@ -89,7 +89,7 @@ export const lines = {
       'The four circles are a picture of purpose. A Spanish writer, Andres Zuzunaga, drew it in 2011. In 2014 a blogger, Marc Winn, put the Japanese word Ikigai in the middle, and that is the version that travelled the world. So the picture is from Spain, not Japan, and it is new, not ancient.',
       'The picture names its overlaps: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession. Miss a circle and work can feel off. Paid and skilled but not in love: comfortable, yet empty. Loving it but unpaid: joyful, yet broke. That is a useful way to think about a career, and it is all this game claims to be.',
       'Ikigai (say ee-kee-guy) is something else. It joins iki, life, and gai, worth: what makes a day worth getting up for. A craft, a garden, a grandchild, the first tea of the morning. Mieko Kamiya, a Japanese doctor, wrote the best-known book on it in 1966. It is felt in small things, it does not need to pay, and it does not have to be a job.',
-      'So this game does not teach Ikigai, and it cannot find your reason for living. It borrows the four circles to help you think about work. What I hope we keep from the Japanese idea is one thing: paying attention to small, real moments in your own days instead of big wishes. There is more on the ABOUT page.',
+      'So how does this game sit beside Ikigai? It differs in three ways: it is about work, one of its circles is pay, and it ends in a goal. Ikigai is about a whole life, asks nothing about money, and is not something to achieve. It stays close in one way, which I owe to Kamiya: she wrote that it has to be lived to be understood, so we count only what you have lived, not what you wish. This game does not teach Ikigai, and a job does not have to be yours. There is more on the ABOUT page.',
       `We will walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. I ask the questions, you bring the evidence, and you decide what it means. I will never tell you what to be, and nothing here is a promise about any job.`,
     ],
     ikigaiNextPage: 'NEXT',
