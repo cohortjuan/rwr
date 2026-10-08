@@ -29,6 +29,10 @@ const CREDITS_PACE = 25
 // The scroll wheel changes that pace, between this many times slower and this many faster.
 const SLOWEST = 0.25
 const FASTEST = 6
+// The roll stops with the maker's credit in the middle of the screen, holds it there, and
+// then the credits fade away.
+const HOLD_CREDIT_MS = 3000
+const FADE_CREDITS_MS = 900
 // If the roar's sound never reports that it ended, the music comes back after this long.
 const ROAR_LONGEST_MS = 10000
 
@@ -60,6 +64,9 @@ export default function RoarScreen() {
   const [rolling, setRolling] = useState(false)
   const creditsRef = useRef<HTMLDialogElement>(null)
   const rollRef = useRef<HTMLDListElement>(null)
+  const makerRef = useRef<HTMLDivElement>(null)
+  // True while the credits fade out at their end.
+  const [fading, setFading] = useState(false)
   // Read once when the screen is drawn, which is often enough for a date.
   const [now] = useState(() => Date.now())
 
@@ -91,6 +98,12 @@ export default function RoarScreen() {
     // the last has left the top. A browser animation is not used here: changing its speed
     // while it runs left the picture out of step with where the lines really were.
     const distance = roll.offsetHeight + frame.clientHeight
+    // The roll ends where the maker's credit, the last thing in it, sits in the middle of the
+    // window. If that credit is not there, it ends when the last line has left the top.
+    const maker = makerRef.current
+    const restAt = maker ? frame.clientHeight / 2 + maker.offsetTop + maker.offsetHeight / 2 : distance
+    let holdTimer: number | undefined
+    let fadeTimer: number | undefined
     // The window must start, and stay, unscrolled: the lines are moved, not the window.
     frame.scrollTop = 0
     let risen = 0
@@ -106,11 +119,15 @@ export default function RoarScreen() {
       const seconds = Math.min(0.05, (now - last) / 1000)
       last = now
       pace += (wanted - pace) * Math.min(1, seconds * 6)
-      risen += CREDITS_PACE * pace * seconds
+      risen = Math.min(restAt, risen + CREDITS_PACE * pace * seconds)
       if (roll) roll.style.transform = `translateY(${-risen}px)`
       if (frame && frame.scrollTop !== 0) frame.scrollTop = 0
-      if (risen >= distance) {
-        setRolling(false)
+      if (risen >= restAt) {
+        // Hold there for a moment, fade out, and go back to the roar screen.
+        holdTimer = window.setTimeout(() => {
+          setFading(true)
+          fadeTimer = window.setTimeout(() => setRolling(false), FADE_CREDITS_MS)
+        }, HOLD_CREDIT_MS)
         return
       }
       frameId = requestAnimationFrame(rise)
@@ -126,6 +143,9 @@ export default function RoarScreen() {
     dialog.addEventListener('wheel', changePace, { passive: false })
     return () => {
       cancelAnimationFrame(frameId)
+      window.clearTimeout(holdTimer)
+      window.clearTimeout(fadeTimer)
+      setFading(false)
       dialog.removeEventListener('wheel', changePace)
     }
   }, [rolling, reducedMotion])
@@ -219,7 +239,7 @@ export default function RoarScreen() {
   // The maker's credit. It is shown only when the credits are rolled on the whole screen,
   // after everything that is the player's, and not in the panel on the roar screen.
   const makerCredit = (
-    <div className={`${styles.credit} ${styles.maker}`}>
+    <div ref={makerRef} className={`${styles.credit} ${styles.maker}`}>
       <dt>{lines.roar.credits.madeBy}</dt>
       <dd>
         {/* A small local picture, so nothing is fetched from another site. */}
@@ -394,11 +414,12 @@ export default function RoarScreen() {
       </div>
 
       {/* The credits on the whole screen. They rise from the bottom and leave at the top. Any
-          key, a click or a tap stops them and goes back, and so does reaching the end. */}
+          key, a click or a tap stops them and goes back. Left alone, they stop with the
+          maker's credit in the middle, hold, fade out, and go back by themselves. */}
       <dialog
         ref={creditsRef}
         tabIndex={-1}
-        className={styles.cinema}
+        className={fading ? `${styles.cinema} ${styles.cinemaFading}` : styles.cinema}
         aria-label={lines.roar.credits.heading}
         onClose={() => setRolling(false)}
         onClick={() => setRolling(false)}

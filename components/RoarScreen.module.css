@@ -291,6 +291,14 @@
   flex-direction: column;
 }
 
+/* The end of the credits: the box and the dark behind it fade away together. Keep the time
+   in step with FADE_CREDITS_MS in RoarScreen.tsx. */
+.cinemaFading,
+.cinemaFading::backdrop {
+  opacity: 0;
+  transition: opacity 0.9s linear;
+}
+
 /* It holds the keyboard's focus while it is open, and needs no ring to say so. */
 .cinema:focus {
   outline: none;
