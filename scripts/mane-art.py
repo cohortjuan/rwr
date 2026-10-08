@@ -70,10 +70,30 @@ def top_edge(x, limit=8):
     return None
 CX = 25
 
+# Where his face is, read from the sprite so the mane follows him if he is redrawn.
+# FX is the middle of his head, taken across his cheeks. CHIN is the row where his head ends
+# and his neck begins: the narrowest row below his cheeks. Everything that hangs below the
+# face (the ruffs beside the jaw, the bib, the fall over the chest) is placed from CHIN, and
+# the opening the full mane leaves for his face ends just under it.
+_cheeks = edges(20)
+FX = (_cheeks[0] + _cheeks[1] + 1) / 2
+CHIN = min(range(24, 33), key=lambda y: (edges(y)[1] - edges(y)[0], y))
+FACE_TOP = 7.2
+FY = (FACE_TOP + CHIN + 1.0) / 2          # the middle of the opening
+FRY = (CHIN + 1.0 - FACE_TOP) / 2         # and half its height
+FRX = 14.2
+# The designs below were first drawn for a lion whose chin was at row 31. DROP moves what
+# hangs under the chin by the difference.
+DROP = CHIN - 31
+
 # The lock of hair on his forehead, as a filled shape that follows the one drawn on the
-# sprite: hanging from the hairline, swept to his left, ending in a point.
-LOCK = ["MMMMMMMM", "DMMMMMMD", "DMMMMMMD", "DDMMMMMD", ".DDMMMMD", "..DDMMMD", "...DDMMD", "....DDD."]
-LOCK_X, LOCK_Y = 24, 3
+# sprite: a leaf hanging from the hairline, its left edge slanting in and its right edge
+# straight, ending in a point. On the sprite its outline runs from pixel (36, 9) down to the
+# point at (44, 18), and back up the right side at x 46 to 47. If the sprite is redrawn,
+# these are the numbers to check: print the sprite's pixels around its forehead and fit the
+# rows to the line drawn there.
+LOCK = ["MMMMMMM", "DMMMMMD", ".DMMMMD", "..DMMMD", "...DMMD", "....DD.", "....D.."]
+LOCK_X, LOCK_Y = 21, 4
 
 def lock(cells, joined):
     for dy, row in enumerate(LOCK):
@@ -81,7 +101,7 @@ def lock(cells, joined):
             if c != '.': cells[(LOCK_X + dx, LOCK_Y + dy)] = c
     if joined:
         # run the hair on top down into the lock, so they are one piece
-        for x in range(LOCK_X, LOCK_X + 8):
+        for x in range(LOCK_X, LOCK_X + len(LOCK[0])):
             top = top_edge(x) or 0
             for y in range(top, LOCK_Y):
                 cells.setdefault((x, y), 'M')
@@ -100,7 +120,7 @@ def growing(size):
         if (x % 2 == 0) and up > 1: up -= 1
         for y in range(top - up, top + dip + (0 if x % 3 else 1)):
             put(x, y, 'D' if y == top - up else 'M')
-    ruff = {0: None, 1: None, 2: (14, 28, 4, 2)}[size]
+    ruff = {0: None, 1: None, 2: (14, CHIN, 4, 2)}[size]
     if ruff:
         y0, y1, out, inn = ruff
         for y in range(y0, y1 + 1):
@@ -114,14 +134,14 @@ def growing(size):
                     c = 'D' if k == -o and o > 0 else 'M'
                     if k < 0 and x % 3 == 0 and y % 5 != 0: c = 'D'
                     put(x, y, c)
-    bib = {0: None, 1: None, 2: (31, 36, 9)}[size]
+    bib = {0: None, 1: None, 2: (CHIN + 1, CHIN + 6, 9)}[size]
     if bib:
         y0, y1, half = bib
         for y in range(y0, y1 + 1):
             t = (y - y0) / (y1 - y0 + 1); hw = half * (1 - t) ** 0.8
-            for x in range(int(CX - hw), int(CX + hw) + 1):
+            for x in range(round(FX - hw), round(FX + hw)):
                 if (x % 2 == 0) and y == y1: continue
-                edge = abs(x - CX) > hw - 1 or y == y1
+                edge = abs(x + 0.5 - FX) > hw - 1 or y == y1
                 strand = x % 4 == 0 and y > y0 + 1 and y % 6 != 0
                 put(x, y, 'D' if edge or strand else 'M')
     lock(cells, joined=size >= 1)
@@ -131,20 +151,19 @@ def regal():
     # The full mane: it frames the whole face, swallows all but the tips of the ears, rises in
     # a crown of points, and falls wide over the chest and shoulders.
     cells = {}
-    FY = 19.5                       # the face it frames
-    def face(x, y):  return ((x + 0.5 - CX - 0.5) / 14.2) ** 2 + ((y + 0.5 - FY) / 12.3) ** 2 < 1
+    def face(x, y):  return ((x + 0.5 - FX) / FRX) ** 2 + ((y + 0.5 - FY) / FRY) ** 2 < 1
     def ear(x, y):
         for ex in (7.5, 42.0):
             if ((x + 0.5 - ex) / 3.6) ** 2 + ((y + 0.5 - 8.0) / 4.6) ** 2 < 1: return True
         return False
     def outer(x, y):
-        dx, dy = x + 0.5 - CX - 0.5, y + 0.5 - 17.0
+        dx, dy = x + 0.5 - FX, y + 0.5 - 17.0
         ang = math.atan2(dy, dx)
         # points all the way round, longer on top like a crown
         spike = 0.5 + 0.5 * math.cos(ang * 12)
         up = max(0.0, -math.sin(ang))
         rx, ry = 27.5 + 1.2 * spike, 20.5 + 2.6 * spike * (0.4 + up)
-        if dy > 0: ry = 26.0 + 1.5 * spike          # it hangs below the chin, over the chest
+        if dy > 0: ry = 26.0 + DROP + 1.5 * spike   # it hangs below the chin, over the chest
         if dy > 0: rx = 27.5 - 9.5 * min(1.0, dy / 30.0) + 1.5 * spike   # and narrows to the chest
         return (dx / rx) ** 2 + (dy / ry) ** 2 < 1
     def inside(x, y):
@@ -155,7 +174,7 @@ def regal():
     for y in range(-TOP, 44):
         for x in range(CW):
             if not inside(x, y): continue
-            dx, dy = x + 0.5 - CX - 0.5, y + 0.5 - 17.0
+            dx, dy = x + 0.5 - FX, y + 0.5 - 17.0
             ang = math.atan2(dy, dx)
             rim = not all(inside(x + ax, y + ay) or face(x + ax, y + ay) or ear(x + ax, y + ay)
                           for ax, ay in ((1, 0), (-1, 0), (0, 1), (0, -1)))
@@ -177,40 +196,39 @@ def regal_b():
     # fanning out from the face: a high rounded top, a long pointed fall over the chest that
     # ends in separate locks, and a darker ruff under the chin, as grown lions have.
     cells = {}
-    FY = 19.5
-    def face(x, y): return ((x - 24.5) / 14.2) ** 2 + ((y + 0.5 - FY) / 12.3) ** 2 < 1
+    def face(x, y): return ((x + 0.5 - FX) / FRX) ** 2 + ((y + 0.5 - FY) / FRY) ** 2 < 1
     def ear(x, y):
         for ex in (7.5, 42.0):
             if ((x + 0.5 - ex) / 3.6) ** 2 + ((y + 0.5 - 8.0) / 4.6) ** 2 < 1: return True
         return False
     def tri(v): return 1 - 4 * abs((v % 1) - 0.5)            # +1 mid-lock, -1 between locks
     def outer(x, y):
-        dx, dy = x - 24.5, y + 0.5 - 17.0
+        dx, dy = x + 0.5 - FX, y + 0.5 - 17.0
         if dy <= 0:
             ang = math.atan2(dy, dx)
             tuft = 0.5 + 0.5 * math.cos(ang * 10)
             ry = 21.0 + 2.2 * tuft * max(0.0, -math.sin(ang))
             return (dx / 27.5) ** 2 + (dy / ry) ** 2 < 1
         if abs(dx) >= 26: return False
-        fall = 30.0 * (1 - abs(dx) / 26.0) ** (1 / 1.7)        # long in the middle, short at the sides
+        fall = (30.0 + DROP) * (1 - abs(dx) / 26.0) ** (1 / 1.7)        # long in the middle, short at the sides
         return dy < fall + 1.6 * tri(dx / 3.4)                 # each lock ends in a point
     def inside(x, y):
         if not (0 <= x < CW and -TOP <= y < 48): return False
         if not outer(x, y) or face(x, y) or ear(x, y): return False
         if y >= 30 and x >= 44: return False                   # leave the tail alone
         return True
-    def lock_of(x, y): return math.floor(math.atan2(y + 0.5 - 3.0, x - 24.5) * 21 / math.pi)
+    def lock_of(x, y): return math.floor(math.atan2(y + 0.5 - 3.0, x + 0.5 - FX) * 21 / math.pi)
     for y in range(-TOP, 48):
         for x in range(CW):
             if not inside(x, y): continue
-            dx, dy = x - 24.5, y + 0.5 - 17.0
+            dx, dy = x + 0.5 - FX, y + 0.5 - 17.0
             rim = not all(inside(x + ax, y + ay) or face(x + ax, y + ay) or ear(x + ax, y + ay)
                           for ax, ay in ((1, 0), (-1, 0), (0, 1), (0, -1)))
             # a thin line wherever one lock meets the next
             parting = lock_of(x, y) != lock_of(x + 1, y) and y > 4
             near_face = any(face(x + ax, y + ay) for ax, ay in ((1, 0), (-1, 0), (0, 1), (0, -1)))
             # the darker ruff under the chin
-            ruff = dy > 13 and abs(dx) < 10.5 * (1 - (dy - 13) / 19.0)
+            ruff = dy > 13 + DROP and abs(dx) < 10.5 * (1 - (dy - 13 - DROP) / 19.0)
             dark = rim or (parting and not near_face)
             if ruff: dark = not parting and not near_face or rim
             cells[(x, y)] = 'D' if dark else 'M'
@@ -226,7 +244,7 @@ def regal_c():
     top, bottom = regal(), regal_b()
     cells = {spot: c for spot, c in top.items() if spot[1] < SEAM}
     cells.update({spot: c for spot, c in bottom.items() if spot[1] >= SEAM})
-    def face(x, y): return ((x - 24.5) / 14.2) ** 2 + ((y + 0.5 - 19.5) / 12.3) ** 2 < 1
+    def face(x, y): return ((x + 0.5 - FX) / FRX) ** 2 + ((y + 0.5 - FY) / FRY) ** 2 < 1
     def ear(x, y):
         return any(((x + 0.5 - ex) / 3.6) ** 2 + ((y + 0.5 - 8.0) / 4.6) ** 2 < 1 for ex in (7.5, 42.0))
     # where the halves meet, redraw the dark edge so the outline stays unbroken
