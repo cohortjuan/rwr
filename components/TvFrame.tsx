@@ -21,8 +21,9 @@ export default function TvFrame() {
           <span className={styles.badge}>RWR</span>
           <span className={styles.speakerRight} />
           <span className={styles.groove} />
-          <span className={styles.power} />
-          <span className={`${styles.label} ${styles.labelPower}`}>POWER</span>
+          <span className={styles.power}>
+            <b>POWER</b>
+          </span>
           <span className={`${styles.label} ${styles.labelIn}`}>VIDEO · AUDIO</span>
           <span className={styles.led} />
           <span className={styles.buttons}>

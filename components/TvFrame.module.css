@@ -197,11 +197,6 @@
   white-space: nowrap;
 }
 
-.labelPower {
-  top: 17.6em;
-  left: 6%;
-}
-
 .labelIn {
   top: 13.3em;
   right: 6%;
@@ -216,11 +211,14 @@
   background: linear-gradient(180deg, #060607 0 50%, #3d3d43 50% 100%);
 }
 
+/* The power button, with its name printed on it. */
 .power {
-  top: 6.95em;
+  top: 6.85em;
   left: 6%;
-  width: 3.6em;
-  height: 1.2em;
+  display: grid !important;
+  place-items: center;
+  width: 4.4em;
+  height: 1.45em;
   border-radius: 0.2em;
   background: linear-gradient(180deg, #3a3a3f 0%, #232326 45%, #151517 100%);
   box-shadow:
@@ -228,10 +226,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+.power b {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.62em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  /* The spacing after the last letter would push the word off centre. */
+  margin-right: -0.14em;
+  color: #a9a9b3;
+  text-shadow: 0 1px 0 #000;
+}
+
 /* The set is on. */
 .led {
-  top: 7.32em;
-  left: calc(6% + 4.5em);
+  top: 7.35em;
+  left: calc(6% + 5.2em);
   width: 0.46em;
   height: 0.46em;
   border-radius: 50%;
