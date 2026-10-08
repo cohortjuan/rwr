@@ -206,6 +206,8 @@ Rules:
 - Do not name or suggest any job, career, course, or employer, and do not give advice.
 - Do not say what pays well or what is in demand.
 - Do not repeat the evidence numbers.
+- Never imply that one job has to satisfy all four circles, or that a circle with little
+  evidence is a dead end. Interests and skills grow with doing.
 
 ${guardrails}`
 }

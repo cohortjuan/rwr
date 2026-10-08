@@ -37,6 +37,11 @@ flowchart LR
   forbids naming careers or giving advice. The message is saved with the claims it was about,
   so it is asked for again only if they change. Then the player sets `goalText`, the goal the
   roar waits on. Without the AI the message is built from the strongest and thinnest circle.
+  Before the goal, Todah says two things the diagram gets wrong if read too literally: the
+  four circles do not all have to live in one job (in Pew's 2021 survey of 17 countries,
+  family ranked above occupation as a source of meaning almost everywhere), and a thin circle
+  is not a dead end (O'Keefe, Dweck and Walton, 2018: people who see interests as developed,
+  not found, stay interested when a subject gets hard).
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.

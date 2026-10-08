@@ -488,6 +488,10 @@ export const lines = {
         : `Your evidence is even across the circles, with ${strongest} a little ahead. When you lay the four side by side, what do you notice?`,
     scriptedEmpty: 'You have a claim in every circle, and none of them is tested yet. That is an honest place to stand. Which one would you most like to test first?',
     goalHeading: 'YOUR MAIN GOAL',
+    // Two things the four-circle picture gets wrong if it is read too literally. Both are
+    // backed by research (see docs/architecture/overview.md), so keep them true if reworded.
+    beforeGoal:
+      'Two things before you choose. The four circles do not all have to live in one job: plenty of people find Heart in one place and Coin in another. And a thin circle is not a no. It only means not tested yet, and what we love and what we are good at both grow with doing.',
     goalIntro:
       'Now pick one goal to walk toward. Make it something you will know you have reached, and make it yours. Todah roars only when you say it is done.',
     goalLabel: 'My main goal',

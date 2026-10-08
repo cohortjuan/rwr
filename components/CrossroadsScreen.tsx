@@ -165,6 +165,7 @@ export default function CrossroadsScreen() {
                   </>
                 ) : (
                   <form onSubmit={saveGoal}>
+                    <p>{lion(lines.crossroads.beforeGoal)}</p>
                     <p>{lion(lines.crossroads.goalIntro)}</p>
                     <div className="field">
                       <label htmlFor="crossroads-goal">{lines.crossroads.goalLabel}</label>
