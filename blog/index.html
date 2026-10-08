@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RWR Trail Log</title>
+<meta name="description" content="How RWR, a 16-bit career adventure, was built for the 2026 Good Soil Fall Code Jam. A trail of short stops you can walk in order or click around, with a look under the hood at each one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  /* The trail log wears the game's own colors: deep indigo, teal panels, gold edges, cream text. */
+  :root {
+    --indigo: #1b1740;
+    --indigo-deep: #0f0c29;
+    --teal-deep: #0f3b3a;
+    --teal: #1f6f6b;
+    --gold: #f2c14e;
+    --gold-bright: #ffe08a;
+    --cream: #f6e4b0;
+    --ink: #1a1226;
+    --crimson: #8f1d2c;
+    --pixel: 'Press Start 2P', monospace;
+    --body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--cream);
+    background: linear-gradient(180deg, var(--indigo) 0%, var(--indigo-deep) 100%) fixed;
+    font-family: var(--body);
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  /* Faint scanlines over everything, as on the game's screen. They take no clicks. */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 3px);
+  }
+
+  a { color: var(--gold-bright); }
+
+  code {
+    padding: 1px 5px;
+    font-size: 0.88em;
+    color: var(--gold-bright);
+    background: rgba(15, 12, 41, 0.7);
+    border: 1px solid var(--teal);
+    overflow-wrap: anywhere;
+  }
+
+  /* The pixel font has no emoji, so they are set in the system's own, a little larger. */
+  .emo {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+    font-size: 1.7em;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: -0.2em;
+    text-shadow: none;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--gold-bright);
+    outline-offset: 3px;
+  }
+
+  .wrap {
+    width: min(1120px, 100% - 32px);
+    margin: 0 auto;
+  }
+
+  /* ---------- top ---------- */
+  .top {
+    padding: 34px 0 18px;
+    text-align: center;
+  }
+
+  .logo {
+    margin: 0;
+    font-family: var(--pixel);
+    font-size: clamp(2.2rem, 9vw, 4.4rem);
+    line-height: 1.1;
+    color: var(--gold);
+    text-shadow: 0 6px 0 var(--crimson), 0 0 22px rgba(242, 193, 78, 0.35);
+  }
+
+  .logo span {
+    display: block;
+    margin-top: 16px;
+    font-size: clamp(0.7rem, 2.4vw, 1.05rem);
+    color: var(--cream);
+    text-shadow: none;
+    letter-spacing: 0.08em;
+  }
+
+  .lede {
+    max-width: 640px;
+    margin: 16px auto 0;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  /* ---------- buttons, in the game's chunky style ---------- */
+  .btn {
+    display: inline-block;
+    padding: 12px 14px;
+    font-family: var(--pixel);
+    font-size: 0.65rem;
+    line-height: 1.3;
+    color: var(--ink);
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.45);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn:hover { background: var(--gold-bright); }
+
+  .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .btn.quiet {
+    color: var(--cream);
+    background: rgba(15, 12, 41, 0.85);
+    border-color: var(--cream);
+  }
+
+  .btn.quiet:hover { background: var(--indigo); }
+
+  .btn[disabled] {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* ---------- the two halves: the trail and the stop you are at ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 26px;
+    align-items: start;
+    padding: 10px 0 60px;
+  }
+
+  .panel {
+    background: var(--teal-deep);
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 0 4px var(--ink), 0 10px 0 4px rgba(0, 0, 0, 0.35);
+  }
+
+  /* ---------- the trail ---------- */
+  .trail {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 16px 14px 18px 16px;
+  }
+
+  .trail h2 {
+    margin: 0 0 4px;
+    font-family: var(--pixel);
+    font-size: 0.7rem;
+    color: var(--gold-bright);
+  }
+
+  .walked {
+    margin: 0 0 4px;
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+
+  /* A row of paw prints, one for each stop, filled in as they are visited. */
+  .paws {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+
+  .paws span { opacity: 0.3; filter: grayscale(1); }
+
+  .paws span.on { opacity: 1; filter: none; }
+
+  .done {
+    margin: 18px 0 0;
+    padding: 10px 12px;
+    color: var(--ink);
+    background: var(--gold-bright);
+    border: 3px solid var(--ink);
+    font-weight: 700;
+    animation: arrive 0.3s steps(4) both;
+  }
+
+  /* The path itself: a dotted line down the left, with every stop sitting on it. */
+  .path {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 46px;
+    list-style: none;
+  }
+
+  .path::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 8px;
+    bottom: 8px;
+    border-left: 4px dotted var(--teal);
+  }
+
+  .part {
+    margin: 16px 0 6px -46px;
+    padding-left: 46px;
+    font-family: var(--pixel);
+    font-size: 0.55rem;
+    line-height: 1.6;
+    color: var(--gold);
+  }
+
+  .part:first-child { margin-top: 2px; }
+
+  .stop {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 7px 8px;
+    text-align: left;
+    color: var(--cream);
+    background: none;
+    border: 2px solid transparent;
+    font: inherit;
+    font-size: 0.98rem;
+    line-height: 1.3;
+    cursor: pointer;
+  }
+
+  .stop:hover { border-color: var(--teal); }
+
+  .stop .emo {
+    font-size: 1em;
+    vertical-align: baseline;
+  }
+
+  /* The marker on the path: a number in a square, like a signpost. */
+  .stop::before {
+    content: attr(data-n);
+    position: absolute;
+    left: -42px;
+    top: 4px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    font-family: var(--pixel);
+    font-size: 0.5rem;
+    color: var(--cream);
+    background: var(--indigo-deep);
+    border: 3px solid var(--teal);
+  }
+
+  .stop.seen::before {
+    color: var(--ink);
+    background: var(--teal);
+  }
+
+  .stop[aria-current='true'] {
+    color: var(--ink);
+    background: var(--cream);
+    border-color: var(--ink);
+    font-weight: 700;
+  }
+
+  .stop[aria-current='true']::before {
+    color: var(--ink);
+    background: var(--gold);
+    border-color: var(--ink);
+  }
+
+  /* Todah walks the trail: he sits beside whichever stop is open, and hops there when it changes. */
+  .cub {
+    position: absolute;
+    left: -8px;
+    top: 0;
+    z-index: 1;
+    width: 40px;
+    height: auto;
+    image-rendering: pixelated;
+    pointer-events: none;
+    transition: transform 0.45s steps(6);
+    filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.4));
+  }
+
+  /* ---------- the stop that is open ---------- */
+  .card {
+    padding: 22px 24px 24px;
+    min-height: 420px;
+  }
+
+  .where {
+    margin: 0 0 10px;
+    font-family: var(--pixel);
+    font-size: 0.55rem;
+    line-height: 1.6;
+    color: var(--gold);
+  }
+
+  .card h2 {
+    margin: 0 0 16px;
+    font-family: var(--pixel);
+    font-size: clamp(0.95rem, 2.6vw, 1.35rem);
+    line-height: 1.5;
+    color: var(--gold-bright);
+  }
+
+  /* Todah has something to say at every stop. */
+  .says {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin: 0 0 18px;
+  }
+
+  .says img {
+    flex: none;
+    width: 54px;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  .bubble {
+    position: relative;
+    margin: 0 0 8px;
+    padding: 10px 14px;
+    color: var(--ink);
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+    font-size: 0.98rem;
+  }
+
+  /* The bubble's tail, pointing at him. */
+  .bubble::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    bottom: 8px;
+    border: 6px solid transparent;
+    border-right-color: var(--ink);
+  }
+
+  .shot {
+    margin: 0 0 18px;
+  }
+
+  .shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 4px solid var(--ink);
+    box-shadow: 0 0 0 3px var(--gold), 0 10px 0 3px rgba(0, 0, 0, 0.35);
+    background: var(--indigo-deep);
+  }
+
+  .shot figcaption {
+    margin-top: 12px;
+    font-size: 0.88rem;
+    opacity: 0.85;
+  }
+
+  .text p {
+    margin: 0 0 14px;
+    max-width: 62ch;
+  }
+
+  .text blockquote {
+    margin: 0 0 14px;
+    padding: 2px 0 2px 14px;
+    border-left: 4px solid var(--gold);
+    font-style: italic;
+  }
+
+  /* Under the hood: the same stop again, in a developer's words. Closed until it is asked for. */
+  .hood {
+    margin-top: 6px;
+    background: rgba(15, 12, 41, 0.55);
+    border: 3px dashed var(--teal);
+  }
+
+  .hood summary {
+    padding: 12px 14px;
+    font-family: var(--pixel);
+    font-size: 0.6rem;
+    line-height: 1.6;
+    color: var(--gold-bright);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .hood summary::-webkit-details-marker { display: none; }
+
+  .flap::after { content: '  [ OPEN ]'; color: var(--cream); }
+
+  .hood[open] .flap::after { content: '  [ CLOSE ]'; }
+
+  .hood summary small {
+    display: block;
+    margin-top: 6px;
+    font-family: var(--body);
+    font-size: 0.85rem;
+    color: var(--cream);
+    opacity: 0.8;
+  }
+
+  .hood ul {
+    margin: 0;
+    padding: 0 16px 14px 34px;
+    font-size: 0.96rem;
+  }
+
+  .hood li { margin: 0 0 10px; max-width: 68ch; }
+
+  .turn {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 3px solid var(--teal);
+  }
+
+  .count {
+    font-family: var(--pixel);
+    font-size: 0.55rem;
+    color: var(--cream);
+  }
+
+  .hint {
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+
+  /* When a stop opens, its contents step in, the way the game's panels do. */
+  .card.arrive > * {
+    animation: arrive 0.3s steps(4) both;
+  }
+
+  @keyframes arrive {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---------- foot ---------- */
+  .foot {
+    padding: 0 0 46px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .foot img {
+    display: block;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+  }
+
+  /* ---------- narrow screens: the trail on top, as rows of numbered stops ---------- */
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+
+    .trail {
+      position: static;
+      max-height: none;
+    }
+
+    .path {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0;
+    }
+
+    .path::before { display: none; }
+
+    .part {
+      flex-basis: 100%;
+      margin: 10px 0 0;
+      padding: 0;
+    }
+
+    /* Each stop is a square with its number and its emoji: the whole trail fits on one screen,
+       and the stop's name is the heading of the card below. */
+    .stop {
+      width: auto;
+      min-height: 44px;
+      padding: 8px 10px 8px 40px;
+      border-color: var(--teal);
+      font-size: 1.15rem;
+    }
+
+    .stop .name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .stop::before {
+      left: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .cub { display: none; }
+
+    .card { padding: 18px 16px 20px; }
+
+    /* No arrow keys on a phone. */
+    .hint { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cub { transition: none; }
+    .card.arrive > *, .done { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top wrap">
+  <h1 class="logo">RWR <span><i class="emo">🐾</i> TRAIL LOG <i class="emo">🐾</i></span></h1>
+  <p class="lede">How a 16-bit career adventure got built, one stop at a time. Walk it in order, or click any stop on the trail. Developers: every stop has an <strong>under the hood</strong> flap.</p>
+  <div class="links">
+    <a class="btn" href="https://rwr-sigma.vercel.app"><i class="emo">🎮</i> PLAY RWR</a>
+    <a class="btn quiet" href="https://github.com/cohortjuan/rwr">SEE THE CODE</a>
+  </div>
+</header>
+
+<main class="layout wrap">
+  <nav class="trail panel" aria-label="Stops on the trail">
+    <h2><i class="emo">🗺️</i> THE TRAIL</h2>
+    <p class="walked" id="walked"></p>
+    <div class="paws" id="paws" aria-hidden="true"></div>
+    <ol class="path" id="path"></ol>
+  </nav>
+
+  <article class="card panel" id="card" aria-live="polite">
+    <p class="where" id="where"></p>
+    <h2><i class="emo" id="title-icon"></i> <span id="title"></span></h2>
+    <div class="says" id="says">
+      <img src="img/cub.png" alt="Todah, the lion cub">
+      <p class="bubble" id="bubble"></p>
+    </div>
+    <figure class="shot" id="shot" hidden>
+      <img id="shot-img" alt="" width="738" height="575">
+      <figcaption id="shot-cap"></figcaption>
+    </figure>
+    <div class="text" id="text"></div>
+    <figure class="shot" id="more" hidden>
+      <img id="more-img" alt="" width="738" height="575" loading="lazy">
+      <figcaption id="more-cap"></figcaption>
+    </figure>
+    <details class="hood" id="hood" hidden>
+      <summary><span class="flap"><i class="emo">🔧</i> UNDER THE HOOD</span><small>The same stop in a developer's words: for instructors and anyone who likes to see how it works.</small></summary>
+      <ul id="hood-list"></ul>
+    </details>
+    <p class="done" id="done" hidden>🎉 You walked the whole trail. Todah is proud of you. 🦁</p>
+    <div class="turn">
+      <button class="btn quiet" id="back" type="button">&lt; BACK</button>
+      <span class="count" id="count"></span>
+      <button class="btn" id="next" type="button">NEXT &gt;</button>
+    </div>
+    <p class="hint">The left and right arrow keys walk the trail too.</p>
+  </article>
+</main>
+
+<footer class="foot wrap">
+  <img src="img/cohortjuan.jpg" alt="">
+  <p>Built by <a href="https://github.com/cohortjuan">cohortjuan</a> for the 2026 Good Soil Fall Code Jam. Theme: Season of Change. 🍂</p>
+</footer>
+
+<script>
+// Every stop on the trail, in order. To change the log, change this list: nothing else needs
+// to be touched.
+// Each part has an emoji and a name. Each stop has:
+//   icon   an emoji for the stop
+//   says   what Todah says there
+//   img, alt, cap   an optional picture, its description and its caption
+//   more   an optional second picture, { img, alt, cap }, shown under the text
+//   text   paragraphs. One that starts with "> " is shown as a quote
+//   hood   optional notes for developers. Words in `backticks` are shown as code
+const parts = [
+  {
+    icon: '🌱',
+    name: 'PART 1: THE IDEA',
+    stops: [
+      {
+        icon: '🍂',
+        title: 'A season of change',
+        says: 'I walked in from the left. It took a few tries before I could do it without tripping.',
+        img: 'title.jpg',
+        alt: 'The RWR title screen: a lion cub sitting in front of a rising sun under the words RWR, 16-bit career adventure.',
+        cap: 'The title screen. The cub walks in, sits down and waits for you.',
+        text: [
+          'RWR is my entry for the 2026 Good Soil Fall Code Jam. The theme is Season of Change, and the change I picked is one most people face alone: working out what to do for work next.',
+          'Career quizzes hand you a label and leave. I wanted something that walks with you. So RWR is a 16-bit game where a lion cub named Todah asks about real moments from your life and helps you turn them into one goal of your own.',
+        ],
+        hood: [
+          'Next.js 16 (App Router) with React 19 and TypeScript, styled with plain CSS modules. No UI library and no game engine. After four days: about 12,800 lines of TypeScript, 5,000 of CSS and 1,700 of Python for the art tools, across 110 commits.',
+          'The intro is a 4-frame sprite strip stepped with CSS `steps(4, jump-none)`. The walk lasts exactly six turns of the cycle, so it ends on its last frame by itself, then cross-fades into the seated cub over 0.15s.',
+          'The seated cub is on the page from the first frame at `opacity: 0`, so every picture he needs is loaded before the fade. The earlier version swapped pictures at the turnaround and stuttered on a first visit.',
+        ],
+      },
+      {
+        icon: '🦁',
+        title: 'A lion who will not roar',
+        says: 'I have been practicing my roar. You will know when it is time.',
+        img: 'hold.jpg',
+        alt: 'A box asking: are you ready to let Todah roar? with a wide button that says hold to roar, half filled with gold.',
+        cap: 'The roar is yours to let out. You press and hold, and only once you say the goal is reached.',
+        text: [
+          'The whole game hangs on one rule: Todah does not roar until you say your goal is reached. Nobody else decides that. Not the game, and not the AI.',
+          'He is a guide, not a prophet. Nothing in RWR promises a job or an outcome. That one rule shaped almost every screen that came after it.',
+        ],
+        hood: [
+          'Hold-to-roar listens for pointer and keyboard events. Pressing starts a 1.5 second timer and a CSS width transition on the meter. Letting go clears the timer and the meter drains. A plain single-press button sits beside it for anyone who cannot hold a button down.',
+          'The roar has to be the only sound. A tiny store, `lib/roarSound.ts`, read with `useSyncExternalStore`, tells the music player when the roar starts and when the audio element fires `ended`. The music cuts with a 0.15s Web Audio gain ramp and fades back in at a softer level afterwards.',
+        ],
+      },
+    ],
+  },
+  {
+    icon: '🎮',
+    name: 'PART 2: HOW IT PLAYS',
+    stops: [
+      {
+        icon: '🗺️',
+        title: 'Four circles, four levels',
+        says: 'Four circles. I can count that high.',
+        img: 'map.jpg',
+        alt: 'The trail map: four overlapping circles labeled Heart, Craft, Cause and Coin with Purpose in the middle, next to a count of evidence for each.',
+        cap: 'The trail map. Strong evidence in one circle, none yet in another.',
+        text: [
+          'The game is built on the purpose diagram: what you love, what you are good at, what the world needs, and what you can be paid for. In RWR those are four levels called Heart ❤️, Craft 🛠️, Cause 🌍 and Coin 🪙.',
+          'Each level ends with one sentence in your own words and up to three pieces of evidence for it. The trail map shows where your evidence is strong and where it is thin. It is a map, not a verdict.',
+        ],
+        hood: [
+          'The whole game is one object in `localStorage`, read through a `useSyncExternalStore` store so every screen stays in step. A circle is `{ claim: string, evidence: string[] }` and its score is `Math.min(evidence.length, 3)`.',
+          'No answer is stored on a server. Supabase is used for sign-in only.',
+        ],
+      },
+      {
+        icon: '💬',
+        title: 'Real moments, not vibes',
+        says: 'I ask. You answer. I do not grade. I am a lion, not a teacher.',
+        img: 'level.jpg',
+        alt: 'The end of level one: Todah says the circle has two of three evidence, and that it is a place to start from, not a grade.',
+        cap: 'The end of a level. Todah marks the map and refuses to grade you.',
+        text: [
+          'In each level Todah asks for a real moment, like the last time you lost track of time doing something. With AI switched on he follows up on what you said. With it off, the same level runs from written questions.',
+          'He never grades an answer. A thin circle only means not tested yet.',
+        ],
+        hood: [
+          'One server route, `/api/todah`, is the only place the app talks to a language model (`openai/gpt-oss-120b` on Groq). It has a mode for each job: interview, summary, crossroads, paths, goal, road, check-in and letter.',
+          'The server counts the player\'s answers and tells the model "this is follow-up 2 of 3" on every turn, so a level always ends when it should.',
+          'One more call turns the talk into JSON: a one-sentence claim and three yes-or-no answers about evidence. Anything that is not exactly that shape is dropped, and the player gets an empty form to fill in.',
+          'Every prompt carries the same guardrails: no promised outcomes, no diagnosis, and a pause with care if the player sounds hopeless. A made-up hopeless player was part of testing.',
+        ],
+      },
+      {
+        icon: '🧭',
+        title: 'The Crossroads',
+        says: 'Three paths. I cannot tell you which one. I can sit here while you pick.',
+        img: 'paths.jpg',
+        alt: 'Three cards side by side: the path you are on, the path next door and the bigger leap, each naming a job, a goal and a rough pay range.',
+        cap: 'Three paths to test, built from one made-up player\'s own words.',
+        text: [
+          'After the four levels comes the Crossroads. If you ask, Todah lays out three paths to test, each one a real full-time occupation built from your own words: the one closest to where you stand, one next door, and a bigger leap.',
+          'Taking a path sets the goal the roar waits for. Writing your own goal is always there too, and Todah gives his thoughts either way.',
+        ],
+        hood: [
+          'The paths come back as JSON and are checked on the server: exactly three, one of each kind, every field clamped to a length. A pay range is kept only if it is two sensible numbers: between $15,000 and $400,000, with the top no more than three times the bottom.',
+          'The answer is saved under a key made from the four claims and their scores, so it is asked for once, and asked again only if one of them changes.',
+          'Each card links to O*NET OnLine\'s search for that job title, so pay and training come from a public source and not from the model.',
+        ],
+      },
+      {
+        icon: '🧥',
+        title: 'The road, the pride and the wardrobe',
+        says: 'Yes, the jacket is necessary.',
+        img: 'wardrobe.jpg',
+        alt: 'The wardrobe: rows of small lions each wearing a different hat, with prices in sparks.',
+        cap: 'The wardrobe. Every piece is drawn on your own lion before you choose it.',
+        text: [
+          'A goal gets a plan for the obstacle you expect, and three small experiments to try in the real world. Friends join your pride by link or QR code and send cheers. 📣',
+          'Cheers and progress earn sparks ✨, and sparks dress your lion. The wardrobe is the fun part, and it is also a reason to come back and take the next step.',
+        ],
+        hood: [
+          'The pride has no server. A friend\'s card is packed into the part of a link after the `#`, which browsers never send anywhere, and shown as a QR code.',
+          'Each wardrobe piece is a transparent PNG on the same 89 x 111 grid as the lion, drawn in an SVG laid over the sprite and sorted by a fixed draw order. There are 100 of them.',
+          'Fur colors are CSS filters on the sprite. A small function, `applyFilter`, repeats the browser\'s filter math on a single color, which is how each fur gets a mane that matches it.',
+          'Up to three things can stand on the floor. The middle one is tucked behind the front paws by drawing it first and then drawing the paws again on top, cut out of the sprite with nested SVG viewports.',
+        ],
+      },
+      {
+        icon: '🎴',
+        title: 'Something to keep',
+        says: 'Do not peek at the letter. I am sitting on it.',
+        img: 'card.jpg',
+        alt: 'A cream trail card showing a smiling lion, a player name, four boxes of the player\'s own words, their goal and their first step.',
+        cap: 'The trail card: your lion, your words, your goal.',
+        text: [
+          'Most people stop for the day once their goal is set, and reaching it can be months away. So that moment needed an ending of its own.',
+          'Now you leave with a trail card made of your own words, and you can seal a letter to your future self. ✉️ It opens when you reach your goal, or on a date you pick.',
+        ],
+        more: {
+          img: 'letter.jpg',
+          alt: 'A panel titled a letter to yourself, with a sealed envelope stamped with a paw and the words: sealed, it opens when you reach your goal.',
+          cap: 'The sealed letter, waiting under a paw-print seal.',
+        },
+        hood: [
+          'The letter is `{ text, sealedAt, opensAt, openedAt }` in the player\'s own browser. `opensAt` is `null` when it waits for the goal. One function, `capsuleDue`, decides whether it has arrived, and every screen that shows the letter asks it.',
+          'It is never sent to the AI or to a server. Not even Todah reads it.',
+        ],
+      },
+      {
+        icon: '🌅',
+        title: 'The roar',
+        says: 'ROAR. (I held that in for the whole game.)',
+        img: 'credits.jpg',
+        alt: 'The last screen of the credits: the player\'s lion, the words the end and the beginning, and a credit to the maker.',
+        cap: 'The last screen of the credits.',
+        text: [
+          'When the goal is reached, you press and hold to let Todah roar. The sun comes up and he becomes a Pride Leader. 👑',
+          'Then the credits roll, and every line in them is something you said or did on the way: how it began, your four circles, what stood in the way, who cheered you on.',
+        ],
+        hood: [
+          'The full-screen credits are moved by the game itself with `requestAnimationFrame`, not by a CSS animation. That lets the scroll wheel ease the speed up and down: `pace += (wanted - pace) * Math.min(1, seconds * 6)`.',
+          'The last screen is given the window\'s exact height, with the lion at its top and the maker\'s credit at its foot. The roll stops when that screen fills the window, holds for three seconds, and fades.',
+          'A bug worth remembering: the credits once opened at their end. `dialog.showModal()` puts focus on the first focusable thing inside, which was a link at the very bottom, and the browser scrolled the hidden window down to show it.',
+        ],
+      },
+    ],
+  },
+  {
+    icon: '🧭',
+    name: 'PART 3: DECISIONS THAT SHAPED IT',
+    stops: [
+      {
+        icon: '🔒',
+        title: 'Privacy changed the plan',
+        says: 'Your name? I never heard it. Your browser whispers it for me.',
+        text: [
+          'Answers in a game like this are personal. So before the interview was written, I asked how to protect them. Reading the AI providers\' terms changed which provider I used.',
+          'Your answers stay in your own browser. Your name is never sent to the AI: it writes a placeholder and your browser fills the name in. And Todah asks before any AI is used at all. If you say no, the whole game still works.',
+        ],
+        hood: [
+          'The model never sees a name. Prompts tell it to write the token `[NAME]`, and the browser swaps the real name in.',
+          'Before anything is sent, a scrubber replaces email addresses, links and phone numbers with placeholders. Its first version missed `(555) 123-4567` and wrongly removed `2019-2024`. Both were caught by testing with sample text.',
+          'The free AI tier is shared by every player. A cookie holding only a date and a count allows 60 replies a day per browser, and a counter in memory allows 20 a minute per network address. Past that, the game carries on from written lines.',
+          'Keys live only in server environment variables. The browser never calls a model directly.',
+        ],
+      },
+      {
+        icon: '📜',
+        title: 'Giving credit where it is due',
+        says: 'I am a lion, not a philosopher. Credit goes to the people who drew the circles.',
+        img: 'about.jpg',
+        alt: 'The About page, with sections titled what shaped RWR and a short history of the diagram.',
+        cap: 'The About page tells where the diagram really comes from.',
+        text: [
+          'The four-circle diagram is often called ikigai, but it is not an old Japanese idea. Andres Zuzunaga drew it in 2011 as a diagram of purpose, and a blogger put the word ikigai in the middle in 2014.',
+          'So the middle of my diagram says PURPOSE, the word its author put there. The About page tells that history, and what ikigai means in Japan.',
+        ],
+        hood: [
+          'Every word a player reads lives in one file, `lib/lines.ts`. Rules that must survive later edits are written as comments beside the words they guard, for example that no path may ever be called right, likely or well paid.',
+        ],
+      },
+      {
+        icon: '💵',
+        title: 'Honest about money',
+        says: 'I will not guess your paycheck. I will point at the people who count them.',
+        text: [
+          'The first version of the three paths offered a free weekend workshop to a player who needs to pay rent. That is not career advice, and I said so.',
+          'Now every path is real full-time work, a step up from where the player stands. The game shows a rough pay range, says plainly that it may be out of date, and links to a free government site for current figures. The AI is not allowed to state what training a job needs, because in testing it got that wrong.',
+        ],
+        hood: [
+          'Rewording the prompt was not enough at first. Asked for the occupation "closest to what they do", the model kept offering the low-paid job the player already had. Three changes fixed it: redefining that slot as one step up, listing commonly low-paid work to leave out, and giving the model more room to think with `reasoning_effort: \'medium\'`.',
+          'In one test the model said a job needs a master\'s degree where a bachelor\'s is the usual route. So training was taken out of the model\'s hands and left to the public source.',
+          'A spot check against the Bureau of Labor Statistics (May 2025 figures). Dietitians: the game said $55,000 to $85,000, the real median is $76,400. Food service managers: the game said $45,000 to $65,000, the real median is $69,390. Close, but it can run low, which is exactly what the note on screen warns about.',
+        ],
+      },
+      {
+        icon: '📺',
+        title: 'Playing on an old TV',
+        says: 'They put me in a television. I like it in here.',
+        img: 'title-tv.jpg',
+        alt: 'The title screen shown inside an old black television set with speaker grilles, a power button and an RWR badge.',
+        cap: 'On a wide screen the whole game sits inside an old TV set, drawn in code.',
+        text: [
+          'On a wide screen the game sits inside an old TV set with speaker grilles, a power light and an RWR badge. It is drawn in code, with no picture file, and it can be switched off in settings.',
+          'It is there for one reason: it makes people smile before they have answered a single question.',
+        ],
+        hood: [
+          'The cabinet is one element with a hole cut by `clip-path: polygon(evenodd, ...)`. The sloped surround round the tube is two gradient rings made with `mask-composite: exclude`.',
+          'The grain of the plastic is an inline SVG `feTurbulence` filter used as a background image.',
+          'Three CSS variables say how far the set reaches in from each edge. They are zero when the set is off, so every button pinned to a corner simply adds them. Pop-up boxes and their dark backdrops are inset to the glass the same way.',
+        ],
+      },
+    ],
+  },
+  {
+    icon: '🤖',
+    name: 'PART 4: BUILDING WITH AI',
+    stops: [
+      {
+        icon: '🤝',
+        title: 'Who did what',
+        says: 'The human pointed. The machine typed. I supervised.',
+        text: [
+          'I built RWR with Claude Code, an AI coding assistant. It wrote most of the code. I made the decisions: what the game is, what it must never do, how it should feel, and what was not good enough yet.',
+          'I played every screen as it was built and steered it live. On day one the first title screen just sat there, and to me it read as unfinished. That became the rule for everything after it:',
+          '> Stick to addictive game principles. As fun as it is helpful.',
+        ],
+        hood: [
+          'Changes were type-checked with `tsc` and linted with ESLint as they were made.',
+          'Screens were tested in a real browser with made-up players, including a player in distress and a player with the AI switched off, and the live site was checked after each push.',
+          'The art came from an image model and the music from Pixabay\'s free library. The README says what the AI made, what I decided, and where every asset came from.',
+        ],
+      },
+      {
+        icon: '🙅',
+        title: 'What I turned down',
+        says: 'They took my typing sound. I have made my peace with it.',
+        text: [
+          'A lot of directing is saying no. A typing sound on every letter survived for exactly one commit: four minutes. An early mockup put the grown lion on a cliff, which looked too much like The Lion King, so it stayed in the drawer. The reward shows him over a city skyline.',
+          'When the AI redrew a set of accessories, the detail of the originals was lost. I had the originals cut out and used exactly as they were drawn. Fast is not the same as good, and deciding what was good stayed my job.',
+        ],
+        hood: [
+          'The redrawn accessories were made on the lion\'s own 89 x 111 grid, which is too coarse for a pattern on a wallet. The originals are now cut from the source sheet at six times that, 534 x 666, and drawn smoothed and not pixelated, so the design can be read.',
+          'Their other colors are made by shifting the hue of the cut-out, so every color keeps the same drawing underneath.',
+        ],
+      },
+      {
+        icon: '✂️',
+        title: 'From a drawing to the game',
+        says: 'I was cut from a pink sheet with scissors made of Python.',
+        img: 'sheet.jpg',
+        alt: 'A sheet of twelve pixel-art lions in different poses on a bright pink background.',
+        cap: 'One of the sheets the art starts from, drawn by an image model.',
+        text: [
+          'The art starts as sheets like this one, drawn by an image model. Small scripts cut each piece out, line it up against Todah\'s own outline, and repaint it in one shared set of colors. That is why a red cap and a red scarf are the same red.',
+          'His mane and his sunglasses are placed from the sprite itself, from his chin and his eyes. So when he is redrawn, they are fitted again by running a script, not by hand.',
+        ],
+        hood: [
+          'The cutter is Python with Pillow and nothing else. For each cell on a sheet it finds where the drawn lion sits by sliding the game\'s own sprite outline over it and scoring the match, then keeps only the pixels that differ from the bare lion.',
+          'Colors come from 16 named ramps of five steps each. A piece is repainted by rank: each pixel keeps its place from dark to light on the new ramp, so the shading survives the change of color.',
+          'The mane is drawn by a script on a 51 x 58 grid. It reads the sprite to find the middle of his head and the row where his chin ends, and builds the ruffs, the bib and the full mane from those. When the lion was redrawn, the old fixed numbers left the mane three rows too low. Now it measures.',
+        ],
+      },
+    ],
+  },
+  {
+    icon: '🔥',
+    name: 'PART 5: WHAT BROKE, AND WHAT I LEARNED',
+    stops: [
+      {
+        icon: '🐛',
+        title: 'Things that broke',
+        says: 'My mane once sat beside my head. We do not speak of it.',
+        text: [
+          'The first live AI call failed, because the model I had picked had been retired. Redrawing Todah left his mane sitting beside his tuft of hair. The credits once opened at their end, because the browser jumped to a link at the very bottom.',
+          'Each of those was found by using the game the way a player would, not by reading the code.',
+        ],
+        hood: [
+          'The retired model returned a 404. The model name is now a setting with a default, so the next retirement is a one-line change and not a new build of the logic.',
+          'The model thinks before it writes, and the thinking comes out of the same token allowance. Asked to think hard, it spent the whole allowance thinking and wrote nothing, twice. Every call now says how much room it gets and how hard to think first.',
+          'The mane and the credits bugs are told under their own stops: "From a drawing to the game" and "The roar".',
+        ],
+      },
+      {
+        icon: '💡',
+        title: 'What I learned',
+        says: 'Play it yourself. That is the whole lesson.',
+        text: [
+          'Small, honest features beat clever ones. And a free AI budget shapes the design: every player shares it, so each browser gets a fair number of replies a day, and the game still works with no AI at all.',
+          'The best test I ran was the simplest. I played it from start to finish and noticed what I expected to happen next. I expected the game to suggest something at the end, and it did not. That gap became the three paths.',
+        ],
+        hood: [
+          'A full playthrough uses about 25 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
+        ],
+      },
+      {
+        icon: '🏁',
+        title: 'What comes next',
+        says: 'The trail goes on. Bring snacks.',
+        img: 'reward.jpg',
+        alt: 'The reward picture: a grown lion roaring over a city skyline at sunset, with the words RWR Pride Leader.',
+        cap: 'The picture a player earns with the roar.',
+        text: [
+          'Before the deadline on November 27: testing on real phones, a short demo video, and saving the trail card as a picture.',
+          'You can play RWR right now. It is free and it needs no account.',
+        ],
+        hood: [
+          'This log is one HTML file with no framework and no build step. Every stop is an entry in one array at the bottom of the file, and the address keeps the stop number after the `#`, so a link can point at any stop.',
+        ],
+      },
+    ],
+  },
+]
+
+// Flatten the parts into one walk, remembering which part each stop belongs to.
+const stops = parts.flatMap((part) => part.stops.map((stop) => ({ ...stop, part: part.name })))
+const seen = new Set()
+let at = 0
+// Once a reader opens the hood, it stays open at the stops that follow.
+let hoodOpen = false
+
+const $ = (id) => document.getElementById(id)
+
+// An emoji in its own element, so it is drawn at its own size beside the pixel font.
+function emoji(mark) {
+  const element = document.createElement('i')
+  element.className = 'emo'
+  element.textContent = mark
+  return element
+}
+const path = $('path')
+
+// Build the trail once: a heading for each part, then a button for each stop.
+let n = 0
+for (const part of parts) {
+  const heading = document.createElement('li')
+  heading.className = 'part'
+  heading.append(emoji(part.icon), ` ${part.name}`)
+  path.appendChild(heading)
+  for (const stop of part.stops) {
+    const item = document.createElement('li')
+    const button = document.createElement('button')
+    const index = n
+    button.type = 'button'
+    button.className = 'stop'
+    button.dataset.n = String(index + 1)
+    const name = document.createElement('span')
+    name.className = 'name'
+    name.textContent = ` ${stop.title}`
+    button.title = stop.title
+    button.append(emoji(stop.icon), name)
+    button.addEventListener('click', () => go(index, true))
+    item.appendChild(button)
+    path.appendChild(item)
+    n += 1
+  }
+}
+
+const cub = document.createElement('img')
+cub.className = 'cub'
+cub.src = 'img/cub.png'
+cub.alt = ''
+path.appendChild(cub)
+
+const buttons = [...path.querySelectorAll('.stop')]
+const paws = stops.map(() => {
+  const paw = document.createElement('span')
+  paw.textContent = '🐾'
+  $('paws').appendChild(paw)
+  return paw
+})
+
+$('hood').addEventListener('toggle', () => {
+  hoodOpen = $('hood').open
+})
+
+// A developer's note as safe HTML: everything escaped, then `code` marked up.
+function note(text) {
+  const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return safe.replace(/`([^`]+)`/g, '<code>$1</code>')
+}
+
+function go(index, byHand) {
+  at = Math.max(0, Math.min(stops.length - 1, index))
+  const stop = stops[at]
+  seen.add(at)
+
+  $('where').textContent = `${stop.part} · STOP ${at + 1} OF ${stops.length}`
+  $('title-icon').textContent = stop.icon
+  $('title').textContent = stop.title
+  $('bubble').textContent = stop.says
+
+  const shot = $('shot')
+  if (stop.img) {
+    const image = $('shot-img')
+    image.src = `img/${stop.img}`
+    image.alt = stop.alt || ''
+    $('shot-cap').textContent = stop.cap || ''
+    shot.hidden = false
+  } else {
+    shot.hidden = true
+  }
+
+  const more = $('more')
+  more.hidden = !stop.more
+  if (stop.more) {
+    const image = $('more-img')
+    image.src = `img/${stop.more.img}`
+    image.alt = stop.more.alt || ''
+    $('more-cap').textContent = stop.more.cap || ''
+  }
+
+  $('text').replaceChildren(
+    ...stop.text.map((paragraph) => {
+      const quote = paragraph.startsWith('> ')
+      const element = document.createElement(quote ? 'blockquote' : 'p')
+      element.textContent = quote ? paragraph.slice(2) : paragraph
+      return element
+    }),
+  )
+
+  const hood = $('hood')
+  hood.hidden = !stop.hood
+  if (stop.hood) {
+    $('hood-list').innerHTML = stop.hood.map((line) => `<li>${note(line)}</li>`).join('')
+    hood.open = hoodOpen
+  }
+
+  $('count').textContent = `${at + 1} / ${stops.length}`
+  $('back').disabled = at === 0
+  $('next').disabled = at === stops.length - 1
+  $('walked').textContent = `${seen.size} of ${stops.length} stops visited`
+  $('done').hidden = seen.size < stops.length
+
+  buttons.forEach((button, i) => {
+    button.setAttribute('aria-current', i === at ? 'true' : 'false')
+    button.classList.toggle('seen', seen.has(i))
+  })
+  paws.forEach((paw, i) => paw.classList.toggle('on', seen.has(i)))
+
+  // Todah sits beside the stop that is open.
+  const here = buttons[at]
+  cub.style.transform = `translateY(${here.offsetTop - 14}px)`
+
+  // Step the contents in again.
+  const card = $('card')
+  card.classList.remove('arrive')
+  void card.offsetWidth
+  card.classList.add('arrive')
+
+  // The address remembers the stop, so a link can point at one.
+  history.replaceState(null, '', `#${at + 1}`)
+
+  if (byHand) {
+    here.scrollIntoView({ block: 'nearest' })
+    if (window.matchMedia('(max-width: 860px)').matches) card.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
+}
+
+$('back').addEventListener('click', () => go(at - 1, true))
+$('next').addEventListener('click', () => go(at + 1, true))
+
+document.addEventListener('keydown', (event) => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return
+  if (event.key === 'ArrowRight') go(at + 1, true)
+  if (event.key === 'ArrowLeft') go(at - 1, true)
+})
+
+// Start at the stop the address names, or at the first.
+const asked = Number(location.hash.slice(1))
+go(Number.isInteger(asked) && asked >= 1 && asked <= stops.length ? asked - 1 : 0, false)
+// The cub is placed again once the fonts have settled the layout.
+window.addEventListener('load', () => go(at, false))
+</script>
+</body>
+</html>
