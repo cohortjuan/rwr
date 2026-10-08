@@ -117,7 +117,21 @@ function readText(value: unknown, max: number): string {
 // broken or half-filled set.
 const pathKinds = ['near', 'next', 'wild']
 
-function readPaths(text: string): { paths: { kind: string, name: string, why: string, goal: string }[], care: boolean } {
+// A rough yearly pay range from the AI, kept only if it is two sensible whole numbers. Anything
+// odd is dropped, and the card then shows the link to current figures with no range.
+function readPay(value: unknown): { low: number, high: number } | null {
+  const pay = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>
+  const low = Math.round(Number(pay.low))
+  const high = Math.round(Number(pay.high))
+  if (!Number.isFinite(low) || !Number.isFinite(high)) return null
+  if (low < 15000 || high > 400000 || high <= low || high > low * 3) return null
+  return { low, high }
+}
+
+function readPaths(text: string): {
+  paths: { kind: string, name: string, why: string, goal: string, pay: { low: number, high: number } | null }[]
+  care: boolean
+} {
   const empty = { paths: [], care: false }
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
@@ -135,6 +149,7 @@ function readPaths(text: string): { paths: { kind: string, name: string, why: st
           name: readText(entry.name, 60),
           why: readText(entry.why, 220),
           goal: readText(entry.goal, 160),
+          pay: readPay(entry.pay),
         }
       })
       .filter((path) => path.name && path.why && path.goal)

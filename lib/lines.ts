@@ -583,9 +583,12 @@ export const lines = {
     pathsThinking: 'Todah is reading the trail ahead...',
     pathsKinds: { near: 'THE PATH YOU ARE ON', next: 'THE PATH NEXT DOOR', wild: 'THE BIGGER LEAP' },
     pathsGoal: 'A goal to walk toward:',
-    // The game never states pay or entry requirements itself. It sends the player to look them up.
-    pathsCheck: 'SEE WHAT IT TAKES AND PAYS',
-    pathsCheckNote: 'Opens O*NET OnLine, a free United States government site, with the training, pay and outlook for this kind of work. Pay differs by place, so look up your own area there before you choose.',
+    // Pay is a rough range and is always called that. Rules that must survive edits: it is
+    // never shown as current or exact, and the link to current figures sits right under it.
+    pathsPay: 'Rough pay:',
+    pathsPayRange: (low: number, high: number) => `$${low.toLocaleString('en-US')} to $${high.toLocaleString('en-US')} a year`,
+    pathsCheck: 'SEE CURRENT PAY AND WHAT IT TAKES',
+    pathsCheckNote: 'The pay shown is a rough national range from older figures. It may be out of date, and it differs a lot by place. Each link opens O*NET OnLine, a free United States government site, with current pay for your area, the training the work takes, and its outlook. Look there before you choose.',
     pathsChoose: 'TAKE THIS PATH',
     pathsChosen: 'YOUR PATH',
     pathsAfter: 'Take one and its goal becomes your main goal. You can change the words after, or skip these and write your own below.',

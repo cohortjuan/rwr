@@ -19,8 +19,15 @@ export type TodahForm = 'cub' | 'nomad' | 'leader'
 
 // One of three kinds of work the four circles could point to: the one closest to where the
 // player stands, one next door, and a bigger leap. `goal` is a goal on that path they can take
-// as their main goal.
-export type PathIdea = { kind: 'near' | 'next' | 'wild', name: string, why: string, goal: string }
+// as their main goal. `pay` is a rough yearly range in dollars from the AI's memory of public
+// figures, or null when it gave none: it is always shown as possibly out of date.
+export type PathIdea = {
+  kind: 'near' | 'next' | 'wild'
+  name: string
+  why: string
+  goal: string
+  pay?: { low: number, high: number } | null
+}
 
 // The player chooses whether their lion is a lion or a lioness. It decides part of the
 // wardrobe: only a lion grows a mane, and some pieces are only for a lioness.

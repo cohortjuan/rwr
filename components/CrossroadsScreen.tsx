@@ -244,7 +244,14 @@ export default function CrossroadsScreen() {
                           <span>
                             <span className={styles.pathLabel}>{lines.crossroads.pathsGoal}</span> {path.goal}
                           </span>
-                          {/* Pay and what the work takes are never stated here. The player looks them up. */}
+                          {/* A rough range only, and only when the AI gave a sensible one. Current
+                              figures and what the work takes are for the player to look up. */}
+                          {path.pay && (
+                            <span>
+                              <span className={styles.pathLabel}>{lines.crossroads.pathsPay}</span>{' '}
+                              {lines.crossroads.pathsPayRange(path.pay.low, path.pay.high)}
+                            </span>
+                          )}
                           <a
                             className={styles.pathCheck}
                             href={`https://www.onetonline.org/find/quick?s=${encodeURIComponent(path.name)}`}
