@@ -17,8 +17,9 @@ export type ChatMessage = { role: 'user' | 'todah', text: string }
 
 export type TodahForm = 'cub' | 'nomad' | 'leader'
 
-// One of three directions the four circles could point in: the one the player is already on,
-// one next door, and a wild one. `goal` is a first milestone they can take as their main goal.
+// One of three kinds of work the four circles could point to: the one closest to where the
+// player stands, one next door, and a bigger leap. `goal` is a goal on that path they can take
+// as their main goal.
 export type PathIdea = { kind: 'near' | 'next' | 'wild', name: string, why: string, goal: string }
 
 // The player chooses whether their lion is a lion or a lioness. It decides part of the

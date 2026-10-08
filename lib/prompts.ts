@@ -25,6 +25,8 @@ const guardrails = `Guardrails that always apply:
 - You do not know the player's name. If you address them, write ${NAME_TOKEN} exactly like
   that and the game fills it in. Never ask for their full name, employer, address, or contacts.
 - Plain text only: no emoji, no markdown, no lists. This is a 16-bit game.
+- Write in American English: American spelling and everyday American words. When you quote the
+  player, keep their words exactly as they wrote them.
 - Never diagnose, label, or tell them what they should do.
 - Never claim any job or outcome is promised to them. You are a guide, not a prophet.
 - If they express hopelessness or distress, pause the game talk, respond with care, and
@@ -91,13 +93,13 @@ export const levelBriefs: Partial<Record<Phase, LevelBrief>> = {
     probes: [
       'whether other people come to them for help with this (ask who, and for what)',
       'one thing they made, fixed, or improved with this skill that they could point to',
-      'how long they have been doing or practising it',
+      'how long they have been doing or practicing it',
     ],
     claim: 'what the player is good at, as one short sentence in the first person that starts with "I am good at"',
     evidence: {
       asked: 'The player said other people come to them for help with this.',
       made: 'The player named a specific thing they made, fixed, or improved.',
-      practiced: 'The player said they have done or practised it for a year or more.',
+      practiced: 'The player said they have done or practiced it for a year or more.',
     },
   },
   Cause: {
@@ -240,42 +242,75 @@ Rules:
 ${guardrails}`
 }
 
-// Three paths: at the Crossroads, if the player asks, one call lays out three directions their
-// four circles could point in. They are ideas to test. The player picks one as their goal,
-// changes its words, or writes their own. Nothing here may read as a promise or an answer.
+// Three paths: at the Crossroads, if the player asks, one call lays out three kinds of work
+// their four circles could point to. They are ideas to test. The player picks one as their
+// goal, changes its words, or writes their own. Rules that must survive edits:
+// - Each path is real, full-time work that people make a living at, never a side gig, a
+//   volunteer project or a one-off event. A player once got "run a free weekend workshop" as
+//   a career path, and that is no help to someone who needs to pay rent.
+// - The AI never states pay, demand, or entry requirements: in testing it said a job needed a
+//   master's degree when it needs a bachelor's. The game links each path to a public source.
+// - Nothing here may read as a promise or as the answer.
 function pathsPrompt(): string {
-  return `You help a player of a retro career-exploration game see where their four circles could point.
-You are not talking to the player. You fill in a small form, which they will read. They then
-choose one path as their goal, change its words, or write their own.
+  return `You help a player of a retro career-exploration game see what kinds of work their four circles
+could point to. You are not talking to the player. You fill in a small form, which they will
+read. They then choose one path as their goal, change its words, or write their own.
 
 You are given their four circles (what they love, what they are good at, who they want to help,
-what they could be paid for) with how much evidence each has, from 0 to 3.
+what they could be paid for) with how much evidence each has, from 0 to 3. The player is an
+adult in the United States who needs work that pays the bills.
 
 Reply with one JSON object and nothing else, in exactly this shape:
 {"paths": [{"kind": "near", "name": "...", "why": "...", "goal": "..."}, {"kind": "next", "name": "...", "why": "...", "goal": "..."}, {"kind": "wild", "name": "...", "why": "...", "goal": "..."}]}
 
 Exactly three paths, in this order:
-- "near": the path closest to what they already do and have the most evidence for.
-- "next": a neighbouring path that uses the same strengths somewhere they have not tried yet.
-- "wild": the path they might try if money and other people's opinions did not matter. It is
-  still built from their own words.
+- "near": one step up from where they stand now. The skilled, lead, or supervisory occupation
+  that what they already do leads to. Never the entry-level job they already have or could get
+  tomorrow.
+- "next": a neighboring occupation where the same strengths are used in a different setting.
+- "wild": a bigger leap that would take real training, which their words still point toward.
+
+Every path must be an established occupation: one that employers across the country hire for
+full time, or a licensed trade or profession. Think of the titles in the Occupational Outlook
+Handbook. Never a side gig, a hobby, volunteering, a one-off event or project, or a business
+idea with no customers yet.
+
+Pay matters. The player needs work an adult can live on. Leave out occupations that are
+commonly low paid or mostly part time, such as retail sales, cashier, food service, childcare
+worker, teacher's aide, recreation worker, most entry-level care work, and basic repair of
+bikes or other small goods. When their words point at one of those, name instead the better-paid
+skilled occupation the same strengths lead to: a licensed trade, a technician, a supervisor or
+manager of that work, a teacher or trainer with a credential, or a health or technical
+profession. Keep what they love in it.
+
+Two examples of stepping up, to show the idea. Do not copy them.
+- Someone who tunes up bikes on weekends and likes explaining repairs: not "Bicycle Repairer".
+  Instead "Industrial Machinery Mechanic", or "Service Manager" at a repair shop.
+- Someone with years as a cashier and server who loves cooking and stays calm in a rush: not
+  "Cook" or "Server". Instead "Food Service Manager", or "Chef" running a kitchen.
+
+Before you answer, check each name against the low-paid list above. If a name is on it or
+close to it, replace it with the step up.
 
 For each path:
-- "name": a kind of work or a direction, in plain words, at most 6 words. A field or a type of
-  role, never a named employer, product, website, or course.
-- "why": one sentence, at most 140 characters, saying which of their own words point this way.
+- "name": the occupation's ordinary job title, as a job board would list it, at most 5 words.
+  Never a named employer, product, website, or course.
+- "why": one sentence, at most 150 characters, saying which of their own words point this way.
   Quote two to six of their words inside it.
-- "goal": one first milestone on that path that they could reach in a few months and would know
-  they had reached. First person, at most 110 characters, such as "Get paid for one ..." or
-  "Finish one ... and show it to ...". It must not depend on someone else choosing them.
+- "goal": a goal on this path they would clearly know they had reached, in the first person, at
+  most 110 characters. Usually landing a first paid, full-time role in this work, or finishing
+  the training it needs. Not a hobby project or a free event.
 
 Rules:
-- These are paths to test, not answers. Never say a path is right for them, will work out, pays
-  well, or is in demand. Say "could", never "will" or "should".
-- The three must be clearly different from each other.
-- Build every line from what they said. It should fit this player and nobody else. Invent
-  nothing about them.
-- Nothing that means quitting anything, and nothing risky or costly.
+- Write in American English.
+- These are paths to test, not answers. Never say a path is right for them or will work out.
+  Say "could", never "will" or "should".
+- Do not state pay, salary figures, demand, or what training or degree the work needs. You can
+  get those wrong, so the game sends the player to a public source for them.
+- The three must be clearly different occupations.
+- Build "why" from what they said. It should fit this player and nobody else. Invent nothing
+  about them.
+- Nothing that means quitting anything on the spot, and nothing risky.
 - No names or contact details.
 - Do not judge, diagnose, or label the player.
 - If their words express hopelessness or distress, reply exactly {"care": true, "paths": []}.
@@ -333,6 +368,7 @@ Reply with one JSON object and nothing else, in exactly this shape:
   "Spend...", "Look up..."), at most 140 characters. At least one must involve talking to a real
   person.
 - Build every line from what they said. It should fit this player and nobody else.
+- Write in American English.
 
 Guardrails that always apply:
 - Do not name a specific employer, course, product, or website. Do not state pay or demand, and

@@ -130,7 +130,12 @@ function readPaths(text: string): { paths: { kind: string, name: string, why: st
     const paths = (Array.isArray(fields.paths) ? fields.paths : [])
       .map((path: unknown) => {
         const entry = (typeof path === 'object' && path !== null ? path : {}) as Record<string, unknown>
-        return { kind: String(entry.kind ?? ''), name: readText(entry.name, 60), why: readText(entry.why, 200), goal: readText(entry.goal, 160) }
+        return {
+          kind: String(entry.kind ?? ''),
+          name: readText(entry.name, 60),
+          why: readText(entry.why, 220),
+          goal: readText(entry.goal, 160),
+        }
       })
       .filter((path) => path.name && path.why && path.goal)
     const whole = pathKinds.map((kind) => paths.find((path) => path.kind === kind))
@@ -308,7 +313,8 @@ export async function POST(request: Request) {
       const result = await generateReply(
         buildSystemPrompt({ mode, entryChoice: null }),
         [{ role: 'user', text: `The four circles:\n${[...crossroads.values()].join('\n')}` }],
-        { maxTokens: 1500, effort: 'low' },
+        // Medium thinking: on low it kept offering the low-paid job the player already has.
+        { maxTokens: 3000, effort: 'medium' },
       )
       return sent({ ...readPaths(result.text), provider: result.provider })
     } catch (error) {

@@ -244,12 +244,22 @@ export default function CrossroadsScreen() {
                           <span>
                             <span className={styles.pathLabel}>{lines.crossroads.pathsGoal}</span> {path.goal}
                           </span>
+                          {/* Pay and what the work takes are never stated here. The player looks them up. */}
+                          <a
+                            className={styles.pathCheck}
+                            href={`https://www.onetonline.org/find/quick?s=${encodeURIComponent(path.name)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {lines.crossroads.pathsCheck}
+                          </a>
                           <button type="button" className="btn" onClick={() => takePath(path)}>
                             {lines.crossroads.pathsChoose}
                           </button>
                         </li>
                       ))}
                     </ul>
+                    <p className={styles.fine}>{lines.crossroads.pathsCheckNote}</p>
                     <p className={styles.fine}>{lines.crossroads.pathsAfter}</p>
                   </>
                 ) : aiOn && pathsState !== 'failed' ? (

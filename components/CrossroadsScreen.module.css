@@ -129,3 +129,13 @@
   font-size: 0.85rem;
   opacity: 0.85;
 }
+
+.pathCheck {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.55rem;
+  color: var(--gold-bright);
+}
+
+.fine + .fine {
+  margin-top: 6px;
+}
