@@ -315,6 +315,9 @@ export default function CrossroadsScreen() {
                       <Link className="btn" href="/road">
                         {lines.crossroads.toRoad}
                       </Link>
+                      <Link className="btn" href="/card">
+                        {lines.card.open}
+                      </Link>
                       <Link className="btn btn-quiet" href="/upgrades">
                         {lines.crossroads.toUpgrades}
                       </Link>

@@ -461,6 +461,29 @@ export const lines = {
     back: 'BACK TO WARDROBE',
   },
 
+  // The trail card: a keepsake from the first sitting, made of the player's own words. It is a
+  // draft Juan is deciding whether to keep (2026-10-09).
+  card: {
+    name: 'TRAIL CARD',
+    brand: 'RWR · TRAIL CARD',
+    noName: 'A traveler',
+    alt: (name: string) => `The trail card of ${name}`,
+    walkingWith: (lion: string) => `walking with ${lion}`,
+    noClaim: 'Not walked yet',
+    path: 'THE PATH I AM TESTING',
+    goal: 'MY GOAL',
+    step: 'MY FIRST STEP',
+    noStep: 'Not planned yet. Plan the road to add it.',
+    footer: 'A SEASON OF CHANGE · RWR',
+    locked: 'Your trail card is made once you have set a goal at the Crossroads.',
+    toCrossroads: 'GO TO THE CROSSROADS',
+    draftNote: 'This is yours to keep: your lion, your words, your goal. (Draft: saving it as a picture and sending it come next if this stays.)',
+    toRoad: 'BACK TO THE ROAD',
+    planRoad: 'PLAN THE ROAD',
+    back: 'BACK TO THE CROSSROADS',
+    open: 'SEE MY TRAIL CARD',
+  },
+
   // The level interviews. Each level opens with a scripted question, then three follow-ups
   // (from the AI, or from `scripted` when the AI is off or down), then a claim and its
   // evidence go on the trail map. Rules that must survive edits: Todah asks for real moments,
@@ -885,6 +908,7 @@ export const lines = {
       '/level/coin': 'LEVEL 4',
       '/crossroads': 'CROSSROADS',
       '/road': 'THE ROAD',
+      '/card': 'TRAIL CARD',
       '/witness': 'WITNESS',
       '/letter': "TODAH'S NOTE",
       '/upgrades': 'UPGRADES',
