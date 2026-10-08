@@ -4,17 +4,19 @@ import { useState } from 'react'
 import Link from 'next/link'
 import PawPrint from '@/components/PawPrint'
 import { lines } from '@/lib/lines'
-import { saveProgress, useLionText, useProgress } from '@/lib/progress'
+import { capsuleDue, saveProgress, useLionText, useProgress } from '@/lib/progress'
 import { useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './SealedLetter.module.css'
 
-// A letter to yourself, sealed until a date the player picks. It is written when the goal is
-// set, kept on this device, and handed back when its day comes, with one question from Todah.
+// A letter to yourself, sealed until the goal is reached or until a date the player picks. It
+// is written when the goal is set, kept on this device, and handed back when its moment
+// comes, with one question from Todah.
 // Nothing here goes to the AI or to a server. A draft Juan is deciding whether to keep.
 
 const LETTER_MAX = 300
-const waits = [30, 60, 90]
+// How long it waits: until the goal is reached, or a number of days.
+const waits: ('goal' | number)[] = ['goal', 30, 60, 90]
 const DAY_MS = 86_400_000
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -24,12 +26,12 @@ export default function SealedLetter() {
   const lion = useLionText()
   const { sound } = useSettings()
   const [draft, setDraft] = useState('')
-  const [wait, setWait] = useState(waits[0])
+  const [wait, setWait] = useState<'goal' | number>('goal')
   // The time is read when the panel is first drawn, which is often enough for a date.
   const [now] = useState(() => Date.now())
 
   const letter = progress.capsule
-  const due = letter !== null && now >= new Date(letter.opensAt).getTime()
+  const due = capsuleDue(progress, now)
 
   function seal(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -41,7 +43,7 @@ export default function SealedLetter() {
       capsule: {
         text,
         sealedAt: sealedAt.toISOString(),
-        opensAt: new Date(sealedAt.getTime() + wait * DAY_MS).toISOString(),
+        opensAt: wait === 'goal' ? null : new Date(sealedAt.getTime() + wait * DAY_MS).toISOString(),
         openedAt: null,
       },
     })
@@ -75,15 +77,15 @@ export default function SealedLetter() {
           </div>
           <div className={styles.waits} role="group" aria-label={lines.capsule.waitLabel}>
             <span className={styles.waitLabel}>{lines.capsule.waitLabel}</span>
-            {waits.map((days) => (
+            {waits.map((option) => (
               <button
-                key={days}
+                key={option}
                 type="button"
-                className={wait === days ? 'btn' : 'btn btn-quiet'}
-                aria-pressed={wait === days}
-                onClick={() => setWait(days)}
+                className={wait === option ? 'btn' : 'btn btn-quiet'}
+                aria-pressed={wait === option}
+                onClick={() => setWait(option)}
               >
-                {lines.capsule.days(days)}
+                {option === 'goal' ? lines.capsule.atGoal : lines.capsule.days(option)}
               </button>
             ))}
           </div>
@@ -103,8 +105,8 @@ export default function SealedLetter() {
             </span>
           </div>
           <div>
-            <p className={styles.strong}>{lines.capsule.sealed(day(letter.opensAt))}</p>
-            <p>{lion(lines.capsule.keeping)}</p>
+            <p className={styles.strong}>{letter.opensAt ? lines.capsule.sealed(day(letter.opensAt)) : lines.capsule.sealedGoal}</p>
+            <p>{lion(letter.opensAt ? lines.capsule.keeping : lines.capsule.keepingGoal)}</p>
             <p className={styles.fine}>{lines.capsule.sealedOn(day(letter.sealedAt))}</p>
           </div>
         </div>

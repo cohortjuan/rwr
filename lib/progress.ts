@@ -140,9 +140,10 @@ export type Progress = {
   // What Todah said about the main goal once it was set, kept so it is asked for once. `for`
   // is the goal it was about: a new goal gets new thoughts.
   goalThoughts: { text: string, for: string } | null
-  // A letter the player wrote to themselves when the goal was set, sealed until `opensAt`.
-  // It stays on this device and is never sent anywhere.
-  capsule: { text: string, sealedAt: string, opensAt: string, openedAt: string | null } | null
+  // A letter the player wrote to themselves when the goal was set. It is sealed until the
+  // goal is reached (`opensAt` null), or until the date in `opensAt`. It stays on this device
+  // and is never sent anywhere.
+  capsule: { text: string, sealedAt: string, opensAt: string | null, openedAt: string | null } | null
   road: Road | null
   witnesses: Witness[]
   letter: Letter | null
@@ -468,6 +469,14 @@ export function pridePower(progress: Progress, others: Progress[] = []): { level
     level: parts.reduce((sum, part) => sum + part.level, 0),
     max: parts.reduce((sum, part) => sum + part.max, 0),
   }
+}
+
+// Whether the player's sealed letter has reached its moment: the goal is reached, or its
+// date has come. `now` is a time in milliseconds.
+export function capsuleDue(progress: Progress, now: number): boolean {
+  const letter = progress.capsule
+  if (!letter || letter.openedAt) return false
+  return letter.opensAt ? now >= new Date(letter.opensAt).getTime() : Boolean(progress.goalAchievedAt)
 }
 
 export function hasSavedGame(progress: Progress): boolean {

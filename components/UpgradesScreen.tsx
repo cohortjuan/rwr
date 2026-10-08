@@ -7,6 +7,7 @@ import { lines } from '@/lib/lines'
 import { auraSize, maneSize, sparks, wornIds } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
 import {
+  capsuleDue,
   isPath,
   milestones,
   PATH_EVIDENCE,
@@ -81,7 +82,7 @@ export default function UpgradesScreen() {
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
   // Read once when the screen is drawn, which is often enough for a date.
   const [now] = useState(() => Date.now())
-  const capsuleDue = progress.capsule ? now >= new Date(progress.capsule.opensAt).getTime() : false
+  const letterDue = capsuleDue(progress, now)
   // A lioness has no mane: the same upgrade is her aura.
   const lioness = progress.lionSex === 'female'
   const slotName = (slot: Slot) => (slot.id === 'mane' && lioness ? lines.upgrades.lioness.name : slot.name)
@@ -152,7 +153,7 @@ export default function UpgradesScreen() {
         </header>
 
         {/* A letter the player sealed for themselves has reached its day. */}
-        {progress.capsule && !progress.capsule.openedAt && capsuleDue && (
+        {letterDue && (
           <aside className={styles.tip}>
             <p className={styles.tipText}>{lines.capsule.hub}</p>
             <div className={styles.tipButtons}>
