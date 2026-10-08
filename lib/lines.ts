@@ -695,7 +695,7 @@ export const lines = {
         title: 'WHAT THE AI DOES',
         body: [
           'If you allow it, an AI service writes what Todah says. It asks and reflects back. You bring the evidence and decide what it means, and you can change every word before it is marked on your map.',
-          'It is told never to tell you what to be, never to guess at pay or your chances, and to respond with care if you are having a hard time. Without it, the whole game runs from written questions and nothing you type leaves your device.',
+          'It is told never to tell you what to be, never to guess at your chances, and to respond with care if you are having a hard time. The one place it mentions pay is the three paths, where it gives a rough range that may be out of date, next to a link to current figures. Without it, the whole game runs from written questions and nothing you type leaves your device.',
         ],
       },
       {
