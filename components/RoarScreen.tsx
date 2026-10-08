@@ -21,6 +21,9 @@ const CLIP = 110
 // faster than the shortest roll.
 const CREDIT_SECONDS = 7
 const CREDITS_SHORTEST = 60
+// On the whole screen the lines have further to travel, so their pace is set directly, in
+// pixels a second. Larger lettering can move faster than the small window's and still be read.
+const CREDITS_PACE = 22
 // If the roar's sound never reports that it ended, the music comes back after this long.
 const ROAR_LONGEST_MS = 10000
 
@@ -46,8 +49,10 @@ export default function RoarScreen() {
   // Holding the button fills a meter. Letting go early empties it again.
   const [holding, setHolding] = useState(false)
   const holdTimer = useRef<number | undefined>(undefined)
-  // Counts the times the credits have been started, so they can be rolled again.
-  const [creditsRun, setCreditsRun] = useState(0)
+  // ROLL THE CREDITS fills the screen with them. Any key or a tap anywhere goes back.
+  const [rolling, setRolling] = useState(false)
+  const creditsRef = useRef<HTMLDialogElement>(null)
+  const rollRef = useRef<HTMLDListElement>(null)
   // Read once when the screen is drawn, which is often enough for a date.
   const [now] = useState(() => Date.now())
 
@@ -60,6 +65,21 @@ export default function RoarScreen() {
     if (confirming && !dialog.open) dialog.showModal()
     if (!confirming && dialog.open) dialog.close()
   }, [confirming])
+
+  useEffect(() => {
+    const dialog = creditsRef.current
+    if (!dialog) return
+    if (rolling && !dialog.open) dialog.showModal()
+    if (!rolling && dialog.open) dialog.close()
+    // Once the lines are on the screen their length is known, and so is how far they must
+    // rise: their own height and the height of the window they rise through.
+    const roll = rollRef.current
+    const frame = roll?.parentElement
+    if (rolling && roll && frame) {
+      roll.style.setProperty('--window', `${frame.clientHeight}px`)
+      roll.style.animationDuration = `${Math.round((roll.offsetHeight + frame.clientHeight) / CREDITS_PACE)}s`
+    }
+  }, [rolling])
 
   // While the roar sounds the music is silent (see MusicPlayer). It is told when the roar
   // starts and when it is over, however it ends.
@@ -178,7 +198,7 @@ export default function RoarScreen() {
               <button type="button" className="btn btn-quiet" onClick={playRoar}>
                 {lines.roar.replay}
               </button>
-              <button type="button" className="btn btn-quiet" onClick={() => setCreditsRun(creditsRun + 1)}>
+              <button type="button" className="btn btn-quiet" onClick={() => setRolling(true)}>
                 {lines.roar.credits.again}
               </button>
               <Link className="btn btn-quiet" href="/upgrades">
@@ -194,8 +214,7 @@ export default function RoarScreen() {
             <h2 className={styles.heading}>{lines.roar.credits.heading}</h2>
             <div className={styles.credits} tabIndex={0}>
               <dl
-                key={creditsRun}
-                className={justRoared || creditsRun > 0 ? styles.roll : undefined}
+                className={justRoared ? styles.roll : undefined}
                 style={{ animationDuration: `${Math.max(CREDITS_SHORTEST, credits().length * CREDIT_SECONDS)}s` }}
               >
                 {credits().map((line, index) => (
@@ -276,6 +295,45 @@ export default function RoarScreen() {
           </section>
         )}
       </div>
+
+      {/* The credits on the whole screen. They rise from the bottom and leave at the top. Any
+          key, a click or a tap stops them and goes back, and so does reaching the end. */}
+      <dialog
+        ref={creditsRef}
+        className={styles.cinema}
+        aria-label={lines.roar.credits.heading}
+        onClose={() => setRolling(false)}
+        onClick={() => setRolling(false)}
+        onKeyDown={(event) => {
+          event.preventDefault()
+          setRolling(false)
+        }}
+      >
+        {rolling && (
+          <>
+            <p className={styles.cinemaTitle}>{lines.roar.credits.heading}</p>
+            <div className={styles.cinemaWindow}>
+              <dl ref={rollRef} className={styles.cinemaRoll} onAnimationEnd={() => setRolling(false)}>
+                {credits().map((line, index) => (
+                  <div key={index} className={styles.credit}>
+                    <dt>
+                      <span className={styles.mark} aria-hidden="true">
+                        {line.mark}
+                      </span>{' '}
+                      {line.label}
+                    </dt>
+                    <dd>{line.text}</dd>
+                  </div>
+                ))}
+                <div className={styles.credit}>
+                  <dd className={styles.end}>{lines.roar.credits.end}</dd>
+                </div>
+              </dl>
+            </div>
+            <p className={styles.cinemaHint}>{lines.roar.credits.hint}</p>
+          </>
+        )}
+      </dialog>
 
       <dialog
         ref={confirmRef}

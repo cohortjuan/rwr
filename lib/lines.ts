@@ -1167,6 +1167,7 @@ export const lines = {
     credits: {
       heading: '🎬 THE TRAIL BEHIND YOU',
       again: '🎬 ROLL THE CREDITS',
+      hint: 'Press any key or tap anywhere to go back',
       // One emoji beside each label in the credits.
       marks: {
         starring: '🌟',

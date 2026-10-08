@@ -268,3 +268,109 @@
   font-size: 0.7rem !important;
   color: var(--gold-bright);
 }
+
+/* The credits on the whole screen (or the whole TV glass, when the set is drawn). */
+.cinema {
+  /* Exactly the screen, or exactly the glass: the set's edges are zero when it is not drawn. */
+  width: calc(100vw - 2 * var(--tv-side));
+  height: calc(100dvh - var(--tv-top) - var(--tv-bottom));
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: var(--tv-curve);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  color: var(--cream);
+  background: linear-gradient(180deg, #05040f 0%, var(--indigo-deep) 60%, #05040f 100%);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.cinema[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.cinema::backdrop {
+  background: #05040f;
+}
+
+.cinemaTitle,
+.cinemaHint {
+  flex: none;
+  margin: 0;
+  padding: 14px 16px;
+  text-align: center;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+}
+
+.cinemaHint {
+  color: var(--cream);
+  opacity: 0.7;
+}
+
+.cinemaWindow {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  text-align: center;
+  /* The lines fade in at the bottom and out at the top. */
+  mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+}
+
+/* The lines start just below the window and rise until the last has left the top. How far
+   that is (--window) and how long it takes are set on the element once it has been measured
+   (see CREDITS_PACE in RoarScreen.tsx). */
+.cinemaRoll {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0 20px;
+  animation: cinemaRoll 90s linear forwards;
+}
+
+.cinemaRoll .credit {
+  margin-bottom: 30px;
+}
+
+.cinemaRoll .credit dt {
+  font-size: 0.65rem;
+}
+
+.cinemaRoll .credit dd {
+  font-size: 1.35rem;
+}
+
+@keyframes cinemaRoll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--window, 100dvh)));
+  }
+}
+
+/* With motion off nothing rises, so the lines are simply there to scroll through. */
+@media (prefers-reduced-motion: reduce) {
+  .cinemaWindow {
+    overflow-y: auto;
+    mask-image: none;
+  }
+
+  .cinemaRoll {
+    position: static;
+  }
+}
+
+html[data-reduce-motion='true'] .cinemaWindow {
+  overflow-y: auto;
+  mask-image: none;
+}
+
+html[data-reduce-motion='true'] .cinemaRoll {
+  position: static;
+}
