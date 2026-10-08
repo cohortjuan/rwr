@@ -61,6 +61,22 @@ flowchart LR
   link carries the card id, the friend's first name and up to 200 characters. Both sit in
   the URL fragment, every field is validated and run through the name filter, and an answer
   is kept only if its card id matches the lion in play. It is an honour system.
+- **Todah's note** (`/letter`, `components/LetterScreen.tsx`, `lib/letterImage.ts`): opens
+  only once `goalAchievedAt` is set. One call in `letter` mode sends the player's words in
+  order (the first Quest 1 answer, the four claims, friends' witness answers, the goal, the
+  obstacle and plan, and what they reported about each experiment) and gets back the middle of
+  a note of about 90 words. The game adds the greeting and signature, so the player's name is
+  never sent. The server then removes the quotation marks from any quote that is not really
+  in the player's words, and asks once more if the note runs long. The model is asked to
+  think only lightly for this call: asked to think harder it has used its whole allowance
+  thinking and returned nothing. Without the AI the note is assembled from the player's own
+  words. It is saved as `progress.letter` and can be rewritten twice.
+  The note is drawn on a canvas in the browser: wood grain, paper fibres, fold creases and
+  the inked paw print are made from seeded random strokes, the text is set in a handwriting
+  font, and the lion is the player's own pixel lion (coat colour worked out pixel by pixel
+  with `lib/colour.ts`) enlarged eight times with the Scale2x edge-rounding method and given
+  a soft-focus copy underneath. The same picture is what the screen shows and what is saved
+  or shared, as a JPEG. The words are also in the image's alt text and offered as plain text.
 - **Sharing the free AI** (`lib/limit.ts`): the provider's free tier is one daily budget for
   all players. Before each AI reply the route checks a daily count kept in an HttpOnly cookie
   (a date and a number, nothing about the visitor; 60 a day) and a per-minute count per

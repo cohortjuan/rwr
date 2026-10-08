@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Atkinson_Hyperlegible, Pixelify_Sans, Press_Start_2P } from 'next/font/google'
+import { Atkinson_Hyperlegible, Kalam, Pixelify_Sans, Press_Start_2P } from 'next/font/google'
 import AccountWatch from '@/components/AccountWatch'
 import MusicPlayer from '@/components/MusicPlayer'
 import SettingsToggles from '@/components/SettingsToggles'
@@ -26,6 +26,13 @@ const clear = Atkinson_Hyperlegible({
   variable: '--font-clear',
 })
 
+// Handwriting, used in one place only: the note Todah leaves at the end of the game.
+const hand = Kalam({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-hand',
+})
+
 export const metadata: Metadata = {
   title: 'RWR: 16-bit Career Adventure',
   description:
@@ -47,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${pixel.variable} ${talk.variable} ${clear.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${pixel.variable} ${talk.variable} ${clear.variable} ${hand.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: applySavedSettings }} />
       </head>

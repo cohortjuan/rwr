@@ -70,6 +70,11 @@ export type Road = { obstacle: string, plan: string, steps: RoadStep[] }
 // the friend sends back, like a cheer. `key` stops the same link being counted twice.
 export type Witness = { key: string, name: string, text: string, at: string }
 
+// Todah's note: the last thing in the game, written once when the goal is reached. `text` is
+// the middle of the note (the game adds the greeting and the paw print). `scripted` means it
+// was put together from the player's own words without the AI.
+export type Letter = { text: string, at: string, scripted: boolean, rewrites: number }
+
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
 export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
@@ -114,6 +119,7 @@ export type Progress = {
   crossroads: { text: string, for: string } | null
   road: Road | null
   witnesses: Witness[]
+  letter: Letter | null
   // null in every game except one a dev account has switched dev tools on for.
   dev: DevOverrides | null
 }
@@ -157,6 +163,7 @@ export const emptyProgress: Progress = {
   crossroads: null,
   road: null,
   witnesses: [],
+  letter: null,
   dev: null,
 }
 

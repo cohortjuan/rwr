@@ -82,7 +82,10 @@ export default function RoarScreen() {
             </p>
             <p className={styles.rewardBody}>{lines.roar.rewardBody(progress.playerName)}</p>
             <div className={styles.buttons}>
-              <button type="button" className="btn" onClick={playRoar}>
+              <Link className="btn" href="/letter">
+                {lion(lines.letter.onRoar)}
+              </Link>
+              <button type="button" className="btn btn-quiet" onClick={playRoar}>
                 {lines.roar.replay}
               </button>
               <Link className="btn btn-quiet" href="/upgrades">

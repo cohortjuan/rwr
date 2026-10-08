@@ -17,7 +17,7 @@ const ONBOARDING_ANSWERS = 3
 // The most a claim written by the AI may run to before the player edits it.
 const CLAIM_MAX = 160
 
-const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'road', 'checkin', 'help']
+const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'road', 'checkin', 'letter', 'help']
 const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
@@ -138,6 +138,54 @@ function readRoad(text: string): { plan: string, steps: { circle: string, text: 
   }
 }
 
+// Everything the letter is made from, as labelled lines in the order it happened. Each piece
+// is the player's own text, scrubbed and trimmed, and a piece that is missing is left out.
+function readTrail(body: Record<string, unknown>): string {
+  const rows: string[] = []
+  const add = (label: string, value: unknown, max = 300) => {
+    const text = readText(value, max)
+    if (text) rows.push(`${label}: "${text}"`)
+  }
+  add('In the warm-up quest, about a recent good day', body.warmup)
+  rows.push(...claimRows(body.claims).values())
+  for (const said of (Array.isArray(body.witness) ? body.witness : []).slice(0, 2)) {
+    add('Someone who knows them said they would come to them for', said, 200)
+  }
+  add('The goal they set', body.goal, 200)
+  add('What they said would get in the way', body.obstacle)
+  add('Their plan for that', body.plan, 200)
+  for (const tried of (Array.isArray(body.experiments) ? body.experiments : []).slice(0, 3)) {
+    const entry = (typeof tried === 'object' && tried !== null ? tried : {}) as Record<string, unknown>
+    const step = readText(entry.step, 200)
+    const note = readText(entry.note, 400)
+    if (step && note) rows.push(`An experiment they tried: "${step}". What they said happened: "${note}"`)
+  }
+  rows.push('They have now told you the goal is reached.')
+  return rows.join('\n')
+}
+
+const plain = (text: string) => text.toLowerCase().replace(/[‘’]/g, "'").replace(/\s+/g, ' ')
+
+// The note quotes the player. A quote that is not really theirs loses its quotation marks, so
+// nothing is ever presented as the player's words unless they wrote it.
+function keepRealQuotes(note: string, trail: string): string {
+  const said = plain(trail)
+  return note.replace(/[“"]([^“”"]{2,300})[”"]/g, (whole, quote: string) => {
+    const words = plain(quote).replace(/[.,!?;:]+$/, '').trim()
+    return words && said.includes(words) ? whole : quote
+  })
+}
+
+// A note left on a table is short, and it borrows the player's phrases, not their paragraphs.
+const NOTE_WORDS_MAX = 135
+const QUOTE_WORDS_MAX = 12
+const wordCount = (text: string) => text.split(/\s+/).filter(Boolean).length
+
+function noteFits(note: string): boolean {
+  const quotes = [...note.matchAll(/[“"]([^“”"]{2,300})[”"]/g)]
+  return wordCount(note) <= NOTE_WORDS_MAX && quotes.every((quote) => wordCount(quote[1]) <= QUOTE_WORDS_MAX)
+}
+
 // Only the game's own pages may call this route. It is not a full defence (headers can be
 // forged outside a browser), but it stops other websites from spending the AI quota.
 function isSameOrigin(request: Request): boolean {
@@ -183,6 +231,7 @@ export async function POST(request: Request) {
   const step = readText(body.step, 200)
   const report = readText(body.note, MAX_TEXT_LENGTH)
   if (mode === 'road' && (!goal || !obstacle)) return Response.json({ error: 'bad_request' }, { status: 400 })
+  if (mode === 'letter' && !goal) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (mode === 'checkin' && (!step || !report || !circleOrder.includes(String(body.circle)))) {
     return Response.json({ error: 'bad_request' }, { status: 400 })
   }
@@ -191,6 +240,38 @@ export async function POST(request: Request) {
   const limit = checkLimit(request)
   if (!limit.ok) return Response.json({ error: limit.reason }, { status: 429 })
   const sent = (data: Record<string, unknown>) => Response.json(data, { headers: { 'Set-Cookie': limit.cookie } })
+
+  // The letter is one message written from everything the player said along the way.
+  if (mode === 'letter') {
+    const trail = readTrail(body)
+    try {
+      // The longest thing Todah writes, so it gets more room than a reply does. The model is
+      // told to think only a little first: asked to think harder, it has spent the whole
+      // allowance on thinking and written nothing. Thinking lightly, it sometimes runs long or
+      // quotes whole sentences, so a note that does not fit is written once more and the
+      // better of the two is kept.
+      let note = ''
+      let provider = ''
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const result = await generateReply(
+          buildSystemPrompt({ mode, entryChoice: null }),
+          [{ role: 'user', text: `What they said along the way:\n${trail}` }],
+          { maxTokens: 1500, effort: 'low' },
+        )
+        const written = keepRealQuotes(stripCompleteToken(result.text).reply, trail).slice(0, 1200)
+        provider = result.provider
+        if (!note || written.length < note.length) note = written
+        if (noteFits(written)) {
+          note = written
+          break
+        }
+      }
+      return sent({ reply: note, provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
 
   // The road is a form filled in from the goal, the obstacle, and the four claims.
   if (mode === 'road' && crossroads) {

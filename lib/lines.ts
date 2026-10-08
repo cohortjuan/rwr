@@ -166,6 +166,7 @@ export const lines = {
       { title: 'My Pride', body: 'Your pride card holds your first name, your lion, Pride Power, and your main goal if you leave that switched on. It travels inside the link or QR code you share. RWR does not store it and its server never sees it, but anyone who has the link can read it, so share it only with people you trust.' },
       { title: "A friend's witness", body: 'When you ask someone what they would come to you for, your first name and your lion\'s name travel inside the link you send, and their answer travels inside the link they send back. RWR does not send, store, or see either one. If you use AI replies, what they said (not their name) is shown to the AI during the Craft level.' },
       { title: 'The road', body: 'Your goal, the obstacle you name, your plan, and what you tell Todah about each experiment are saved on this device like your other answers. With AI replies on, they are sent to the AI service to write the plan and Todah\'s reply, with the same protections.' },
+      { title: "Todah's note", body: 'When your goal is reached, Todah leaves you a note made from what you said along the way. With AI replies on, those words are sent to the AI service to write it, with the same protections. The note is saved on this device. If you save it as a picture or send it to someone, that is your choice and RWR is not involved.' },
       { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
     ],
@@ -671,6 +672,49 @@ export const lines = {
     toTitle: 'SEE WHAT RWR IS',
   },
 
+  // Todah's note: the final gift, left "on the table" once the goal is reached. Rules that must
+  // survive edits: it is built from the player's own words, it lifts them up for things they
+  // actually did, and it never gives advice or promises what happens next.
+  letter: {
+    name: "TODAH'S NOTE",
+    locked: 'I leave my note when you tell me your goal is reached. Not before.',
+    toRoar: 'GO TO THE ROAR',
+    waiting: (name: string) => `One more thing, ${name}. I left something on the table for you.`,
+    open: 'OPEN THE NOTE',
+    writing: 'Todah is writing...',
+    dear: (name: string) => `Dear ${name},`,
+    signoff: 'Your friend,',
+    kept: 'This note is kept with your lion. You can read it again any time from the roar screen.',
+    save: 'SAVE AS A PICTURE',
+    send: 'SEND IT TO SOMEONE',
+    saved: 'Saved as a picture.',
+    saveFailed: 'The picture could not be made here. A screenshot will do the job.',
+    again: 'ASK TODAH TO WRITE IT AGAIN',
+    againLeft: (n: number) => (n === 1 ? 'He will write it once more.' : `He will write it ${n} more times.`),
+    back: 'BACK TO THE ROAR',
+    credit: 'RWR: 16-bit Career Adventure',
+    shareTitle: (lion: string) => `A note from ${lion}`,
+    fileName: 'a-note-from-todah.jpg',
+    // Read out in place of the picture, and offered as plain text under it.
+    alt: (lion: string) => `A handwritten note from ${lion}, left on a wooden desk, with a photo of your lion taped to it. It reads:`,
+    asText: 'READ IT AS PLAIN TEXT',
+    drawing: 'Todah is finding a pen...',
+    onRoar: "READ TODAH'S NOTE",
+    // The note without the AI: the player's own words, set in order. Each line is used only
+    // if the player said that thing.
+    scripted: {
+      startWarmup: (words: string) => `When we met, I was a cub, and you told me about a good day: "${words}"`,
+      startPlain: 'When we met, I was a cub and you were only starting down this trail.',
+      heart: (words: string) => `You told me, "${words}".`,
+      witness: (name: string, words: string) => `${name} said they would come to you for "${words}".`,
+      goal: (words: string) => `Then you set a goal that was all yours: "${words}".`,
+      obstacle: (words: string) => `You knew what would get in the way: "${words}". You made a plan for it anyway.`,
+      experiment: (words: string) => `You went out and tried something real, and came back to tell me: "${words}"`,
+      close: 'And then you did it. Nobody did that for you. I only walked beside you.',
+      sendoff: 'Head up. You earned this one.',
+    },
+  },
+
   // Forgotten passwords: asking for a reset link, and choosing the new password.
   reset: {
     forgot: 'Forgot password?',
@@ -722,6 +766,7 @@ export const lines = {
       '/crossroads': 'CROSSROADS',
       '/road': 'THE ROAD',
       '/witness': 'WITNESS',
+      '/letter': "TODAH'S NOTE",
       '/upgrades': 'UPGRADES',
       '/map': 'TRAIL MAP',
       '/pride': 'MY PRIDE',

@@ -69,6 +69,12 @@ prophet: nothing in the game promises a job or an outcome.
 - A friend's witness (`/witness`): the player sends one question to someone who knows them,
   "What would you come to me for?" The answer comes back in a link, with no account and no
   server, and is kept beside the Craft circle
+- Todah's note (`/letter`): the final gift, once the player says their goal is reached. A
+  handwritten note left on a wooden desk, signed with an inked paw print, with a snapshot of
+  the player's own lion taped to it. It is made from what the player said along the way. With
+  AI replies on, Todah writes it and adds his two cents, so no two are alike. Without them it
+  is put together from the player's own words. It is kept with the lion and can be saved as a
+  picture or sent to someone. It is the one place the game leaves its 16-bit look, on purpose
 - A fair share of the AI: a daily count per browser and a per-minute count per address keep
   one visitor from using up the free AI for everyone. Past the limit the game carries on from
   scripted lines
@@ -100,7 +106,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
-Not built yet: Todah's letter, crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
+Not built yet: crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
 the database.
 
 ## Technologies
@@ -175,8 +181,8 @@ To be completed before submission. Running notes:
 - Level-up sound (`public/audio/level-up.mp3`): "Achievement Unlock" by Universfield, from
   Pixabay, used under the Pixabay Content License.
 - All audio is re-encoded as mono MP3 at 48 to 96 kbps with LAME to keep downloads small.
-- Fonts: Press Start 2P, Pixelify Sans, and Atkinson Hyperlegible, all under the SIL Open Font
-  License, loaded through `next/font`.
+- Fonts: Press Start 2P, Pixelify Sans, Atkinson Hyperlegible, and Kalam (the handwriting in
+  Todah's note), all under the SIL Open Font License, loaded through `next/font`.
 
 ## Design and architecture
 

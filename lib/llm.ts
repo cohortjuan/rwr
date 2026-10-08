@@ -8,6 +8,11 @@ export type LlmMessage = { role: 'user' | 'assistant', text: string }
 
 export type LlmResult = { text: string, provider: 'gemini' | 'groq' }
 
+// Per-call settings. `maxTokens` is the room for the reply. The Groq model thinks before it
+// writes and that thinking comes out of the same room, so a long piece of writing needs more
+// of it, and `effort` says how much thinking to do first.
+export type LlmOptions = { maxTokens?: number, effort?: 'low' | 'medium' | 'high' }
+
 export class LlmUnavailableError extends Error {
   constructor(message: string) {
     super(message)
@@ -34,7 +39,7 @@ const TEMPERATURE = 0.7
 const DEFAULT_GEMINI_MODEL = 'gemini-flash-latest'
 const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b'
 
-async function callGemini(system: string, messages: LlmMessage[], apiKey: string): Promise<string> {
+async function callGemini(system: string, messages: LlmMessage[], apiKey: string, options: LlmOptions): Promise<string> {
   const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`
   const response = await fetch(url, {
@@ -46,7 +51,7 @@ async function callGemini(system: string, messages: LlmMessage[], apiKey: string
         role: message.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: message.text }],
       })),
-      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: TEMPERATURE },
+      generationConfig: { maxOutputTokens: options.maxTokens ?? MAX_OUTPUT_TOKENS, temperature: TEMPERATURE },
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
@@ -58,7 +63,7 @@ async function callGemini(system: string, messages: LlmMessage[], apiKey: string
   return text
 }
 
-async function callGroq(system: string, messages: LlmMessage[], apiKey: string): Promise<string> {
+async function callGroq(system: string, messages: LlmMessage[], apiKey: string, options: LlmOptions): Promise<string> {
   const model = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -69,8 +74,9 @@ async function callGroq(system: string, messages: LlmMessage[], apiKey: string):
         { role: 'system', content: system },
         ...messages.map((message) => ({ role: message.role, content: message.text })),
       ],
-      max_tokens: MAX_OUTPUT_TOKENS,
+      max_tokens: options.maxTokens ?? MAX_OUTPUT_TOKENS,
       temperature: TEMPERATURE,
+      ...(options.effort ? { reasoning_effort: options.effort } : {}),
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
@@ -97,7 +103,7 @@ function readKey(name: string): string | undefined {
   return value
 }
 
-export async function generateReply(system: string, messages: LlmMessage[]): Promise<LlmResult> {
+export async function generateReply(system: string, messages: LlmMessage[], options: LlmOptions = {}): Promise<LlmResult> {
   const groqKey = readKey('GROQ_API_KEY')
   const geminiKey = process.env.GEMINI_FALLBACK === 'on' ? readKey('GEMINI_API_KEY') : undefined
   if (!groqKey && !geminiKey) throw new LlmUnavailableError('No LLM API key is set')
@@ -105,13 +111,13 @@ export async function generateReply(system: string, messages: LlmMessage[]): Pro
   if (groqKey) {
     try {
       try {
-        return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
+        return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
       } catch (error) {
         // A server error or an empty reply is usually a blip, so it gets one more try.
         // A rate limit does not: asking again at once only makes it worse.
         if (!(error instanceof ProviderError) || error.status < 500) throw error
         console.warn('[llm] Groq failed once, trying again:', error.message)
-        return { text: await callGroq(system, messages, groqKey), provider: 'groq' }
+        return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
       }
     } catch (error) {
       // Log the status only. Never log keys, prompts, or player answers.
@@ -121,7 +127,7 @@ export async function generateReply(system: string, messages: LlmMessage[]): Pro
   }
 
   try {
-    return { text: await callGemini(system, messages, geminiKey as string), provider: 'gemini' }
+    return { text: await callGemini(system, messages, geminiKey as string, options), provider: 'gemini' }
   } catch (error) {
     console.warn('[llm] Gemini failed:', error instanceof Error ? error.message : 'unknown error')
     throw new LlmUnavailableError('All LLM providers failed')
