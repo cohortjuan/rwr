@@ -58,9 +58,10 @@
   --cub-filter: brightness(0.82) saturate(0.9);
 }
 
-/* The picture snaps open like an old TV warming up. */
+/* The picture snaps open like an old TV warming up. Nothing of it is kept once it is over,
+   so the scene is not left inside a filter and a transform while the cub walks in. */
 .stagePoweringOn {
-  animation: powerUp 0.45s steps(6) both;
+  animation: powerUp 0.45s steps(6);
 }
 
 @keyframes powerUp {
@@ -227,8 +228,10 @@
   position: absolute;
   left: 50%;
   bottom: 29%;
+  /* Both sides are given outright. The sprite inside fills this box by percentage, so it
+     must not depend on how a browser takes a percentage of a height that aspect-ratio set. */
   width: calc(var(--cub-tall) * 132 / 101);
-  aspect-ratio: 132 / 101;
+  height: var(--cub-tall);
   margin-left: calc(var(--cub-px) * (-66 - 27));
   opacity: 1;
   transition:

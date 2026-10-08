@@ -108,8 +108,12 @@ export default function MusicPlayer() {
     // false after a blocked attempt.
     const playing = new Set<HTMLAudioElement>()
     const onPlaying = (event: Event) => {
-      playing.add(event.target as HTMLAudioElement)
-      setAudioGate('open')
+      const element = event.target as HTMLAudioElement
+      playing.add(element)
+      // Sound is allowed once a track that is meant to be heard is playing. A silent one
+      // proves nothing: Safari and Firefox let a track whose volume is 0 start with no tap,
+      // and on the title screen the background track is at 0 while the theme is refused.
+      if (levelsRef.current[elements.indexOf(element)] > 0) setAudioGate('open')
     }
     const onStopped = (event: Event) => {
       playing.delete(event.target as HTMLAudioElement)
