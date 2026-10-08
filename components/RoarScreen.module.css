@@ -406,3 +406,35 @@ html[data-reduce-motion='true'] .cinemaRoll {
   color: var(--gold-bright);
   font-size: 1rem;
 }
+
+/* The last screen of the full-screen credits. It is given the window's own height (see
+   RoarScreen.tsx), and shares it out: the lion at the top, the last line, and the maker's
+   credit at the foot. Everything is sized from that height so it all fits on a short screen. */
+.lastScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2% 0 3%;
+  box-sizing: border-box;
+}
+
+.lastLion {
+  flex: none;
+  height: 44%;
+  aspect-ratio: 51 / 64;
+}
+
+.lastScreen .end {
+  margin: 0 !important;
+}
+
+.lastScreen .maker {
+  margin: 0;
+}
+
+.lastScreen .makerFace {
+  width: clamp(48px, 9vh, 96px);
+  height: clamp(48px, 9vh, 96px);
+  margin: 6px auto 4px;
+}

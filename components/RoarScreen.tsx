@@ -29,8 +29,7 @@ const CREDITS_PACE = 25
 // The scroll wheel changes that pace, between this many times slower and this many faster.
 const SLOWEST = 0.25
 const FASTEST = 6
-// The roll stops with the maker's credit in the middle of the screen, holds it there, and
-// then the credits fade away.
+// The roll stops on its last screen, holds it there, and then the credits fade away.
 const HOLD_CREDIT_MS = 3000
 const FADE_CREDITS_MS = 900
 // If the roar's sound never reports that it ended, the music comes back after this long.
@@ -64,7 +63,7 @@ export default function RoarScreen() {
   const [rolling, setRolling] = useState(false)
   const creditsRef = useRef<HTMLDialogElement>(null)
   const rollRef = useRef<HTMLDListElement>(null)
-  const makerRef = useRef<HTMLDivElement>(null)
+  const lastRef = useRef<HTMLDivElement>(null)
   // True while the credits fade out at their end.
   const [fading, setFading] = useState(false)
   // Read once when the screen is drawn, which is often enough for a date.
@@ -97,11 +96,14 @@ export default function RoarScreen() {
     // The game moves the lines itself, a little every frame, from just below the window until
     // the last has left the top. A browser animation is not used here: changing its speed
     // while it runs left the picture out of step with where the lines really were.
+    // The last screen of the credits is exactly as tall as the window: the lion at its top,
+    // the maker's credit at its foot. The roll ends when that screen fills the window, so the
+    // lion is whole and nothing is cut off. Its height is set here, before anything is
+    // measured.
+    const lastScreen = lastRef.current
+    if (lastScreen) lastScreen.style.height = `${frame.clientHeight}px`
     const distance = roll.offsetHeight + frame.clientHeight
-    // The roll ends where the maker's credit, the last thing in it, sits in the middle of the
-    // window. If that credit is not there, it ends when the last line has left the top.
-    const maker = makerRef.current
-    const restAt = maker ? frame.clientHeight / 2 + maker.offsetTop + maker.offsetHeight / 2 : distance
+    const restAt = lastScreen ? frame.clientHeight + lastScreen.offsetTop : distance
     let holdTimer: number | undefined
     let fadeTimer: number | undefined
     // The window must start, and stay, unscrolled: the lines are moved, not the window.
@@ -236,10 +238,10 @@ export default function RoarScreen() {
 
   if (!hydrated) return <main className="screen" />
 
-  // The maker's credit. It is shown only when the credits are rolled on the whole screen,
-  // after everything that is the player's, and not in the panel on the roar screen.
+  // The maker's credit. It is shown only when the credits are rolled on the whole screen, at
+  // the foot of their last screen, and not in the panel on the roar screen.
   const makerCredit = (
-    <div ref={makerRef} className={`${styles.credit} ${styles.maker}`}>
+    <div className={`${styles.credit} ${styles.maker}`}>
       <dt>{lines.roar.credits.madeBy}</dt>
       <dd>
         {/* A small local picture, so nothing is fetched from another site. */}
@@ -265,33 +267,39 @@ export default function RoarScreen() {
     </div>
   )
 
-  // The lines of the credits, ending on the player's own lion as he is dressed today.
+  // The player's lion as he is dressed today, for the end of the credits.
+  const creditLion = (className: string) => (
+    <LionAvatar
+      className={className}
+      wearing={wornIds(
+        progress,
+        keptLions.map((kept) => kept.progress),
+      )}
+      mane={maneSize(progress)}
+      aura={auraSize(progress)}
+      mood="happy"
+    />
+  )
+
+  // The rows of the credits: a label and the player's own words under it.
+  const creditRows = credits().map((line, index) => (
+    <div key={index} className={styles.credit}>
+      <dt>
+        <span className={styles.mark} aria-hidden="true">
+          {line.mark}
+        </span>{' '}
+        {line.label}
+      </dt>
+      <dd>{line.text}</dd>
+    </div>
+  ))
+
+  // In the panel on the roar screen the rows end on the lion and the last line.
   const creditLines = (
     <>
-      {credits().map((line, index) => (
-        <div key={index} className={styles.credit}>
-          <dt>
-            <span className={styles.mark} aria-hidden="true">
-              {line.mark}
-            </span>{' '}
-            {line.label}
-          </dt>
-          <dd>{line.text}</dd>
-        </div>
-      ))}
+      {creditRows}
       <div className={styles.credit}>
-        <dd>
-          <LionAvatar
-            className={styles.creditLion}
-            wearing={wornIds(
-              progress,
-              keptLions.map((kept) => kept.progress),
-            )}
-            mane={maneSize(progress)}
-            aura={auraSize(progress)}
-            mood="happy"
-          />
-        </dd>
+        <dd>{creditLion(styles.creditLion)}</dd>
         <dd className={styles.end}>{lines.roar.credits.end}</dd>
       </div>
     </>
@@ -414,8 +422,8 @@ export default function RoarScreen() {
       </div>
 
       {/* The credits on the whole screen. They rise from the bottom and leave at the top. Any
-          key, a click or a tap stops them and goes back. Left alone, they stop with the
-          maker's credit in the middle, hold, fade out, and go back by themselves. */}
+          key, a click or a tap stops them and goes back. Left alone, they stop on their last
+          screen, hold, fade out, and go back by themselves. */}
       <dialog
         ref={creditsRef}
         tabIndex={-1}
@@ -433,8 +441,14 @@ export default function RoarScreen() {
             <p className={styles.cinemaTitle}>{lines.roar.credits.heading}</p>
             <div className={styles.cinemaWindow}>
               <dl ref={rollRef} className={styles.cinemaRoll}>
-                {creditLines}
-                {makerCredit}
+                {creditRows}
+                {/* The last screen: the lion whole at the top, the last line, and the maker's
+                    credit at the foot. The roll stops when it fills the window. */}
+                <div ref={lastRef} className={styles.lastScreen}>
+                  {creditLion(styles.lastLion)}
+                  <p className={styles.end}>{lines.roar.credits.end}</p>
+                  {makerCredit}
+                </div>
               </dl>
             </div>
             <p className={styles.cinemaHint}>{lines.roar.credits.hint}</p>
