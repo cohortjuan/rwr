@@ -209,16 +209,27 @@
   color: var(--subtitle);
 }
 
-/* Cub: 4-frame strip, 291x198 per frame. The wrapper slides, the sprite steps. */
+/* Cub. Every drawing of him is 101 pixels tall with his feet on the bottom edge, so each box
+   below has the same height (--cub-tall) and only its width differs: 132 for a walking
+   frame, 112 for a turning frame, 89 seated. That keeps his pixels one size throughout.
+   The wrapper slides, the sprite inside steps through its frames. */
 .cubWalking,
-.cubSeated {
+.cubSeated,
+.cubTurning {
+  --cub-tall: calc(var(--cub) * 198 / 291);
   filter: var(--cub-filter);
   position: absolute;
   left: 50%;
   bottom: 29%;
-  width: var(--cub);
-  aspect-ratio: 291 / 198;
-  margin-left: calc(var(--cub) / -2);
+  width: calc(var(--cub-tall) * 132 / 101);
+  aspect-ratio: 132 / 101;
+  margin-left: calc(var(--cub-tall) * 132 / 101 / -2);
+}
+
+.cubTurning {
+  width: calc(var(--cub-tall) * 112 / 101);
+  aspect-ratio: 112 / 101;
+  margin-left: calc(var(--cub-tall) * 112 / 101 / -2);
 }
 
 .cubWalking {
@@ -275,43 +286,37 @@
   }
 }
 
-/* The turn, first half: he stops, and the side view narrows as he swings round to face us. */
-.cubTurning {
-  filter: var(--cub-filter);
-  position: absolute;
-  left: 50%;
-  bottom: 29%;
-  width: var(--cub);
-  aspect-ratio: 291 / 198;
-  margin-left: calc(var(--cub) / -2);
-  transform-origin: 50% 100%;
-  animation: turnAway 0.2s steps(4) forwards;
+/* The turn: three frames, shown once. He stops side-on, looks round at us, and half sits. */
+.spriteTurn {
+  width: 100%;
+  height: 100%;
+  background-image: url('/sprites/todah-turn.png');
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: turnCycle 0.48s steps(3) forwards;
 }
 
-@keyframes turnAway {
+@keyframes turnCycle {
   from {
-    transform: scaleX(1);
+    background-position-x: 0%;
   }
   to {
-    transform: scaleX(0.3);
+    background-position-x: 150%;
   }
 }
 
-/* The turn, second half: the front view widens out from the same narrow sliver, with a small
-   settle as he sits. */
+/* When he arrives by turning, the seated cub drops into place with a small settle. */
 .cubFacingIn {
-  animation: turnIn 0.26s steps(5) both;
+  animation: settle 0.22s steps(4) both;
 }
 
-@keyframes turnIn {
+@keyframes settle {
   0% {
-    transform: translateX(-50%) scaleX(0.35);
-  }
-  60% {
-    transform: translateX(-50%) scaleX(1) translateY(-3%);
+    transform: translateX(-50%) translateY(-4%);
   }
   100% {
-    transform: translateX(-50%) scaleX(1);
+    transform: translateX(-50%);
   }
 }
 
@@ -323,9 +328,8 @@
   left: 50%;
   bottom: 29%;
   /* As tall as the walking sprite, at the seated sprite's own proportions. */
-  width: calc(var(--cub) * 198 / 291 * 153 / 173);
+  width: calc(var(--cub) * 198 / 291 * 89 / 101);
   transform: translateX(-50%);
-  transform-origin: 50% 100%;
 }
 
 

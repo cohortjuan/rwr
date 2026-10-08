@@ -192,12 +192,14 @@ To be completed before submission. Running notes:
 - Lookbook: every wardrobe piece in every colour, at `/lookbook` in the running game
 - Mane progression sheet: [docs/design/mane-progression.html](docs/design/mane-progression.html),
   drawn by [scripts/mane-art.py](scripts/mane-art.py)
-- The lion's sprites: the seated cub was rebuilt from a sheet made with an image model, by
-  [scripts/todah-from-sheet.py](scripts/todah-from-sheet.py), which joins a clean face to a
+- The lion's sprites come from two sheets made with an image model. The seated cub is rebuilt
+  by [scripts/todah-from-sheet.py](scripts/todah-from-sheet.py), which joins a clean face to a
   clean body, removes the JPEG smear, reduces him to ten colours, shaves everything outside
-  his outline, and draws his tail and his three other faces. The walking cub is cleaned to
-  the same colours by [scripts/clean-walk.py](scripts/clean-walk.py). The drawings as first
-  made are kept in [docs/design/source](docs/design/source)
+  his outline, and draws his tail. His blink, smile and talking faces, his four-frame walk and
+  the three frames of his turn are cut from a second sheet
+  ([docs/design/source/poses-sheet.jpg](docs/design/source/poses-sheet.jpg)) by
+  [scripts/poses-from-sheet.py](scripts/poses-from-sheet.py), repainted in the same ten
+  colours. The first drawings are kept in [docs/design/source](docs/design/source)
 - New wardrobe art is drawn by the image model over
   [docs/design/accessory-base.png](docs/design/accessory-base.png) with the prompts in
   [docs/design/nano-banana-prompts.md](docs/design/nano-banana-prompts.md)

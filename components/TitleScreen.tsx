@@ -30,8 +30,8 @@ export default function TitleScreen() {
   const reducedMotion = useReducedMotion()
   const progress = useProgress()
   const [walkDone, setWalkDone] = useState(false)
-  // Between the side-on walk and the front-facing sit there is a short turn, so he does not
-  // snap from one drawing to the other. `turned` marks that he arrived by turning.
+  // Between the side-on walk and the front-facing sit he turns: he stops, looks round at the
+  // player, and half sits. `turned` marks that he arrived that way, for a small settle.
   const [turning, setTurning] = useState(false)
   const [turned, setTurned] = useState(false)
   const [boxOpen, setBoxOpen] = useState(false)
@@ -150,11 +150,14 @@ export default function TitleScreen() {
           <div
             className={seated ? styles.cubSeated : turning ? styles.cubTurning : styles.cubWalking}
             onAnimationEnd={(event) => {
-              if (event.target !== event.currentTarget) return
-              // The walk ends in a turn, and the turn ends with him seated.
-              if (!turning && SEATED_SPRITE) {
-                setTurning(true)
-                return
+              // The walk ends in a turn (three frames, played by the sprite inside), and the
+              // turn ends with him seated.
+              if (!turning) {
+                if (event.target !== event.currentTarget) return
+                if (SEATED_SPRITE) {
+                  setTurning(true)
+                  return
+                }
               }
               setTurned(true)
               setWalkDone(true)
@@ -162,7 +165,7 @@ export default function TitleScreen() {
             role="img"
             aria-label="Todah, a lion cub"
           >
-            <div className={seated || turning ? styles.spriteStill : styles.spriteWalk} />
+            <div className={seated ? styles.spriteStill : turning ? styles.spriteTurn : styles.spriteWalk} />
           </div>
         )}
 
