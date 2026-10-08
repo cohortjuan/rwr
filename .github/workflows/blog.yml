@@ -1,0 +1,42 @@
+# Publishes the trail log (the blog/ folder) to GitHub Pages.
+# It runs when something in blog/ changes on main, or when started by hand from the Actions tab.
+# The game itself is deployed by Vercel and is not touched by this.
+name: Publish the trail log
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blog/**'
+      - '.github/workflows/blog.yml'
+  workflow_dispatch:
+
+# The least the job needs: read the repo, write to Pages, and prove who it is to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time. A newer one replaces one still waiting.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Get the files
+        uses: actions/checkout@v5
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+      - name: Pack the blog folder
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: blog
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4
