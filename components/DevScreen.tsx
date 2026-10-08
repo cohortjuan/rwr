@@ -151,6 +151,19 @@ export default function DevScreen() {
               {achieved ? lines.dev.roarOn : lines.dev.roarOff}
             </button>
             <p className={styles.fine}>{lines.dev.roarNote}</p>
+
+            {progress.capsule && !progress.capsule.openedAt && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-quiet"
+                  onClick={() => progress.capsule && saveProgress({ capsule: { ...progress.capsule, opensAt: new Date().toISOString() } })}
+                >
+                  {lines.capsule.devDeliver}
+                </button>
+                <p className={styles.fine}>{lines.capsule.devNote}</p>
+              </>
+            )}
           </div>
         </section>
 

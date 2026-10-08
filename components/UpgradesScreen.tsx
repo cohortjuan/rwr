@@ -79,6 +79,9 @@ export default function UpgradesScreen() {
   const [leveledUp, setLeveledUp] = useState<SlotId | null>(null)
 
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
+  // Read once when the screen is drawn, which is often enough for a date.
+  const [now] = useState(() => Date.now())
+  const capsuleDue = progress.capsule ? now >= new Date(progress.capsule.opensAt).getTime() : false
   // A lioness has no mane: the same upgrade is her aura.
   const lioness = progress.lionSex === 'female'
   const slotName = (slot: Slot) => (slot.id === 'mane' && lioness ? lines.upgrades.lioness.name : slot.name)
@@ -147,6 +150,18 @@ export default function UpgradesScreen() {
           <h1 className={styles.heading}>{lines.upgrades.heading}</h1>
           <p className={styles.intro}>{lion(lines.upgrades.intro)}</p>
         </header>
+
+        {/* A letter the player sealed for themselves has reached its day. */}
+        {progress.capsule && !progress.capsule.openedAt && capsuleDue && (
+          <aside className={styles.tip}>
+            <p className={styles.tipText}>{lines.capsule.hub}</p>
+            <div className={styles.tipButtons}>
+              <Link className="btn" href="/crossroads">
+                {lines.capsule.hubOpen}
+              </Link>
+            </div>
+          </aside>
+        )}
 
         {tipId && (
           <aside className={styles.tip} aria-label={lines.upgrades.tipLabel}>

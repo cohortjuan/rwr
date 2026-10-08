@@ -461,6 +461,33 @@ export const lines = {
     back: 'BACK TO WARDROBE',
   },
 
+  // A letter to yourself, sealed until a date the player picks. A draft Juan is deciding whether
+  // to keep (2026-10-09). It never leaves the device, and Todah never reads it.
+  capsule: {
+    heading: 'A LETTER TO YOURSELF',
+    intro:
+      'Before you go: write a few lines to the you who will read this later. What do you hope is true by then? What should that you remember about today? I will seal it and keep it until its day.',
+    label: 'Dear future me',
+    placeholder: 'By the time you read this, I hope...',
+    waitLabel: 'Open it in:',
+    days: (n: number) => `${n} DAYS`,
+    seal: 'SEAL IT',
+    privacy: 'It stays on this device. Nobody reads it but you, not even Todah.',
+    sealed: (date: string) => `Sealed. It opens on ${date}.`,
+    keeping: 'Todah is keeping it safe. No peeking: come back on its day.',
+    sealedOn: (date: string) => `You wrote it on ${date}.`,
+    arrived: 'YOUR LETTER HAS ARRIVED',
+    arrivedBody: (date: string) => `You wrote this to yourself on ${date}. Its day has come.`,
+    open: 'OPEN IT',
+    after: 'That was you, not so long ago. How does it read now? Whatever has changed, the trail is still here.',
+    toRoad: 'TELL TODAH HOW IT IS GOING',
+    again: 'WRITE A NEW ONE',
+    hub: 'A letter you wrote to yourself has arrived.',
+    hubOpen: 'OPEN IT AT THE CROSSROADS',
+    devDeliver: 'DELIVER THE SEALED LETTER NOW',
+    devNote: 'Makes a sealed letter arrive today, so the opening can be shown without waiting.',
+  },
+
   // The trail card: a keepsake from the first sitting, made of the player's own words. It is a
   // draft Juan is deciding whether to keep (2026-10-09).
   card: {

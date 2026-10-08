@@ -140,6 +140,9 @@ export type Progress = {
   // What Todah said about the main goal once it was set, kept so it is asked for once. `for`
   // is the goal it was about: a new goal gets new thoughts.
   goalThoughts: { text: string, for: string } | null
+  // A letter the player wrote to themselves when the goal was set, sealed until `opensAt`.
+  // It stays on this device and is never sent anywhere.
+  capsule: { text: string, sealedAt: string, opensAt: string, openedAt: string | null } | null
   road: Road | null
   witnesses: Witness[]
   letter: Letter | null
@@ -187,6 +190,7 @@ export const emptyProgress: Progress = {
   crossroads: null,
   paths: null,
   goalThoughts: null,
+  capsule: null,
   road: null,
   witnesses: [],
   letter: null,

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
+import SealedLetter from '@/components/SealedLetter'
 import { circles, circleScore, EVIDENCE_MAX, strongestCircle, thinnestCircle } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
@@ -363,6 +364,9 @@ export default function CrossroadsScreen() {
                 )}
               </section>
             )}
+
+            {/* Once the goal is set: a letter to the player's later self. */}
+            {noticed && hasGoal && !editing && <SealedLetter />}
           </>
         )}
       </div>
