@@ -105,6 +105,11 @@ prophet: nothing in the game promises a job or an outcome.
   behind POWER ON. On a wide screen (a computer, or a tablet or phone held sideways) the game
   is framed by an old TV set drawn in CSS, which TV SET under SETTINGS switches off
 - Sound and motion toggles, reduced-motion support
+- A back arrow and a home button in the corner of every screen: the arrow returns to the
+  screen the player was on before, and the house goes to the title
+- SPEAK beside the answer boxes: the player can say an answer in place of typing it, in
+  browsers that can turn speech into text (not Firefox). The words land in the box to be
+  checked and changed before they are sent
 - Privacy page: AI consent, save-on-device switch, delete my data
 
 Not built yet: crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
@@ -117,6 +122,7 @@ the database.
 - Groq API (free tier, Zero Data Retention on) for Todah's replies, with Google Gemini as an
   optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
+- Web Speech API (built into the browser, no key and no cost) for speaking an answer
 - obscenity (MIT) for the name filter, qrcode-generator (MIT) for My Pride's QR codes
 - Nodemailer (MIT No Attribution) to email wardrobe ideas to the maker from the maker's own
   mailbox. Optional: with no mailbox set, the form is hidden
@@ -159,6 +165,9 @@ Some answers in RWR are personal, so the game is built to collect as little as p
   and your main goal if you leave that on) travels inside the link or QR code you share, in the
   part of the link that browsers never send to a server. Anyone you give the link to can read
   it.
+- Speaking an answer is done by the browser, not by RWR. Most browsers send the sound to
+  their maker's speech service (Google for Chrome, Apple for Safari) to turn it into words.
+  RWR never receives the sound, and the game says so and asks before the mic is first used.
 - Your game is saved in your browser (localStorage). The in-game Privacy page lets you turn
   that off on a shared computer and delete all of your data.
 - AI providers have their own data terms. **While RWR is in testing, please leave out real
