@@ -163,7 +163,7 @@ export default function RoarScreen() {
         </h2>
         <div className={styles.buttons}>
           <button type="button" className="btn" onClick={letHimRoar}>
-            {lines.roar.confirmYes}
+            {lines.roar.confirmYes(progress.lionSex)}
           </button>
           <button type="button" className="btn btn-quiet" autoFocus onClick={() => setConfirming(false)}>
             {lines.roar.confirmNo}

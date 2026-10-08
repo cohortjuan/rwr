@@ -17,6 +17,10 @@ export type ChatMessage = { role: 'user' | 'todah', text: string }
 
 export type TodahForm = 'cub' | 'nomad' | 'leader'
 
+// The player chooses whether their lion is a lion or a lioness. It decides part of the
+// wardrobe: only a lion grows a mane, and some pieces are only for a lioness.
+export type LionSex = 'male' | 'female'
+
 // What one player shares with a friend: a small snapshot that travels inside a link or QR
 // code and never touches a server. `at` is when the snapshot was made.
 export type PrideCard = {
@@ -47,7 +51,7 @@ export type CircleEntry = { claim: string, evidence: string[] }
 export type OutreachKind = 'linkedin' | 'message' | 'talk' | 'interview'
 
 // The lion's wardrobe. One accessory from each category can be worn at a time.
-export type AccessoryCategory = 'fur' | 'mane' | 'hat' | 'shades' | 'ears' | 'neck' | 'body' | 'bag' | 'feet' | 'outfit'
+export type AccessoryCategory = 'fur' | 'mane' | 'essentials' | 'hat' | 'shades' | 'ears' | 'neck' | 'body' | 'bag' | 'feet' | 'outfit'
 export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
 
 // Dev tools, for a dev account only (see lib/account.ts): look at any stage of the game without
@@ -81,6 +85,7 @@ export type CheerReceived = { key: string, name: string, cheer: string, at: stri
 export type Progress = {
   // The guide's name in this game. Todah unless the player renamed their lion.
   lionName: string
+  lionSex: LionSex
   playerName: string
   entryChoice: EntryChoice | null
   onboardingDone: boolean
@@ -132,6 +137,7 @@ const LIONS_KEY = 'rwr.lions.v1'
 
 export const emptyProgress: Progress = {
   lionName: DEFAULT_LION_NAME,
+  lionSex: 'male',
   playerName: '',
   entryChoice: null,
   onboardingDone: false,
@@ -283,10 +289,10 @@ function worthKeeping(progress: Progress): boolean {
 }
 
 // Starts a fresh game with a new lion. The game in play is kept, not erased.
-export function startNewLion(lionName: string) {
+export function startNewLion(lionName: string, lionSex: LionSex = 'male') {
   const current = getSnapshot()
   if (worthKeeping(current)) saveLions([...getLions(), keep(current)])
-  saveProgress({ ...emptyProgress, lionName })
+  saveProgress({ ...emptyProgress, lionName, lionSex })
 }
 
 // Swaps a kept lion back into play, and keeps the game that was in play.

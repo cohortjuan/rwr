@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
 import { lines } from '@/lib/lines'
-import { maneSize, sparks, wornIds } from '@/lib/accessories'
+import { auraSize, maneSize, sparks, wornIds } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
 import {
   isPath,
@@ -79,6 +79,9 @@ export default function UpgradesScreen() {
   const [leveledUp, setLeveledUp] = useState<SlotId | null>(null)
 
   const openSlot = slots.find((slot) => slot.id === openId) ?? null
+  // A lioness has no mane: the same upgrade is her aura.
+  const lioness = progress.lionSex === 'female'
+  const slotName = (slot: Slot) => (slot.id === 'mane' && lioness ? lines.upgrades.lioness.name : slot.name)
   // Den counts paths across every lion, so the other lions' games are needed too.
   const keptLions = useKeptLions()
   const others = keptLions.map((kept) => kept.progress)
@@ -150,7 +153,7 @@ export default function UpgradesScreen() {
             <p className={styles.tipLabel} aria-hidden="true">
               {lines.upgrades.tipLabel}
             </p>
-            <p className={styles.tipText}>{lion(lines.upgrades.tips[tipId])}</p>
+            <p className={styles.tipText}>{lion(tipId === 'start' && lioness ? lines.upgrades.lioness.tipStart : lines.upgrades.tips[tipId])}</p>
             <div className={styles.tipButtons}>
               <button type="button" className="btn" onClick={() => dismissTip(tipId)}>
                 {lines.upgrades.tipGotIt}
@@ -169,6 +172,7 @@ export default function UpgradesScreen() {
                 className={styles.portrait}
                 wearing={wornIds(progress, others)}
                 mane={maneSize(progress)}
+                aura={auraSize(progress)}
                 mood={leveledUp ? 'happy' : 'neutral'}
                 blink
               />
@@ -241,7 +245,7 @@ export default function UpgradesScreen() {
             const level = slotLevel(slot, slotContent(progress, slot, others))
             const card = (
               <>
-                <span className={styles.slotName}>{slot.name}</span>
+                <span className={styles.slotName}>{slotName(slot)}</span>
                 <span className={styles.slotTerm}>{slot.resumeTerm}</span>
                 {slot.locked ? (
                   <span className={styles.slotState}>{lines.upgrades.locked}</span>
@@ -253,7 +257,7 @@ export default function UpgradesScreen() {
                     </span>
                   </>
                 )}
-                <span className={styles.slotGrowth}>{slot.growth}</span>
+                <span className={styles.slotGrowth}>{slot.id === 'mane' && lioness ? lines.upgrades.lioness.growth : slot.growth}</span>
                 {leveledUp === slot.id && <span className={styles.levelUp}>{lines.upgrades.levelUp}</span>}
               </>
             )
@@ -295,7 +299,7 @@ export default function UpgradesScreen() {
         {openSlot?.tally && (
           <div>
             <h2 id="sheet-heading" className={styles.sheetHeading}>
-              {openSlot.name}
+              {slotName(openSlot)}
             </h2>
             <p className={styles.slotTerm}>{openSlot.resumeTerm}</p>
             <p className={styles.preview}>
@@ -352,7 +356,7 @@ export default function UpgradesScreen() {
         {openSlot && !openSlot.tally && (
           <form onSubmit={save}>
             <h2 id="sheet-heading" className={styles.sheetHeading}>
-              {openSlot.name}
+              {slotName(openSlot)}
             </h2>
             <p className={styles.slotTerm}>{openSlot.resumeTerm}</p>
 

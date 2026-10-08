@@ -81,3 +81,41 @@
   flex: 1 1 150px;
   min-width: 0;
 }
+
+/* Lion or lioness: two choices side by side. */
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice legend {
+  margin-bottom: 6px;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+
+.option input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--gold);
+}
+
+.note {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}

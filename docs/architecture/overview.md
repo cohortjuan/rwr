@@ -10,10 +10,18 @@ flowchart LR
   Browser -->|guest progress| LocalStorage[(localStorage)]
   Browser -->|log in, sign up| SupabaseAuth[Supabase Auth]
   SupabaseAuth --- Postgres[(Supabase Postgres)]
+  Browser -->|POST /api/suggest: a wardrobe idea| Suggest[Next.js server route]
+  Suggest -->|SMTP, only if MAIL_USER is set| Mailbox[The maker's own mailbox]
 ```
 
 - LLM keys live only on the server (`.env.local` locally, host environment variables when deployed).
 - The browser never calls an LLM directly.
+- Wardrobe ideas: `/api/suggest` takes one line of text and whether the lion is a lion or a
+  lioness, scrubs contact details, and emails it with Nodemailer from the mailbox named in
+  `MAIL_USER` and `MAIL_PASS` (server only). It stores nothing. It is limited to three ideas
+  per browser a day (cookie `rwr_idea`), six per network address an hour, and sixty a day per
+  running server. With no mailbox set, `GET /api/suggest` answers `open: false` and the
+  wardrobe hides the form.
 - With no key set, or when both providers fail, the quest uses scripted lines from `lib/lines.ts`.
 
 ## Progression

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
-import { maneSize, wornIds } from '@/lib/accessories'
+import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import {
@@ -88,6 +88,7 @@ export default function DevScreen() {
               className={styles.preview}
               wearing={wornIds(progress, others)}
               mane={maneSize(progress)}
+              aura={auraSize(progress)}
               blink
             />
             <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[todahForm(progress, others)]))}</p>

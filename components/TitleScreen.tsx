@@ -10,11 +10,11 @@ import NameLionBox from '@/components/NameLionBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
 import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
-import { maneSize, wornIds } from '@/lib/accessories'
+import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
-import { hasSavedGame, startNewLion, switchToLion, useKeptLions, useProgress } from '@/lib/progress'
+import { hasSavedGame, startNewLion, switchToLion, useKeptLions, useProgress, type LionSex } from '@/lib/progress'
 import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import styles from './TitleScreen.module.css'
 
@@ -114,9 +114,9 @@ export default function TitleScreen() {
     else setNamingLion(true)
   }
 
-  function newGame(lionName: string) {
+  function newGame(lionName: string, lionSex: LionSex) {
     setNamingLion(false)
-    startNewLion(lionName)
+    startNewLion(lionName, lionSex)
     if (signedIn) router.push('/quest')
     else setBoxOpen(true)
   }
@@ -158,6 +158,7 @@ export default function TitleScreen() {
                 keptLions.map((kept) => kept.progress),
               )}
               mane={maneSize(progress)}
+              aura={auraSize(progress)}
               blink
             />
           </div>

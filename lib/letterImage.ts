@@ -127,16 +127,18 @@ function composeLion(
   const chosen = picture.wearing
     .map(parseToken)
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
-  // A transformation is worn alone: while it is on, only it and the coat are drawn.
+  // A transformation is a whole picture of its own: while it is on, it is all that is drawn.
   const alone = chosen.some((entry) => entry.item.alone)
-  const worn = alone ? chosen.filter((entry) => entry.item.alone || entry.item.category === 'fur') : chosen
+  const worn = alone ? chosen.filter((entry) => entry.item.alone) : chosen
   const fur = worn.find((entry) => entry.item.category === 'fur')?.item
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
 
   context.imageSmoothingEnabled = false
-  // His tail is a strip of frames. The first is the tail at rest.
-  context.drawImage(tail, 0, 0, sprite.width, sprite.height, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
-  context.drawImage(sprite, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
+  if (!alone) {
+    // His tail is a strip of frames. The first is the tail at rest.
+    context.drawImage(tail, 0, 0, sprite.width, sprite.height, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
+    context.drawImage(sprite, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
+  }
 
   // Coat colours are CSS filters on screen. Here the same sums are done pixel by pixel, so the
   // coat comes out right in every browser.

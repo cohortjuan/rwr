@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import LionAvatar from '@/components/LionAvatar'
-import { accessory, maneSize, wornIds } from '@/lib/accessories'
+import { accessory, auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { useReducedMotion } from '@/lib/settings'
 import styles from './DialogBox.module.css'
@@ -63,6 +63,7 @@ function TypedBox({ text, speaker, mood = 'neutral', children }: Props) {
           className={hasHat ? styles.faceWithHat : styles.face}
           wearing={wearing}
           mane={maneSize(progress)}
+          aura={auraSize(progress)}
           mood={mood === 'happy' ? 'happy' : 'neutral'}
           talking={!done}
           blink

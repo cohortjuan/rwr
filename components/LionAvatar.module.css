@@ -4,6 +4,26 @@
   aspect-ratio: 51 / 64;
 }
 
+/* The lion and everything it wears, as one layer filling the stage. */
+.body {
+  position: absolute;
+  inset: 0;
+}
+
+/* A lioness's aura: a soft gold glow around her that grows with the first upgrade's level,
+   where a lion's mane would. It follows her outline and whatever she is wearing. */
+.aura1 {
+  filter: drop-shadow(0 0 2px rgba(255, 224, 138, 0.6));
+}
+
+.aura2 {
+  filter: drop-shadow(0 0 3px rgba(255, 224, 138, 0.8)) drop-shadow(0 0 6px rgba(242, 193, 78, 0.35));
+}
+
+.aura3 {
+  filter: drop-shadow(0 0 3px rgba(255, 243, 196, 0.95)) drop-shadow(0 0 9px rgba(242, 193, 78, 0.6));
+}
+
 /* The sprite fills everything below the headroom. */
 .lion {
   position: absolute;

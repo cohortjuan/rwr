@@ -5,6 +5,7 @@ import {
   pridePower,
   todahForm,
   type AccessoryCategory,
+  type LionSex,
   type Progress,
 } from '@/lib/progress'
 import { slotLevel, slots } from '@/lib/upgrades'
@@ -66,8 +67,12 @@ export type Accessory = {
   image?: boolean
   // A whole costume with a mane of its own, so the lion's grown mane is not drawn under it.
   hidesMane?: boolean
-  // Worn by itself: while this is on, nothing else the lion is wearing is drawn.
+  // A whole picture of its own: while this is on, it is all that is drawn. Not the lion
+  // underneath, not his tail, and nothing else he is wearing.
   alone?: boolean
+  // Only for a lion, or only for a lioness. A lion grows a mane and can colour it. A lioness
+  // has no mane, and has pieces of her own in its place.
+  only?: LionSex
 }
 
 // Cells of headroom above the sprite, for hats and the mane's crest.
@@ -81,10 +86,10 @@ export const STEP_SPARKS = 3
 // Walking a level of the interview, once its claim is marked on the trail map.
 export const LEVEL_SPARKS = 5
 
-export const categories: AccessoryCategory[] = ['fur', 'mane', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'feet', 'outfit']
+export const categories: AccessoryCategory[] = ['fur', 'mane', 'essentials', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'feet', 'outfit']
 // The order pieces are drawn in, bottom first: a costume under everything, then shoes and
 // jackets, what hangs over them, and last what sits on the face and head.
-export const drawOrder: AccessoryCategory[] = ['outfit', 'feet', 'body', 'neck', 'bag', 'shades', 'ears', 'hat']
+export const drawOrder: AccessoryCategory[] = ['outfit', 'feet', 'body', 'neck', 'bag', 'shades', 'ears', 'hat', 'essentials']
 // What the lion has in a category when nothing else is chosen.
 export const defaults: Partial<Record<AccessoryCategory, string>> = { fur: 'golden', mane: 'mane-natural' }
 export const NATURAL_MANE: [string, string] = ['#c9601b', '#8f3f12']
@@ -149,6 +154,7 @@ const mane = (id: string, price: number, colours: readonly [string, string]): Ac
   category: 'mane',
   price,
   needsMane: 1,
+  only: 'male',
   mane: [colours[0], colours[1]],
 })
 
@@ -175,7 +181,7 @@ export const accessories: Accessory[] = [
   // Mane colours. Only the colour is bought: the size follows the Mane upgrade. The natural
   // mane is the golden coat's partner, then comes one for each other fur, then three that
   // belong to no set: white, and two cool colours that sit opposite the warm coats.
-  { id: 'mane-natural', category: 'mane', price: 0, mane: NATURAL_MANE },
+  { id: 'mane-natural', category: 'mane', price: 0, only: 'male', mane: NATURAL_MANE },
   ...furs.filter((fur) => fur.filter).map(setMane),
   mane('white', 6, tone.white),
   mane('purple', 6, tone.purple),
@@ -335,17 +341,25 @@ export const accessories: Accessory[] = [
   },
   { id: 'shield-shades', category: 'shades', price: 9, image: true, variants: shades(['black', 'blue', 'red', 'teal']) },
   { id: 'hoop-earrings', category: 'ears', price: 8, image: true, variants: shades(['gold', 'silver', 'rose']) },
+  // One of the pair, worn on one ear.
+  { id: 'hoop-earring', category: 'ears', price: 5, image: true, variants: shades(['gold', 'silver', 'rose']) },
+  // A lioness's essentials (scripts/essentials-art.py). She has no mane to colour, so this
+  // group stands where MANE COLOUR does for a lion. Each is a small thing standing by her paw,
+  // on the other side from her bag, and carries a paw mark.
+  { id: 'perfume', category: 'essentials', price: 6, only: 'female', image: true, variants: shades(['gold', 'pink', 'purple', 'teal']) },
+  { id: 'passport', category: 'essentials', price: 5, only: 'female', image: true, variants: shades(['blue', 'red', 'green', 'black', 'brown']) },
+  { id: 'wallet', category: 'essentials', price: 6, only: 'female', image: true, variants: shades(['brown', 'black', 'red', 'green', 'pink']) },
+  { id: 'phone', category: 'essentials', price: 8, only: 'female', image: true, variants: shades(['purple', 'black', 'pink', 'teal', 'white']) },
 
   { id: 'aviator-jacket', category: 'body', price: 15, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
   { id: 'indigo-jacket', category: 'body', price: 12, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
-  { id: 'micro-bag', category: 'bag', price: 10, image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
+  { id: 'micro-bag', category: 'bag', price: 10, only: 'female', image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
   { id: 'sneakers', category: 'feet', price: 10, image: true, variants: shades(['white', 'black', 'red', 'blue', 'green']) },
 
   {
-    // A transformation, not a piece: the whole lion redrawn as a shishi, the guardian lion of
-    // East Asia. It has its own curled mane and is worn alone, with nothing else on top. Its
-    // colours are the lion dance's own: red, gold and black are the three lions of the southern
-    // Chinese dance, and green is the cloth of the Japanese one.
+    // A transformation, not a piece: a whole picture of a shishi, the guardian lion of East
+    // Asia, in the green of the Japanese lion dance. It takes the lion's place entirely while
+    // it is on.
     id: 'shishi',
     category: 'outfit',
     price: 30,
@@ -353,12 +367,6 @@ export const accessories: Accessory[] = [
     image: true,
     hidesMane: true,
     alone: true,
-    variants: [
-      { id: 'red', swatch: tone.red[0], palette: {} },
-      { id: 'yellow', swatch: '#f0b400', palette: {} },
-      { id: 'black', swatch: tone.black[0], palette: {} },
-      { id: 'green', swatch: tone.green[0], palette: {} },
-    ],
   },
 ]
 
@@ -389,12 +397,21 @@ export function partnerMane(fur: Accessory): Accessory | undefined {
   return byId.get(fur.id === defaults.fur ? (defaults.mane ?? '') : `mane-${fur.id}`)
 }
 
-// The mane's size, 0 to 3. It follows the Mane upgrade's level and nothing else (dev tools aside).
+// The first upgrade's level, 0 to 3 (dev tools aside). On a lion it is the size of his mane.
+// A lioness has no mane: on her the same upgrade is called AURA, and it shows as a glow.
 const maneSlot = slots.find((slot) => slot.id === 'mane')
 
-export function maneSize(progress: Progress): number {
+function firstUpgradeLevel(progress: Progress): number {
   if (typeof progress.dev?.mane === 'number') return progress.dev.mane
   return maneSlot ? slotLevel(maneSlot, progress.upgrades.mane ?? '') : 0
+}
+
+export function maneSize(progress: Progress): number {
+  return progress.lionSex === 'female' ? 0 : firstUpgradeLevel(progress)
+}
+
+export function auraSize(progress: Progress): number {
+  return progress.lionSex === 'female' ? firstUpgradeLevel(progress) : 0
 }
 
 // Sparks earned and spent in this game. The balance never shows below zero.
@@ -441,10 +458,21 @@ export function buyBlock(
   return null
 }
 
+// Whether a piece is for this lion at all: some are only for a lion, some only for a lioness.
+export function fits(item: Accessory, sex: LionSex): boolean {
+  return !item.only || item.only === (sex ?? 'male')
+}
+
+// The wardrobe groups this lion has. A group with nothing in it for them is left out, so a
+// lion sees MANE COLOUR where a lioness sees BAGS.
+export function categoriesFor(sex: LionSex): AccessoryCategory[] {
+  return categories.filter((category) => accessories.some((item) => item.category === category && fits(item, sex)))
+}
+
 // Tokens for what the lion is wearing, limited to pieces it owns, in its chosen colours.
 export function wornIds(progress: Progress, others: Progress[] = []): string[] {
   return categories
     .map((category) => byId.get(progress.wearing[category] ?? ''))
-    .filter((item): item is Accessory => item !== undefined && owns(progress, item, others))
+    .filter((item): item is Accessory => item !== undefined && fits(item, progress.lionSex) && owns(progress, item, others))
     .map((item) => wornToken(item, progress.tones[item.id]))
 }

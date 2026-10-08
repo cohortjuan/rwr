@@ -117,6 +117,8 @@ the database.
   optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
 - obscenity (MIT) for the name filter, qrcode-generator (MIT) for My Pride's QR codes
+- Nodemailer (MIT No Attribution) to email wardrobe ideas to the maker from the maker's own
+  mailbox. Optional: with no mailbox set, the form is hidden
 - Hosting: Vercel
 
 Everything used is free or open source.

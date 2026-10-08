@@ -17,7 +17,8 @@ was drawn out of proportion. `pinks` says the piece really is purple or pink, so
 'light' (creams and whites), 'grey' (silver), 'silver' (only the light greys), 'fade' (a
 lens that fades through three colours), or a (from, to) range of hue in degrees, which can
 also say how strong and how bright a pixel must be to count: (from, to, strength, brightness).
-`drawn` names the colour the piece was drawn in, which is then kept exactly as drawn. A
+`drawn` names the colour the piece was drawn in, which is then kept exactly as drawn.
+`single` names a second piece made from a pair: the same pictures with one side only. A
 piece with two painted parts lists two. `colours` are the colours it is sold in, the first
 being the one it was drawn in. Each is a name from RAMPS, or a pair of names for a
 two-part piece.
@@ -94,7 +95,7 @@ SHEETS = {
         {'id': 'micro-bag', 'box': (305, 306, 595, 596), 'areas': [(14, 42, 82, 98)],
          'paint': [BLUE], 'colours': ['blue', 'red', 'green', 'purple', 'pink', 'black']},
         {'id': 'hoop-earrings', 'box': (605, 306, 895, 596), 'areas': [(0, 10, 16, 42), (72, 10, 89, 42)],
-         'paint': [GOLD], 'colours': ['gold', 'silver', 'rose']},
+         'paint': [GOLD], 'colours': ['gold', 'silver', 'rose'], 'single': 'hoop-earring'},
         {'id': 'lion-cap', 'box': (905, 301, 1195, 596), 'areas': [(4, -9, 86, 24)],
          'paint': ['dark'], 'colours': ['black', 'red', 'blue', 'green', 'white']},
         {'id': 'head-bandana', 'box': (5, 606, 295, 892), 'areas': [(0, -4, 89, 38)],
@@ -103,9 +104,8 @@ SHEETS = {
          'paint': ['light'], 'colours': ['white', 'black', 'red', 'blue', 'green']},
         {'id': 'indigo-jacket', 'box': (605, 608, 895, 892), 'areas': [(4, 42, 86, 100)],
          'paint': [BLUE], 'colours': ['blue', 'black', 'red', 'green', 'brown']},
-        # The colours of the lion dance: red, gold and black are the three lions of the southern
-        # Chinese dance (Guan Gong, Liu Bei, Zhang Fei), and green is the cloth of the Japanese one.
-        {'id': 'shishi', 'box': (905, 607, 1195, 892), 'areas': [(0, -3, 89, 101)], 'whole': True,
-         'paint': [(335, 22, 0.45, 0.42)], 'drawn': 'red', 'colours': ['red', 'yellow', 'black', 'green']},
+        # A whole drawing that takes the lion's place. `box` is the drawing itself. He was drawn
+        # gold with red curls, and `jade` repaints him green with gold curls.
+        {'id': 'shishi', 'box': (947, 612, 1165, 891), 'whole': True, 'fit': 'jade'},
     ],
 }

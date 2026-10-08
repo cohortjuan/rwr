@@ -154,3 +154,25 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+
+/* Whose wardrobe this is, with the button that renames them or changes lion and lioness. */
+.yours {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem;
+  color: var(--gold-bright);
+  overflow-wrap: anywhere;
+}
+
+/* Ideas for new pieces. */
+.suggest {
+  margin-top: 28px;
+}
+
+.suggest textarea {
+  width: 100%;
+}

@@ -4,12 +4,16 @@ import { useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
 import LoginBox from '@/components/LoginBox'
+import NameLionBox from '@/components/NameLionBox'
+import SuggestBox from '@/components/SuggestBox'
 import {
   accessories,
   accessory,
+  auraSize,
   buyBlock,
-  categories,
+  categoriesFor,
   CHEER_SPARKS,
+  fits,
   defaults,
   INTERVIEW_SPARKS,
   LEVEL_SPARKS,
@@ -23,7 +27,7 @@ import {
 } from '@/lib/accessories'
 import { useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
-import { saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
+import { saveProgress, useKeptLions, useLionText, useProgress, type LionSex } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './WardrobeScreen.module.css'
@@ -31,6 +35,7 @@ import styles from './WardrobeScreen.module.css'
 type ItemId = keyof typeof lines.wardrobe.items
 type ColourId = keyof typeof lines.wardrobe.colours
 type NoteId = keyof typeof lines.wardrobe.notes
+type LionessNoteId = keyof typeof lines.wardrobe.lionessNotes
 
 const itemName = (item: Accessory) => lines.wardrobe.items[item.id as ItemId] ?? item.id
 const colourName = (id: string) => lines.wardrobe.colours[id as ColourId] ?? id
@@ -49,6 +54,10 @@ export default function WardrobeScreen() {
   const [status, setStatus] = useState('')
   // What a guest is trying on: one token per group, kept only while this screen is open.
   const [trying, setTrying] = useState<Record<string, string>>({})
+  // The box that renames the lion or changes it between a lion and a lioness. `changes` counts
+  // how often it has opened, so each time it starts from the lion as it is now.
+  const [changing, setChanging] = useState(false)
+  const [changes, setChanges] = useState(0)
 
   if (!hydrated) return <main className="screen" />
 
@@ -60,6 +69,14 @@ export default function WardrobeScreen() {
     ? owned
     : [...owned.filter((token) => !((accessory(token)?.category ?? '') in trying)), ...Object.values(trying)]
   const mane = maneSize(progress)
+  const sex = progress.lionSex
+  // A lioness reads her own note where the usual one talks about a mane.
+  const noteFor = (category: string) =>
+    sex === 'female' && category in lines.wardrobe.lionessNotes
+      ? lines.wardrobe.lionessNotes[category as LionessNoteId]
+      : category in lines.wardrobe.notes
+        ? lines.wardrobe.notes[category as NoteId]
+        : ''
   const wornIn = (category: string) => wearing.find((token) => accessory(token)?.category === category)
 
   // A group's default (golden fur, the natural mane) is what the lion has when nothing else is chosen.
@@ -103,6 +120,14 @@ export default function WardrobeScreen() {
     })
   }
 
+  function change(lionName: string, lionSex: LionSex) {
+    setChanging(false)
+    playSfx('select', sound)
+    // What a guest was trying on may not fit the other one.
+    if (lionSex !== sex) setTrying({})
+    saveProgress({ lionName, lionSex })
+  }
+
   // Colours are free to try and to switch. The lion shows one once the piece is worn.
   function pickColour(item: Accessory, colour: string) {
     playSfx('select', sound)
@@ -122,12 +147,31 @@ export default function WardrobeScreen() {
         </header>
 
         <section className={`panel ${styles.top}`}>
-          <LionAvatar className={styles.preview} wearing={wearing} mane={trying.mane ? Math.max(mane, 1) : mane} blink />
+          <LionAvatar
+            className={styles.preview}
+            wearing={wearing}
+            mane={trying.mane ? Math.max(mane, 1) : mane}
+            aura={auraSize(progress)}
+            blink
+          />
           <div>
+            <p className={styles.yours}>
+              <span>{lines.lions.yours(progress.lionName, lines.lions.sexes[sex])}</span>
+              <button
+                type="button"
+                className="btn btn-quiet"
+                onClick={() => {
+                  setChanges(changes + 1)
+                  setChanging(true)
+                }}
+              >
+                {lines.lions.change}
+              </button>
+            </p>
             <p className={styles.sparks}>{lines.wardrobe.sparks(purse.balance)}</p>
             <h2 className={styles.subheading}>{lines.wardrobe.earnHeading}</h2>
             <ul className={styles.earn}>
-              <li>{lines.wardrobe.earnLevel(LEVEL_SPARKS)}</li>
+              <li>{lion(lines.wardrobe.earnLevel(LEVEL_SPARKS))}</li>
               <li>{lines.wardrobe.earnStep(STEP_SPARKS)}</li>
               <li>{lines.wardrobe.earnCheer(CHEER_SPARKS)}</li>
               <li>{lines.wardrobe.earnInterview(INTERVIEW_SPARKS)}</li>
@@ -162,15 +206,13 @@ export default function WardrobeScreen() {
           </section>
         )}
 
-        {categories.map((category) => (
+        {categoriesFor(sex).map((category) => (
           <section key={category} className={styles.group}>
             <h2 className={styles.subheading}>{lines.wardrobe.categories[category]}</h2>
-            {category in lines.wardrobe.notes && (
-              <p className={styles.fine}>{lion(lines.wardrobe.notes[category as NoteId])}</p>
-            )}
+            {noteFor(category) && <p className={styles.fine}>{lion(noteFor(category))}</p>}
             <ul className={styles.grid}>
               {accessories
-                .filter((item) => item.category === category)
+                .filter((item) => item.category === category && fits(item, sex))
                 .map((item) => {
                   const mine = signedIn && owns(progress, item, others)
                   const worn = isWorn(item)
@@ -272,6 +314,8 @@ export default function WardrobeScreen() {
           </section>
         ))}
 
+        <SuggestBox sex={sex} />
+
         <p className={styles.footer}>
           <Link className="btn btn-quiet" href="/upgrades">
             {lines.wardrobe.back}
@@ -280,6 +324,13 @@ export default function WardrobeScreen() {
       </div>
 
       <LoginBox open={loginOpen} guest={false} onClose={() => setLoginOpen(false)} onEnter={() => setLoginOpen(false)} />
+      <NameLionBox
+        key={changes}
+        open={changing}
+        current={{ name: progress.lionName, sex }}
+        onName={change}
+        onCancel={() => setChanging(false)}
+      />
     </main>
   )
 }

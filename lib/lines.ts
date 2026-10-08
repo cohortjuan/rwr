@@ -28,6 +28,16 @@ export const lines = {
   lions: {
     nameQuestion: 'Do you want to rename your new lion?',
     nameLabel: "New lion's name",
+    // Lion or lioness. The choice changes part of the wardrobe and nothing about the trail.
+    sexLabel: 'Lion or lioness?',
+    sexes: { male: 'LION', female: 'LIONESS' },
+    sexNote: 'A lion grows a mane. A lioness grows an aura, and has essentials and bags of her own in the wardrobe. You can change this later in the wardrobe.',
+    changeQuestion: 'Change your lion',
+    changeLabel: "Lion's name",
+    changeSave: 'SAVE',
+    changeNote: 'Nothing you own is lost. Pieces that do not fit wait in the wardrobe until you switch back.',
+    yours: (lion: string, kind: string) => `${lion} · ${kind}`,
+    change: 'RENAME OR CHANGE',
     nameUse: 'USE THIS NAME',
     nameKeep: (lion: string) => `KEEP ${lion.toUpperCase()}`,
     nameCancel: 'CANCEL',
@@ -167,6 +177,7 @@ export const lines = {
       { title: "A friend's witness", body: 'When you ask someone what they would come to you for, your first name and your lion\'s name travel inside the link you send, and their answer travels inside the link they send back. RWR does not send, store, or see either one. If you use AI replies, what they said (not their name) is shown to the AI during the Craft level.' },
       { title: 'The road', body: 'Your goal, the obstacle you name, your plan, and what you tell Todah about each experiment are saved on this device like your other answers. With AI replies on, they are sent to the AI service to write the plan and Todah\'s reply, with the same protections.' },
       { title: "Todah's note", body: 'When your goal is reached, Todah leaves you a note made from what you said along the way. With AI replies on, those words are sent to the AI service to write it, with the same protections. The note is saved on this device. If you save it as a picture or send it to someone, that is your choice and RWR is not involved.' },
+      { title: 'Wardrobe ideas', body: 'If you send an idea for a new wardrobe piece, the words you type are emailed to the person who makes RWR, with whether your lion is a lion or a lioness. Email addresses, links, and phone numbers are removed first. Your name, your account, and your game are not sent. One small cookie counts the ideas this browser has sent today.' },
       { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },
     ],
@@ -256,6 +267,13 @@ export const lines = {
     // Helpful tips on the upgrades screen. One shows per visit, the first that fits the game
     // so far (see pickTip in UpgradesScreen). Players can switch them off, and back on under
     // PRIVACY.
+    // A lioness has no mane, so on her the MANE upgrade goes by another name. It is the same
+    // upgrade with the same levels.
+    lioness: {
+      name: 'AURA',
+      growth: 'Her aura glows brighter through three levels.',
+      tipStart: 'Tap AURA to begin. One sentence about who you are at work earns the first level.',
+    },
     tipLabel: 'TIP',
     tipGotIt: 'GOT IT',
     tipTurnOff: 'TURN TIPS OFF',
@@ -295,6 +313,7 @@ export const lines = {
     categories: {
       fur: 'FUR',
       mane: 'MANE COLOUR',
+      essentials: 'ESSENTIALS',
       hat: 'HATS',
       shades: 'SHADES AND GLASSES',
       ears: 'EARS',
@@ -307,8 +326,14 @@ export const lines = {
     notes: {
       fur: 'Fur changes the coat only. The mane keeps its own colour, so to match a coat, pick the mane of the same name.',
       mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1. Every coat has a mane of the same name that completes its set.',
+      essentials: 'Only a lioness carries these. One stands by her paw, on the other side from her bag, so the two can be worn together. Each has a paw mark.',
+      bag: 'Bags are for a lioness.',
       hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your sneakers, your bag, or nothing at all.',
       outfit: 'A transformation changes the whole lion and is worn alone: while it is on, your other pieces wait in the wardrobe. More about the shishi on the ABOUT page.',
+    },
+    // What a lioness reads in place of a note above. She has no mane to match.
+    lionessNotes: {
+      fur: 'Fur changes the whole coat.',
     },
     colourLabel: (name: string) => `Colour: ${name}`,
     colours: {
@@ -366,6 +391,11 @@ export const lines = {
       'head-bandana': 'Silk bandana',
       'shield-shades': 'Shield shades',
       'hoop-earrings': 'Hoop earrings',
+      'hoop-earring': 'One hoop earring',
+      perfume: 'Perfume',
+      passport: 'Passport',
+      wallet: 'Wallet',
+      phone: 'Phone',
       'aviator-jacket': 'Aviator jacket',
       'indigo-jacket': 'Indigo jacket',
       'micro-bag': 'Micro bag',
@@ -392,6 +422,22 @@ export const lines = {
     accountButton: 'SIGN UP OR LOG IN',
     accountNeeded: 'Needs an account',
     back: 'BACK TO UPGRADES',
+    // Ideas for new pieces, emailed to the maker (app/api/suggest). The form is shown only
+    // when the server has a mailbox to send from.
+    suggest: {
+      heading: 'WHAT SHOULD WE ADD?',
+      intro: 'Is there a piece you wish your lion could wear? Say what it is and it goes to the person who makes RWR.',
+      label: 'Your idea',
+      placeholder: 'A varsity jacket, in green...',
+      send: 'SEND MY IDEA',
+      sending: 'SENDING...',
+      sent: 'Sent. Thank you.',
+      empty: 'Write your idea first.',
+      blocked: 'Please say that another way. Some words cannot be sent.',
+      daily: 'That is all the ideas for today. Come back tomorrow with more.',
+      failed: 'That did not send. Please try again in a moment.',
+      fine: 'Only your words, and whether your lion is a lion or a lioness, are sent. No name, no email, and nothing from your game.',
+    },
   },
 
   // The lookbook: every wardrobe piece in every colour, to look through.
@@ -399,6 +445,7 @@ export const lines = {
     heading: 'LOOKBOOK',
     intro: 'Every piece in the wardrobe, in every colour it comes in. One from each group can be worn at a time.',
     maneLevel: (n: number) => `Mane level ${n}`,
+    only: { male: 'LION ONLY', female: 'LIONESS ONLY' },
     setsHeading: 'MATCHING SETS',
     setsIntro: 'Every coat has a mane of the same name. They are two pieces, found under FUR and MANE COLOUR, and any coat can be worn with any mane.',
     open: 'SEE EVERY PIECE',
@@ -724,7 +771,8 @@ export const lines = {
     saved: 'Saved as a picture.',
     saveFailed: 'The picture could not be made here. A screenshot will do the job.',
     again: 'ASK TODAH TO WRITE IT AGAIN',
-    againLeft: (n: number) => (n === 1 ? 'He will write it once more.' : `He will write it ${n} more times.`),
+    againLeft: (n: number, sex: 'male' | 'female') =>
+      `${sex === 'female' ? 'She' : 'He'} will write it ${n === 1 ? 'once more' : `${n} more times`}.`,
     back: 'BACK TO THE ROAR',
     credit: 'RWR: 16-bit Career Adventure',
     shareTitle: (lion: string) => `A note from ${lion}`,
@@ -1015,7 +1063,7 @@ export const lines = {
     goalShown: 'Your main goal:',
     reachedQuestion: 'GOAL REACHED?',
     confirm: 'Are you ready to let Todah roar?',
-    confirmYes: 'YES, LET HIM ROAR',
+    confirmYes: (sex: 'male' | 'female') => (sex === 'female' ? 'YES, LET HER ROAR' : 'YES, LET HIM ROAR'),
     confirmNo: 'NOT YET',
     rewardTitle: 'PRIDE LEADER',
     rewardBody: (name: string) =>

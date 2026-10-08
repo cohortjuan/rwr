@@ -5,7 +5,7 @@ import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import LionAvatar from '@/components/LionAvatar'
 import PawPrint from '@/components/PawPrint'
-import { maneSize, wornIds } from '@/lib/accessories'
+import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { circles, circleScore } from '@/lib/compass'
 import { renderLetter } from '@/lib/letterImage'
 import { lines } from '@/lib/lines'
@@ -271,7 +271,7 @@ export default function LetterScreen() {
                     </p>
                   </div>
                   <div className={styles.photo}>
-                    <LionAvatar className={styles.lion} wearing={wearing} mane={mane} mood="happy" />
+                    <LionAvatar className={styles.lion} wearing={wearing} mane={mane} aura={auraSize(progress)} mood="happy" />
                   </div>
                 </div>
               </article>
@@ -298,7 +298,7 @@ export default function LetterScreen() {
                 <button type="button" className="btn btn-quiet" onClick={() => write(true)}>
                   {lion(lines.letter.again)}
                 </button>{' '}
-                {lines.letter.againLeft(rewritesLeft)}
+                {lines.letter.againLeft(rewritesLeft, progress.lionSex)}
               </p>
             )}
           </>

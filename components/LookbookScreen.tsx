@@ -12,6 +12,10 @@ const colourName = (id: string) => lines.wardrobe.colours[id as ColourId] ?? id
 const maneLevels = [1, 2, 3]
 const furs = accessories.filter((item) => item.category === 'fur')
 
+// Who a piece or a whole group is for, when it is not for both: a lion or a lioness.
+const onlyFor = (items: Accessory[]) => (items.length > 0 && items.every((item) => item.only === items[0].only) ? items[0].only : undefined)
+const groupOnly = (category: string) => onlyFor(accessories.filter((item) => item.category === category))
+
 function cost(item: Accessory): string {
   if (item.gift) return lines.wardrobe.gifts[item.gift]
   return item.price === 0 ? lines.wardrobe.free : lines.wardrobe.price(item.price)
@@ -30,7 +34,10 @@ export default function LookbookScreen() {
 
         {categories.map((category) => (
           <section key={category} className={styles.group}>
-            <h2 className={styles.subheading}>{lines.wardrobe.categories[category]}</h2>
+            <h2 className={styles.subheading}>
+              {lines.wardrobe.categories[category]}
+              {groupOnly(category) && <span className={styles.cost}> {lines.lookbook.only[groupOnly(category)!]}</span>}
+            </h2>
             {/* Pieces with no colour options of their own (the furs) share one row. */}
             {accessories.some((item) => item.category === category && !item.variants && !item.mane) && (
               <div className={styles.piece}>
@@ -53,6 +60,7 @@ export default function LookbookScreen() {
                 <div key={item.id} className={styles.piece}>
                   <p className={styles.pieceName}>
                     {itemName(item)} <span className={styles.cost}>{cost(item)}</span>
+                    {item.only && !groupOnly(category) && <span className={styles.cost}> {lines.lookbook.only[item.only]}</span>}
                   </p>
                   <ul className={styles.tiles}>
                     {/* A mane colour is shown at each size the mane grows through. */}

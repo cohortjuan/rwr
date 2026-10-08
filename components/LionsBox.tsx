@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import LionAvatar from '@/components/LionAvatar'
-import { maneSize, wornIds } from '@/lib/accessories'
+import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { lines } from '@/lib/lines'
 import { pridePower, todahForm, useProgress, type KeptLion, type TodahForm } from '@/lib/progress'
 import styles from './LionBoxes.module.css'
@@ -49,6 +49,7 @@ export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
                 className={styles.lionFace}
                 wearing={wornIds(lion.progress, others)}
                 mane={maneSize(lion.progress)}
+                aura={auraSize(lion.progress)}
               />
               <div className={styles.lionText}>
                 <p className={styles.lionName}>{lion.progress.lionName.toUpperCase()}</p>

@@ -17,12 +17,17 @@ type Props = {
   wearing: string[]
   // The mane's size, 0 to 3, from the Mane upgrade's level (see maneSize).
   mane?: number
+  // A lioness's aura, 0 to 3, from the same upgrade (see auraSize): a glow in place of a mane.
+  aura?: number
   mood?: 'neutral' | 'happy'
   // The mouth flaps while a line types out.
   talking?: boolean
   blink?: boolean
   className?: string
 }
+
+// The glow for each level of a lioness's aura. Level 0 has none.
+const auras = ['', styles.aura1, styles.aura2, styles.aura3]
 
 // One rectangle per run of the same colour in each row of a piece of art.
 function rects(art: AccessoryArt, key: string) {
@@ -57,6 +62,7 @@ function sparkle(x: number, y: number, index: number, key: string) {
 export default function LionAvatar({
   wearing,
   mane = 0,
+  aura = 0,
   mood = 'neutral',
   talking = false,
   blink = false,
@@ -65,9 +71,9 @@ export default function LionAvatar({
   const chosen = wearing
     .map(parseToken)
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
-  // A transformation is worn alone: while it is on, only it and the coat are drawn.
+  // A transformation is a whole picture of its own: while it is on, it is all that is drawn.
   const alone = chosen.some((entry) => entry.item.alone)
-  const worn = alone ? chosen.filter((entry) => entry.item.alone || entry.item.category === 'fur') : chosen
+  const worn = alone ? chosen.filter((entry) => entry.item.alone) : chosen
   const fur = worn.find((entry) => entry.item.category === 'fur')?.item
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
   // Before the mane starts to grow there is nothing to colour: the cub's own tuft is part of
@@ -82,41 +88,47 @@ export default function LionAvatar({
 
   return (
     <div className={`${styles.stage} ${className ?? ''}`} aria-hidden="true">
-      <div className={styles.lion} style={{ filter: fur?.filter }}>
-        {/* His tail is its own layer, so it can wag. A lion that blinks is a live one, and
-            its tail moves too: a flick now and then, and faster when he is happy. */}
-        <div className={!blink ? styles.tail : mood === 'happy' ? styles.tailHappy : styles.tailWag} />
-        <div className={mood === 'happy' ? styles.happy : styles.sprite} />
-        {blink && mood !== 'happy' && <div className={styles.blink} />}
-        {talking && <div className={styles.mouth} />}
+      {/* Everything drawn of the lion sits in one layer, so a lioness's aura glows round her
+          outline and not round whatever frame the stage has been given. */}
+      <div className={`${styles.body} ${auras[Math.min(aura, 3)]}`}>
+        {!alone && (
+          <div className={styles.lion} style={{ filter: fur?.filter }}>
+            {/* His tail is its own layer, so it can wag. A lion that blinks is a live one, and
+                its tail moves too: a flick now and then, and faster when he is happy. */}
+            <div className={!blink ? styles.tail : mood === 'happy' ? styles.tailHappy : styles.tailWag} />
+            <div className={mood === 'happy' ? styles.happy : styles.sprite} />
+            {blink && mood !== 'happy' && <div className={styles.blink} />}
+            {talking && <div className={styles.mouth} />}
+          </div>
+        )}
+        <svg
+          className={styles.wear}
+          viewBox={`0 0 ${GRID.width} ${GRID.height + HEADROOM}`}
+          shapeRendering="crispEdges"
+          preserveAspectRatio="none"
+        >
+          {maneShape && <g>{rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}</g>}
+          {drawn.map(({ item, variant }) => (
+            <g key={item.id}>
+              {item.image && (
+                <image
+                  className={styles.piece}
+                  href={pieceImage(item, variant)}
+                  x={0}
+                  y={0}
+                  width={GRID.width}
+                  height={GRID.height + HEADROOM}
+                  preserveAspectRatio="none"
+                />
+              )}
+              {item.art?.map((art, layer) =>
+                rects({ ...art, palette: { ...art.palette, ...variant?.palette } }, `${item.id}-${layer}`),
+              )}
+              {item.sparkles?.map((glint, index) => sparkle(glint.x, glint.y, index, item.id))}
+            </g>
+          ))}
+        </svg>
       </div>
-      <svg
-        className={styles.wear}
-        viewBox={`0 0 ${GRID.width} ${GRID.height + HEADROOM}`}
-        shapeRendering="crispEdges"
-        preserveAspectRatio="none"
-      >
-        {maneShape && <g>{rects({ ...maneShape, palette: { M: base, D: shade } }, 'mane')}</g>}
-        {drawn.map(({ item, variant }) => (
-          <g key={item.id}>
-            {item.image && (
-              <image
-                className={styles.piece}
-                href={pieceImage(item, variant)}
-                x={0}
-                y={0}
-                width={GRID.width}
-                height={GRID.height + HEADROOM}
-                preserveAspectRatio="none"
-              />
-            )}
-            {item.art?.map((art, layer) =>
-              rects({ ...art, palette: { ...art.palette, ...variant?.palette } }, `${item.id}-${layer}`),
-            )}
-            {item.sparkles?.map((glint, index) => sparkle(glint.x, glint.y, index, item.id))}
-          </g>
-        ))}
-      </svg>
     </div>
   )
 }

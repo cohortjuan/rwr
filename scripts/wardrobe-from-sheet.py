@@ -94,7 +94,13 @@ def register(soft, box, anchor='bottom', hint=(2.82, 2.8), rows=None):
 def extract(sheet, soft, item):
     box, areas = item['box'], item.get('areas', [])
     whole, pinks, keep = item.get('whole', False), item.get('pinks', False), item.get('keep')
-    (left, top, pitch_x, pitch_y), fit = register(soft, box, item.get('anchor', 'bottom'), item.get('pitch', (2.82, 2.8)), item.get('match'))
+    if whole:
+        # A whole drawing takes the lion's place, so it is not fitted to him. It is read at its
+        # own proportions: as tall as he is, standing on the same line, centred.
+        pitch_x = pitch_y = (box[3] - box[1] + 1) / SPRITE.height
+        left, top, fit = (box[0] + box[2] + 1) / 2 - WIDTH * pitch_x / 2, box[1] - HEAD * pitch_y, 1.0
+    else:
+        (left, top, pitch_x, pitch_y), fit = register(soft, box, item.get('anchor', 'bottom'), item.get('pitch', (2.82, 2.8)), item.get('match'))
     read = lambda x, y: soft[min(sheet.width - 1, max(0, int(left + (x + 0.5) * pitch_x))), min(sheet.height - 1, max(0, int(top + (y + 0.5) * pitch_y)))]
     inside = lambda x, y: any(a[0] <= x < a[2] and a[1] + HEAD <= y < a[3] + HEAD for a in areas)
     piece = Image.new('RGBA', (WIDTH, HEIGHT), (0, 0, 0, 0))
@@ -114,6 +120,9 @@ def extract(sheet, soft, item):
         for x in range(WIDTH):
             colour = read(x, y)
             if magenta(colour) or (areas and not inside(x, y)) or (smear(colour) and not pinks):
+                continue
+            if whole and top + (y + 0.5) * pitch_y < box[1]:
+                # Above the drawing is the cell over it on the sheet.
                 continue
             if whole or unlike(x, y, colour, 1):
                 chosen.add((x, y))
@@ -197,7 +206,50 @@ def fit_vest(piece):
             px[x, y] = dark
 
 
-FITS = {'vest': fit_vest}
+def jade(piece):
+    """The shishi as a jade guardian lion: a green body, gold curls and a dark green outline.
+
+    He was drawn as a gold lion with red curls. His curls are the red pixels and the orange
+    lines among them. The rest of him is body. Each takes its new ramp by its place from dark
+    to light, so the shading he was drawn with is kept.
+    """
+    from wardrobe_manifest import RAMPS
+    src = piece.copy().load()
+    px = piece.load()
+    hsv = lambda c: colorsys.rgb_to_hsv(c[0] / 255, c[1] / 255, c[2] / 255)
+    spots = [(x, y) for y in range(HEIGHT) for x in range(WIDTH) if src[x, y][3]]
+    ink = {s for s in spots if hsv(src[s])[2] <= 0.4}
+    curls = {s for s in spots if s not in ink and not 15 < hsv(src[s])[0] * 360 < 335}
+    for _ in range(2):
+        curls |= {
+            (x, y) for x, y in spots
+            if (x, y) not in ink and (x, y) not in curls and 15 < hsv(src[x, y])[0] * 360 <= 25
+            and sum((x + dx, y + dy) in curls for dx in (-1, 0, 1) for dy in (-1, 0, 1)) >= 3
+        }
+    body = [s for s in spots if s not in ink and s not in curls]
+    light = lambda c: 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2]
+
+    def paint(part, name, shares):
+        ramp = [hexrgb(h) for h in RAMPS[name]]
+        levels = sorted(light(src[s]) for s in part)
+        for s in part:
+            value = light(src[s])
+            place = (sum(l < value for l in levels) + sum(l == value for l in levels) / 2) / len(levels)
+            px[s] = ramp[sum(place >= share for share in shares)] + (255,)
+
+    paint(body, 'green', (0.06, 0.3, 0.72, 0.93))
+    paint(sorted(curls), 'gold', (0.1, 0.42, 0.86, 0.97))
+    for s in ink:
+        px[s] = (12, 42, 21, 255)
+    # His eyes stay gold, so they are not lost in a green face.
+    for left, top, right, bottom in ((21, 39, 28, 45), (51, 39, 60, 45)):
+        for y in range(top, bottom):
+            for x in range(left, right):
+                if (x, y) in set(body) and light(src[x, y]) >= 190:
+                    px[x, y] = hexrgb(RAMPS['gold'][3]) + (255,)
+
+
+FITS = {'vest': fit_vest, 'jade': jade}
 FADES = {}
 
 hexrgb = lambda h: (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16))
@@ -289,5 +341,11 @@ if __name__ == '__main__':
                 names = colour if isinstance(colour, tuple) else (colour,)
                 shown = piece if colour == item.get('drawn') else repaint(piece, item['paint'], names, RAMPS)
                 shown.save(f"{OUT}/{item['id']}--{names[-1]}.png")
+                if item.get('single'):
+                    # One of a pair, sold as its own piece: the same picture with only the
+                    # side on the left of the screen kept.
+                    one = shown.copy()
+                    one.paste((0, 0, 0, 0), (WIDTH // 2, 0, WIDTH, HEIGHT))
+                    one.save(f"{OUT}/{item['single']}--{names[-1]}.png")
             count = sum(n for n, c in piece.getcolors(99999) if c[3])
             print(f"{item['id']}: {count} pixels, outline fit {fit:.0%}")
