@@ -573,6 +573,29 @@ export const lines = {
         ? `Your strongest evidence is in ${strongest}, and the least tested circle so far is ${thinnest}. Not tested yet is not the same as wrong. What do you make of that gap?`
         : `Your evidence is even across the circles, with ${strongest} a little ahead. When you lay the four side by side, what do you notice?`,
     scriptedEmpty: 'You have a claim in every circle, and none of them is tested yet. That is an honest place to stand. Which one would you most like to test first?',
+    // Three paths: ideas to test, never answers. Choosing one makes its first milestone the
+    // main goal, which is the goal the roar waits for. Rules that must survive edits: no path
+    // is called right, likely, well paid or in demand, and the player can always write their own.
+    pathsHeading: 'THREE PATHS TO TEST',
+    pathsIntro:
+      'Want to see where these four circles could point? I can lay out three paths: the one you are on, one next door, and a wild one. They are ideas to test, not answers, and I cannot promise where any of them leads.',
+    pathsAsk: 'SHOW ME THREE PATHS',
+    pathsThinking: 'Todah is reading the trail ahead...',
+    pathsKinds: { near: 'THE PATH YOU ARE ON', next: 'THE PATH NEXT DOOR', wild: 'THE WILD PATH' },
+    pathsGoal: 'A first milestone:',
+    pathsChoose: 'TAKE THIS PATH',
+    pathsChosen: 'YOUR PATH',
+    pathsAfter: 'Take one and its milestone becomes your main goal. You can change the words after, or skip these and write your own below.',
+    pathsFailed: 'I could not see the paths clearly just now. Here are three questions to find them yourself.',
+    pathsCare: 'Before we look at paths: what you wrote sounds heavy, and that matters more than any goal. Please talk to someone you trust, or a professional, today. The trail will wait for you.',
+    // Shown in place of the three paths when the AI is off or down.
+    pathsOwn: [
+      'The path you are on: what would one step up look like, doing more of what already has evidence?',
+      'The path next door: where else could the same strengths be used, somewhere you have not tried?',
+      'The wild path: what would you try if money and other people\'s opinions did not matter?',
+    ],
+    goalThinking: 'Todah is thinking about your goal...',
+    goalNext: 'Next we plan the first stretch of road.',
     goalHeading: 'YOUR MAIN GOAL',
     // Two things the four-circle picture gets wrong if it is read too literally. Both are
     // backed by research (see docs/architecture/overview.md), so keep them true if reworded.
@@ -604,7 +627,7 @@ export const lines = {
         title: 'WHAT THIS IS',
         body: [
           'RWR is a short, free game for thinking about work. A lion cub called Todah asks about real moments from your life, and together you mark the evidence on a map: what you love, what you are good at, who it helps, and what it can pay. Then you set one goal of your own. Todah roars only when you say you have reached it.',
-          'It is a place to think, not a test. It does not name a career for you or promise a job or any outcome.',
+          'It is a place to think, not a test. At the Crossroads Todah can lay out three paths to test if you ask, but he does not choose for you, and he never promises a job or any outcome.',
         ],
       },
       {

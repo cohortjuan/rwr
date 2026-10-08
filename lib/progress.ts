@@ -17,6 +17,10 @@ export type ChatMessage = { role: 'user' | 'todah', text: string }
 
 export type TodahForm = 'cub' | 'nomad' | 'leader'
 
+// One of three directions the four circles could point in: the one the player is already on,
+// one next door, and a wild one. `goal` is a first milestone they can take as their main goal.
+export type PathIdea = { kind: 'near' | 'next' | 'wild', name: string, why: string, goal: string }
+
 // The player chooses whether their lion is a lion or a lioness. It decides part of the
 // wardrobe: only a lion grows a mane, and some pieces are only for a lioness.
 export type LionSex = 'male' | 'female'
@@ -122,6 +126,12 @@ export type Progress = {
   // What Todah said at the Crossroads, kept so it is asked for once. `for` is the four claims
   // it was about: if they change, it is asked for again.
   crossroads: { text: string, for: string } | null
+  // The three paths Todah laid out at the Crossroads, kept so they are asked for once. `for`
+  // is the four claims they were built from, and `chosen` the one the player took as a goal.
+  paths: { for: string, list: PathIdea[], chosen: PathIdea['kind'] | null } | null
+  // What Todah said about the main goal once it was set, kept so it is asked for once. `for`
+  // is the goal it was about: a new goal gets new thoughts.
+  goalThoughts: { text: string, for: string } | null
   road: Road | null
   witnesses: Witness[]
   letter: Letter | null
@@ -167,6 +177,8 @@ export const emptyProgress: Progress = {
   levelChat: {},
   levelsDone: [],
   crossroads: null,
+  paths: null,
+  goalThoughts: null,
   road: null,
   witnesses: [],
   letter: null,

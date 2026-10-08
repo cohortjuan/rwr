@@ -17,7 +17,7 @@ const ONBOARDING_ANSWERS = 3
 // The most a claim written by the AI may run to before the player edits it.
 const CLAIM_MAX = 160
 
-const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'road', 'checkin', 'letter', 'help']
+const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'paths', 'goal', 'road', 'checkin', 'letter', 'help']
 const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
@@ -110,6 +110,34 @@ function readMemory(body: Record<string, unknown>, circle: unknown): string | un
 // scrubbed, trimmed to `max`, and empty unless it really is text.
 function readText(value: unknown, max: number): string {
   return typeof value === 'string' ? scrub(value).trim().slice(0, max) : ''
+}
+
+// The three paths come back as JSON. Anything that is not exactly three whole paths of the
+// three kinds is dropped, so a confused reply shows the player no paths at all rather than a
+// broken or half-filled set.
+const pathKinds = ['near', 'next', 'wild']
+
+function readPaths(text: string): { paths: { kind: string, name: string, why: string, goal: string }[], care: boolean } {
+  const empty = { paths: [], care: false }
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end <= start) return empty
+  try {
+    const form: unknown = JSON.parse(text.slice(start, end + 1))
+    if (typeof form !== 'object' || form === null) return empty
+    const fields = form as Record<string, unknown>
+    if (fields.care === true) return { paths: [], care: true }
+    const paths = (Array.isArray(fields.paths) ? fields.paths : [])
+      .map((path: unknown) => {
+        const entry = (typeof path === 'object' && path !== null ? path : {}) as Record<string, unknown>
+        return { kind: String(entry.kind ?? ''), name: readText(entry.name, 60), why: readText(entry.why, 200), goal: readText(entry.goal, 160) }
+      })
+      .filter((path) => path.name && path.why && path.goal)
+    const whole = pathKinds.map((kind) => paths.find((path) => path.kind === kind))
+    return whole.every((path) => path !== undefined) ? { paths: whole as typeof paths, care: false } : empty
+  } catch {
+    return empty
+  }
 }
 
 // The road plan comes back as JSON. As with the summary, anything that is not exactly what was
@@ -224,13 +252,14 @@ export async function POST(request: Request) {
   if (mode === 'summary' && answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
   // The Crossroads and the road need a claim in every circle, so a half-walked trail never
   // reaches the AI.
-  const crossroads = mode === 'crossroads' || mode === 'road' ? claimRows(body.claims) : null
+  const crossroads = mode === 'crossroads' || mode === 'paths' || mode === 'goal' || mode === 'road' ? claimRows(body.claims) : null
   if (crossroads && crossroads.size < circleOrder.length) return Response.json({ error: 'bad_request' }, { status: 400 })
   const goal = readText(body.goal, 200)
   const obstacle = readText(body.obstacle, 300)
   const step = readText(body.step, 200)
   const report = readText(body.note, MAX_TEXT_LENGTH)
   if (mode === 'road' && (!goal || !obstacle)) return Response.json({ error: 'bad_request' }, { status: 400 })
+  if (mode === 'goal' && !goal) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (mode === 'letter' && !goal) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (mode === 'checkin' && (!step || !report || !circleOrder.includes(String(body.circle)))) {
     return Response.json({ error: 'bad_request' }, { status: 400 })
@@ -267,6 +296,34 @@ export async function POST(request: Request) {
         }
       }
       return sent({ reply: note, provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
+
+  // The three paths are a form filled in from the four claims.
+  if (mode === 'paths' && crossroads) {
+    try {
+      const result = await generateReply(
+        buildSystemPrompt({ mode, entryChoice: null }),
+        [{ role: 'user', text: `The four circles:\n${[...crossroads.values()].join('\n')}` }],
+        { maxTokens: 1500, effort: 'low' },
+      )
+      return sent({ ...readPaths(result.text), provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
+
+  // Todah's thoughts on the goal are one message about it and the four claims.
+  if (mode === 'goal' && crossroads) {
+    try {
+      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
+        { role: 'user', text: `Their main goal: "${goal}"\nThe four circles:\n${[...crossroads.values()].join('\n')}` },
+      ])
+      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
     } catch (error) {
       if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
       return Response.json({ error: 'unavailable' }, { status: 503 })
