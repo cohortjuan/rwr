@@ -211,7 +211,7 @@
 
 /* Cub. Every drawing of him is 101 pixels tall with his feet on the bottom edge, so each box
    below has the same height (--cub-tall) and only its width differs: 132 for a walking
-   frame, 112 for a turning frame, 89 seated. That keeps his pixels one size throughout.
+   frame, 109 for a turning frame, 89 seated. That keeps his pixels one size throughout.
    The wrapper slides, the sprite inside steps through its frames. */
 .cubWalking,
 .cubSeated,
@@ -227,9 +227,9 @@
 }
 
 .cubTurning {
-  width: calc(var(--cub-tall) * 112 / 101);
-  aspect-ratio: 112 / 101;
-  margin-left: calc(var(--cub-tall) * 112 / 101 / -2);
+  width: calc(var(--cub-tall) * 109 / 101);
+  aspect-ratio: 109 / 101;
+  margin-left: calc(var(--cub-tall) * 109 / 101 / -2);
 }
 
 .cubWalking {
@@ -286,15 +286,16 @@
   }
 }
 
-/* The turn: three frames, shown once. He stops side-on, looks round at us, and half sits. */
+/* The turn: two frames, shown once. He stops side-on, then half sits at three-quarters, and
+   the seated cub that follows faces us squarely. (TURN_MS in TitleScreen.tsx is this length.) */
 .spriteTurn {
   width: 100%;
   height: 100%;
   background-image: url('/sprites/todah-turn.png');
-  background-size: 300% 100%;
+  background-size: 200% 100%;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  animation: turnCycle 0.48s steps(3) forwards;
+  animation: turnCycle 0.36s steps(2, jump-none) forwards;
 }
 
 @keyframes turnCycle {
@@ -302,7 +303,7 @@
     background-position-x: 0%;
   }
   to {
-    background-position-x: 150%;
+    background-position-x: 100%;
   }
 }
 

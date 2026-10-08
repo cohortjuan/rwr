@@ -21,6 +21,9 @@ SIZE = 1024          # image models work best with a square picture about this b
 BACKGROUND = (255, 0, 255, 255)   # pure magenta: not used by the lion or by any accessory
 
 sprite = Image.open(SPRITE).convert('RGBA')
+# His tail is kept as a separate strip so the game can wag it. The first frame is the tail at rest.
+tail = Image.open(SPRITE.replace('todah-sit.png', 'todah-tail.png')).convert('RGBA').crop((0, 0, sprite.width, sprite.height))
+sprite.alpha_composite(tail)
 big = sprite.resize((sprite.width * SCALE, sprite.height * SCALE), Image.NEAREST)
 box = (big.width, big.height + HEADROOM * SCALE)
 left, top = (SIZE - box[0]) // 2, (SIZE - box[1]) // 2

@@ -18,6 +18,9 @@ import { hasSavedGame, startNewLion, switchToLion, useKeptLions, useProgress } f
 import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import styles from './TitleScreen.module.css'
 
+// How long the turn's frames take to play. Keep in step with turnCycle in the stylesheet.
+const TURN_MS = 360
+
 // How long to wait to learn whether the browser allows sound before starting anyway.
 const AUDIO_CHECK_MS = 1000
 
@@ -34,6 +37,18 @@ export default function TitleScreen() {
   // player, and half sits. `turned` marks that he arrived that way, for a small settle.
   const [turning, setTurning] = useState(false)
   const [turned, setTurned] = useState(false)
+
+  // The turn ends when its last frame has played. If that signal never comes (a browser that
+  // drops it, a tab that was hidden), he is seated anyway a moment later: he must never be
+  // left part-way round.
+  useEffect(() => {
+    if (!turning) return
+    const timer = window.setTimeout(() => {
+      setTurned(true)
+      setWalkDone(true)
+    }, TURN_MS + 250)
+    return () => window.clearTimeout(timer)
+  }, [turning])
   const [boxOpen, setBoxOpen] = useState(false)
   const email = useAccountEmail()
   const signedIn = Boolean(email)
@@ -150,8 +165,8 @@ export default function TitleScreen() {
           <div
             className={seated ? styles.cubSeated : turning ? styles.cubTurning : styles.cubWalking}
             onAnimationEnd={(event) => {
-              // The walk ends in a turn (three frames, played by the sprite inside), and the
-              // turn ends with him seated.
+              // The walk ends in a turn (two frames, played by the sprite inside), and the turn
+              // ends with him seated and facing the player.
               if (!turning) {
                 if (event.target !== event.currentTarget) return
                 if (SEATED_SPRITE) {

@@ -108,7 +108,7 @@ function drawArt(context: Context, art: AccessoryArt) {
 
 // The lion exactly as the game shows it, at its own pixel size: sprite, coat colour, mane and
 // accessories.
-function composeLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
+function composeLion(sprite: HTMLImageElement, tail: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
   const { canvas, context } = sheet(sprite.width * 4 + 1, Math.round(((GRID.height + HEADROOM) * sprite.width * 4) / GRID.width))
   const worn = picture.wearing
     .map(parseToken)
@@ -117,6 +117,8 @@ function composeLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanv
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
 
   context.imageSmoothingEnabled = false
+  // His tail is a strip of frames. The first is the tail at rest.
+  context.drawImage(tail, 0, 0, sprite.width, sprite.height, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
   context.drawImage(sprite, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
 
   // Coat colours are CSS filters on screen. Here the same sums are done pixel by pixel, so the
@@ -203,8 +205,8 @@ function enlarge(source: HTMLCanvasElement): HTMLCanvasElement {
 // soft-focus copy is laid under the sharp one so the pixel steps melt into each other the way
 // they would in a printed photo, and last he is given light from the top left and shade at the
 // bottom right so he has some body to him.
-function portraitLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
-  const sharp = enlarge(composeLion(sprite, picture))
+function portraitLion(sprite: HTMLImageElement, tail: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
+  const sharp = enlarge(composeLion(sprite, tail, picture))
   // Shrinking a picture and stretching it back is a blur every browser can do.
   const small = sheet(Math.round(sharp.width / 7), Math.round(sharp.height / 7))
   small.context.imageSmoothingEnabled = true
@@ -480,9 +482,9 @@ function drawPhoto(context: Context, lion: HTMLCanvasElement, picture: LetterPic
 export async function renderLetter(picture: LetterPicture): Promise<Blob> {
   const font = `${TEXT}px ${picture.font}`
   await Promise.all([document.fonts.load(font), document.fonts.load(`bold ${font}`)]).catch(() => {})
-  const sprite = await loadImage('/sprites/todah-sit-happy.png')
+  const [sprite, tail] = await Promise.all([loadImage('/sprites/todah-sit-happy.png'), loadImage('/sprites/todah-tail.png')])
   const random = seeded(picture.seed)
-  const lion = portraitLion(sprite, picture)
+  const lion = portraitLion(sprite, tail, picture)
 
   // Lay the note out first, so the paper is as tall as the words need.
   const measure = sheet(10, 10).context

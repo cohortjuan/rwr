@@ -12,12 +12,14 @@ its pixels. This script:
 3. joins the clean face to the clean body along the row where the two agree best,
 4. clears the white background and the pale fringe JPEG leaves outside the outline,
 5. reduces the colours to a small fixed palette, and removes lone dark specks,
-6. sets the lion on a canvas with the game's own proportions (51 wide to 58 tall).
+6. sets the lion on a canvas with the game's own proportions (51 wide to 58 tall),
+7. draws his tail, which the sheet's cub did not have, as a separate layer in several positions.
 
 Needs Pillow. Run from the project root:
     cd scripts && python3 todah-from-sheet.py path/to/sheet.jpg ../public/sprites/todah-sit.png
 
-It writes the seated sprite only. His other faces, his walk and his turn come from a second
+It writes the seated sprite without his tail, and todah-tail.png beside it: the tail as a strip
+of frames, so the game can wag it. His other faces, his walk and his turn come from a second
 sheet: see poses-from-sheet.py, which must be run after this.
 """
 import sys
@@ -63,27 +65,36 @@ def cut_out(img):
     return clear
 
 
-def tail(canvas):
-    """Gives him his tail back. The sheet's cub was drawn without one.
+# The tail's frames in the order they play: mostly at rest, then a flick out and a flick in.
+# `swing` is how many pixels the tuft has moved sideways from rest.
+WAG = (0, 0, 0, 0, 2, 0, -3, 0)
+
+
+def tail(body, swing=0):
+    """His tail, on its own layer. The sheet's cub was drawn without one.
 
     It comes up from behind his right hip and ends in a darker tuft beside his shoulder, where
-    the first Todah carried his. It is painted only on empty pixels, so his body stays in
-    front of it, and it gets the same dark outline as the rest of him.
+    the first Todah carried his. It is painted only where the body is empty, so the body stays
+    in front of it, and it gets the same dark outline as the rest of him. Because it is a
+    layer of its own, the game can swing it without redrawing the lion.
     """
-    px = canvas.load()
-    w, h = canvas.size
-    shades = sorted({px[x, y] for y in range(h) for x in range(w) if px[x, y][3]}, key=lambda c: sum(c[:3]))
+    w, h = body.size
+    behind = body.load()
+    layer = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    px = layer.load()
+    shades = sorted({behind[x, y] for y in range(h) for x in range(w) if behind[x, y][3]}, key=lambda c: sum(c[:3]))
     ink, tuft, shade, fur, light = shades[0], shades[1], shades[2], shades[-3], shades[-2]
-    empty = lambda x, y: 0 <= x < w and 0 <= y < h and px[x, y][3] == 0
+    free = lambda x, y: 0 <= x < w and 0 <= y < h and behind[x, y][3] == 0
     painted = set()
 
     def dab(x, y, colour):
-        if empty(x, y) or (x, y) in painted:
+        if free(x, y):
             px[x, y] = colour
             painted.add((x, y))
 
-    # The tail itself: a curve three pixels thick, lit on the upper side.
-    start, bend, end = (70.0, 72.0), (84.0, 71.0), (82.0, 57.0)
+    # The tail itself: a curve three pixels thick, shaded on the lower side. The root stays
+    # put and the rest follows the tuft.
+    start, bend, end = (70.0, 72.0), (84.0 + swing * 0.6, 71.0), (82.0 + swing, 57.0)
     for step in range(81):
         t = step / 80
         cx = (1 - t) ** 2 * start[0] + 2 * (1 - t) * t * bend[0] + t ** 2 * end[0]
@@ -92,18 +103,19 @@ def tail(canvas):
             for dy in (-1, 0, 1):
                 dab(round(cx) + dx, round(cy) + dy, shade if (dx == 1 and t > 0.45) or (dy == 1 and t <= 0.45) else fur)
 
-    # The tuft: a flame shape leaning a little outward, darker than his coat.
+    # The tuft: a flame shape, darker than his coat.
     rows = {-7: (0, 0), -6: (-1, 1), -5: (-2, 1), -4: (-2, 2), -3: (-3, 2), -2: (-3, 3), -1: (-3, 3), 0: (-3, 3), 1: (-2, 3), 2: (-2, 2), 3: (-1, 1)}
-    tx, ty = 82, 52
+    tx, ty = 82 + swing, 52
     for dy, (left, right) in rows.items():
         for dx in range(left, right + 1):
             dab(tx + dx, ty + dy, shade if dx <= left + 1 and -5 <= dy <= 0 else tuft)
     dab(tx - 1, ty - 3, light)
 
-    # The outline: any empty pixel that touches the new tail.
+    # The outline: any free pixel that touches the tail.
     for x, y in [(x + dx, y + dy) for x, y in painted for dx, dy in STEPS]:
-        if empty(x, y):
+        if free(x, y) and (x, y) not in painted:
             px[x, y] = ink
+    return layer
 
 
 def main(sheet_path, out_path):
@@ -137,9 +149,16 @@ def main(sheet_path, out_path):
 
     canvas = Image.new('RGBA', CANVAS, (0, 0, 0, 0))
     canvas.alpha_composite(lion, ((CANVAS[0] - lion.width) // 2, CANVAS[1] - lion.height))
-    tail(canvas)
     canvas.save(out_path)
     print(f'{out_path}: lion {lion.width}x{lion.height} on {CANVAS[0]}x{CANVAS[1]}, {len(lion.getcolors(9999)) - 1} colours')
+
+    # The tail is saved apart from him, as a strip of frames for the game to play.
+    strip = Image.new('RGBA', (CANVAS[0] * len(WAG), CANVAS[1]), (0, 0, 0, 0))
+    for n, swing in enumerate(WAG):
+        strip.alpha_composite(tail(canvas, swing), (n * CANVAS[0], 0))
+    tail_path = out_path.replace('todah-sit.png', 'todah-tail.png')
+    strip.save(tail_path)
+    print(f'{tail_path}: {len(WAG)} frames')
 
 
 if __name__ == '__main__':

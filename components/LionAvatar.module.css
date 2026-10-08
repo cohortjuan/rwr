@@ -27,6 +27,34 @@
   background-image: url('/sprites/todah-sit-happy.png');
 }
 
+/* The tail: eight frames side by side. It rests for four, flicks out, rests, flicks in, rests.
+   With motion off, or on a lion that is only a picture, it stays on the first frame. */
+.tail,
+.tailWag,
+.tailHappy {
+  position: absolute;
+  inset: 0;
+  background: url('/sprites/todah-tail.png') 0 0 / 800% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.tailWag {
+  animation: wag 2.6s steps(8) infinite;
+}
+
+.tailHappy {
+  animation: wag 0.9s steps(8) infinite;
+}
+
+@keyframes wag {
+  from {
+    background-position-x: 0%;
+  }
+  to {
+    background-position-x: 114.2857%;
+  }
+}
+
 /* Eyes-closed frame, shown for a moment every few seconds. */
 .blink {
   background-image: url('/sprites/todah-sit-blink.png');

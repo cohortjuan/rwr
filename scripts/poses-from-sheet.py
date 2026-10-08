@@ -11,7 +11,7 @@ From it this writes, into public/sprites:
         The seated lion (todah-sit.png, made by todah-from-sheet.py) with only the eyes or the
         mouth taken from the sheet, so the three faces sit exactly on the first.
     todah-walk.png   the four walking frames side by side
-    todah-turn.png   the three frames of his turn: standing, head round, half sat
+    todah-turn.png   the two frames of his turn: standing side-on, then half sat at three-quarters
 Every frame is read at the lion's own pixel size, repainted in his ten colours, cut out of
 the magenta, and given a clean closed outline. All of them are 101 pixels tall with the feet
 on the bottom edge, so the game can show them at one size and he never changes scale.
@@ -164,5 +164,7 @@ def strip(cells, path, fix=None, centred=False):
 if __name__ == '__main__':
     faces()
     walk = strip((5, 6, 7, 8), '../public/sprites/todah-walk.png', fix=lambda frames: open_eye(frames[1], frames[0]))
-    turn = strip((9, 10, 11), '../public/sprites/todah-turn.png', centred=True)
+    # Frame 10 (body side-on, head already facing us) is left out of the turn: with it his head
+    # came round, went back to three-quarters, then came round again.
+    turn = strip((9, 11), '../public/sprites/todah-turn.png', centred=True)
     print(f'frame widths for the title screen: walk {walk}, turn {turn}, seated {BASE.width}, all {HEIGHT} tall')

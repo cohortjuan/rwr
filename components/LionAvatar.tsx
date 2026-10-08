@@ -79,6 +79,9 @@ export default function LionAvatar({
   return (
     <div className={`${styles.stage} ${className ?? ''}`} aria-hidden="true">
       <div className={styles.lion} style={{ filter: fur?.filter }}>
+        {/* His tail is its own layer, so it can wag. A lion that blinks is a live one, and
+            its tail moves too: a flick now and then, and faster when he is happy. */}
+        <div className={!blink ? styles.tail : mood === 'happy' ? styles.tailHappy : styles.tailWag} />
         <div className={mood === 'happy' ? styles.happy : styles.sprite} />
         {blink && mood !== 'happy' && <div className={styles.blink} />}
         {talking && <div className={styles.mouth} />}
