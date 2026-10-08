@@ -1,6 +1,6 @@
 # Prompts for the image model
 
-Upload `docs/design/new-todah/accessory-base-new.png` with each prompt. Save what comes back
+Upload `docs/design/accessory-base.png` with each prompt (made by `scripts/accessory-base.py`). Save what comes back
 into `docs/design/incoming/` as PNG, named `poses.png`, `wardrobe-a.png`, `wardrobe-b.png`.
 
 Twelve lions is the most one sheet can hold and still be cut apart cleanly. More than that and

@@ -30,6 +30,10 @@ export default function TitleScreen() {
   const reducedMotion = useReducedMotion()
   const progress = useProgress()
   const [walkDone, setWalkDone] = useState(false)
+  // Between the side-on walk and the front-facing sit there is a short turn, so he does not
+  // snap from one drawing to the other. `turned` marks that he arrived by turning.
+  const [turning, setTurning] = useState(false)
+  const [turned, setTurned] = useState(false)
   const [boxOpen, setBoxOpen] = useState(false)
   const email = useAccountEmail()
   const signedIn = Boolean(email)
@@ -128,7 +132,11 @@ export default function TitleScreen() {
         )}
 
         {!started ? null : seated && SEATED_SPRITE ? (
-          <div className={styles.cubFacing} role="img" aria-label="Todah, a lion cub, sitting and facing you">
+          <div
+            className={turned ? styles.cubFacingIn : styles.cubFacing}
+            role="img"
+            aria-label="Todah, a lion cub, sitting and facing you"
+          >
             <LionAvatar
               wearing={wornIds(
                 progress,
@@ -140,14 +148,21 @@ export default function TitleScreen() {
           </div>
         ) : (
           <div
-            className={seated ? styles.cubSeated : styles.cubWalking}
+            className={seated ? styles.cubSeated : turning ? styles.cubTurning : styles.cubWalking}
             onAnimationEnd={(event) => {
-              if (event.target === event.currentTarget) setWalkDone(true)
+              if (event.target !== event.currentTarget) return
+              // The walk ends in a turn, and the turn ends with him seated.
+              if (!turning && SEATED_SPRITE) {
+                setTurning(true)
+                return
+              }
+              setTurned(true)
+              setWalkDone(true)
             }}
             role="img"
             aria-label="Todah, a lion cub"
           >
-            <div className={seated ? styles.spriteStill : styles.spriteWalk} />
+            <div className={seated || turning ? styles.spriteStill : styles.spriteWalk} />
           </div>
         )}
 

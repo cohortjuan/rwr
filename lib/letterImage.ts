@@ -34,8 +34,9 @@ const TEXT = 46
 const LINE = 68
 const INK = '#22304d'
 const STAMP = '#7d1f24'
-// One cell of the lion's grid is 3 sprite pixels.
-const CELL = 3
+// The lion is put together at this many screen pixels per grid cell before he is enlarged.
+// The sprite is 89 pixels across 51 cells, so 7 per cell draws it at four times its own size.
+const CELL = 7
 const drawOrder = ['neck', 'shades', 'hat']
 
 type Context = CanvasRenderingContext2D
@@ -108,7 +109,7 @@ function drawArt(context: Context, art: AccessoryArt) {
 // The lion exactly as the game shows it, at its own pixel size: sprite, coat colour, mane and
 // accessories.
 function composeLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
-  const { canvas, context } = sheet(GRID.width * CELL, (GRID.height + HEADROOM) * CELL)
+  const { canvas, context } = sheet(sprite.width * 4 + 1, Math.round(((GRID.height + HEADROOM) * sprite.width * 4) / GRID.width))
   const worn = picture.wearing
     .map(parseToken)
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
@@ -116,7 +117,7 @@ function composeLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanv
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
 
   context.imageSmoothingEnabled = false
-  context.drawImage(sprite, 0, HEADROOM * CELL, GRID.width * CELL, GRID.height * CELL)
+  context.drawImage(sprite, 0, canvas.height - sprite.height * 4, sprite.width * 4, sprite.height * 4)
 
   // Coat colours are CSS filters on screen. Here the same sums are done pixel by pixel, so the
   // coat comes out right in every browser.
@@ -198,12 +199,12 @@ function enlarge(source: HTMLCanvasElement): HTMLCanvasElement {
   return out.canvas
 }
 
-// The lion for the snapshot. He is enlarged eight times with his edges rounded, then a
+// The lion for the snapshot. He is built at four times size and doubled with his edges rounded, then a
 // soft-focus copy is laid under the sharp one so the pixel steps melt into each other the way
 // they would in a printed photo, and last he is given light from the top left and shade at the
 // bottom right so he has some body to him.
 function portraitLion(sprite: HTMLImageElement, picture: LetterPicture): HTMLCanvasElement {
-  const sharp = enlarge(enlarge(enlarge(composeLion(sprite, picture))))
+  const sharp = enlarge(composeLion(sprite, picture))
   // Shrinking a picture and stretching it back is a blur every browser can do.
   const small = sheet(Math.round(sharp.width / 7), Math.round(sharp.height / 7))
   small.context.imageSmoothingEnabled = true

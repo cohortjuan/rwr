@@ -275,8 +275,49 @@
   }
 }
 
-/* Front-facing seated cub (153x173), feet on the same line as the walking cub. */
-.cubFacing {
+/* The turn, first half: he stops, and the side view narrows as he swings round to face us. */
+.cubTurning {
+  filter: var(--cub-filter);
+  position: absolute;
+  left: 50%;
+  bottom: 29%;
+  width: var(--cub);
+  aspect-ratio: 291 / 198;
+  margin-left: calc(var(--cub) / -2);
+  transform-origin: 50% 100%;
+  animation: turnAway 0.2s steps(4) forwards;
+}
+
+@keyframes turnAway {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.3);
+  }
+}
+
+/* The turn, second half: the front view widens out from the same narrow sliver, with a small
+   settle as he sits. */
+.cubFacingIn {
+  animation: turnIn 0.26s steps(5) both;
+}
+
+@keyframes turnIn {
+  0% {
+    transform: translateX(-50%) scaleX(0.35);
+  }
+  60% {
+    transform: translateX(-50%) scaleX(1) translateY(-3%);
+  }
+  100% {
+    transform: translateX(-50%) scaleX(1);
+  }
+}
+
+/* Front-facing seated cub, feet on the same line as the walking cub. */
+.cubFacing,
+.cubFacingIn {
   filter: var(--cub-filter);
   position: absolute;
   left: 50%;
@@ -284,6 +325,7 @@
   /* As tall as the walking sprite, at the seated sprite's own proportions. */
   width: calc(var(--cub) * 198 / 291 * 153 / 173);
   transform: translateX(-50%);
+  transform-origin: 50% 100%;
 }
 
 
@@ -369,7 +411,9 @@
 
   .cubWalking,
   .cubSeated,
-  .cubFacing {
+  .cubTurning,
+  .cubFacing,
+  .cubFacingIn {
     bottom: 24%;
   }
 

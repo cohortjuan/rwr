@@ -9,8 +9,8 @@ It reads public/sprites/todah-sit.png to learn the lion's outline, then writes
 lib/maneArt.ts (the art the game draws) and docs/design/mane-progression.html (a sheet
 showing every mane level). Change the shapes here, never in those two files.
 
-The sprite is treated as a grid of cells, 3 sprite pixels to a cell: 51 cells wide and 58
-tall, with 6 more rows of headroom above for hair that rises over the head.
+The sprite is treated as a grid of cells, 51 wide and 58 tall whatever size it is drawn at,
+with 6 more rows of headroom above for hair that rises over the head.
 """
 import base64, json, math, re, struct, zlib
 from pathlib import Path
@@ -43,26 +43,37 @@ w, h, rows = load(str(SPRITE))
 
 CW, CH, TOP = 51, 58, 6
 def solid(cx, cy):
+    # A cell is the same share of the sprite whatever size the sprite is drawn at.
     if cx < 0 or cy < 0 or cx >= CW or cy >= CH: return False
+    x0, x1 = cx * w // CW, max(cx * w // CW + 1, (cx + 1) * w // CW)
+    y0, y1 = cy * h // CH, max(cy * h // CH + 1, (cy + 1) * h // CH)
     n = a = 0
-    for y in range(cy*3, min(cy*3+3, h)):
-        for x in range(cx*3, min(cx*3+3, w)):
+    for y in range(y0, min(y1, h)):
+        for x in range(x0, min(x1, w)):
             a += rows[y][x*4+3]; n += 1
     return n > 0 and a / n > 110
 S = [[solid(x, y) for x in range(CW)] for y in range(CH)]
 def edges(y):
-    xs = [x for x in range(CW) if S[y][x]]
-    return (min(xs), max(xs)) if xs else None
+    # The left and right edge of his head or body on this row: the run of solid cells that
+    # includes the middle. His tail stands apart to one side and is not part of it.
+    mid = int(CX)
+    if not S[y][mid]:
+        xs = [x for x in range(CW) if S[y][x]]
+        return (min(xs), max(xs)) if xs else None
+    left = right = mid
+    while left > 0 and S[y][left - 1]: left -= 1
+    while right < CW - 1 and S[y][right + 1]: right += 1
+    return (left, right)
 def top_edge(x, limit=8):
     for y in range(limit):
         if S[y][x]: return y
     return None
-CX = 24.5
+CX = 25
 
 # The lock of hair on his forehead, as a filled shape that follows the one drawn on the
 # sprite: hanging from the hairline, swept to his left, ending in a point.
 LOCK = ["MMMMMMMM", "DMMMMMMD", "DMMMMMMD", "DDMMMMMD", ".DDMMMMD", "..DDMMMD", "...DDMMD", "....DDD."]
-LOCK_X, LOCK_Y = 19, 4
+LOCK_X, LOCK_Y = 24, 3
 
 def lock(cells, joined):
     for dy, row in enumerate(LOCK):

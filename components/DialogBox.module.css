@@ -37,9 +37,9 @@
 .face,
 .faceWithHat {
   position: absolute;
-  left: -9%;
-  top: -16.5%;
-  width: 118%;
+  left: -5%;
+  top: -13.5%;
+  width: 110%;
 }
 
 /* Pulled back so the hat fits in the frame. */

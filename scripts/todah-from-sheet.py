@@ -15,12 +15,16 @@ its pixels. This script:
 6. sets the lion on a canvas with the game's own proportions (51 wide to 58 tall).
 
 Needs Pillow. Run from the project root:
-    python3 scripts/todah-from-sheet.py path/to/sheet.jpg docs/design/new-todah/todah-sit.png
+    cd scripts && python3 todah-from-sheet.py path/to/sheet.jpg ../public/sprites/todah-sit.png
+
+It writes the seated sprite and, beside it, his three other faces (blink, happy, talk).
 """
 import sys
 from collections import Counter, deque
 
 from PIL import Image, ImageFilter
+
+from pixel_tools import STEPS, outline
 
 PITCH = 2.75            # half of the sheet's 5.5 pixel art pixel
 BOX = (236, 284)        # one lion's cell on the sheet
@@ -56,70 +60,6 @@ def cut_out(img):
         clear[y][x] = True
         queue.extend(((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
     return clear
-
-
-STEPS = ((1, 0), (-1, 0), (0, 1), (0, -1))
-
-
-def outline(lion):
-    """Leaves nothing outside the dark outline, and no gap in it.
-
-    JPEG smears a pale-to-tan fringe just outside the line, and here and there the line itself
-    came through brown instead of dark. Working from the edge inwards:
-    - a patch of fringe that the dark line already separates from the lion is removed whole,
-    - where a lighter pixel is all that stands between the lion's inside and the background,
-      it is part of the line that lost its colour, so it is made dark,
-    - a loose strand that hangs off such a pixel is removed.
-    It repeats until only dark pixels face the background.
-    """
-    w, h = lion.size
-    px = lion.load()
-    ink = min((px[x, y] for y in range(h) for x in range(w) if px[x, y][3]), key=lambda c: sum(c[:3]))
-    solid = lambda x, y: 0 <= x < w and 0 <= y < h and px[x, y][3] > 0
-    dark = lambda x, y: sum(px[x, y][:3]) < 200
-    removed = sealed = 0
-    while True:
-        # How far each pixel is from the background, counted in steps.
-        depth = {}
-        ring = [(x, y) for y in range(h) for x in range(w) if solid(x, y) and any(not solid(x + dx, y + dy) for dx, dy in STEPS)]
-        level = 1
-        while ring:
-            for spot in ring:
-                depth[spot] = level
-            ring = list({(x + dx, y + dy) for x, y in ring for dx, dy in STEPS if solid(x + dx, y + dy) and (x + dx, y + dy) not in depth})
-            level += 1
-        facing = [(x, y) for (x, y), d in depth.items() if d == 1 and not dark(x, y)]
-        if not facing:
-            break
-        # Patches of lighter pixels joined edge to edge.
-        patch_of, patches = {}, []
-        for start in ((x, y) for y in range(h) for x in range(w) if solid(x, y) and not dark(x, y)):
-            if start in patch_of:
-                continue
-            patch, queue = [], [start]
-            patch_of[start] = len(patches)
-            while queue:
-                x, y = queue.pop()
-                patch.append((x, y))
-                for dx, dy in STEPS:
-                    nxt = (x + dx, y + dy)
-                    if solid(*nxt) and not dark(*nxt) and nxt not in patch_of:
-                        patch_of[nxt] = len(patches)
-                        queue.append(nxt)
-            patches.append(patch)
-        # A patch that reaches well inside is part of the lion. One that does not is fringe.
-        inside = [any(depth[spot] >= 4 for spot in patch) for patch in patches]
-        for x, y in facing:
-            if not inside[patch_of[(x, y)]]:
-                px[x, y] = (0, 0, 0, 0)
-                removed += 1
-            elif any(solid(x + dx, y + dy) and not dark(x + dx, y + dy) and depth[(x + dx, y + dy)] > 1 for dx, dy in STEPS):
-                px[x, y] = ink
-                sealed += 1
-            else:
-                px[x, y] = (0, 0, 0, 0)
-                removed += 1
-    print(f'outline: {removed} pixels shaved off outside it, {sealed} gaps in it closed')
 
 
 def tail(canvas):
@@ -165,6 +105,70 @@ def tail(canvas):
             px[x, y] = ink
 
 
+def eyes(canvas):
+    """The two eyes: each is the box round one of the big dark blobs in the top half of his face."""
+    px = canvas.load()
+    w, h = canvas.size
+    dark = lambda x, y: px[x, y][3] and sum(px[x, y][:3]) < 200
+    seen, found = set(), []
+    for y in range(h // 6, h // 2):
+        for x in range(w):
+            if (x, y) in seen or not dark(x, y):
+                continue
+            blob, queue = [], [(x, y)]
+            seen.add((x, y))
+            while queue:
+                cx, cy = queue.pop()
+                blob.append((cx, cy))
+                for dx, dy in STEPS:
+                    nxt = (cx + dx, cy + dy)
+                    if 0 <= nxt[0] < w and 0 <= nxt[1] < h and nxt not in seen and dark(*nxt):
+                        seen.add(nxt)
+                        queue.append(nxt)
+            xs, ys = [b[0] for b in blob], [b[1] for b in blob]
+            box = (min(xs), min(ys), max(xs), max(ys))
+            # An eye is a compact blob. The outline is one huge sprawling one.
+            if 30 <= len(blob) <= 120 and box[2] - box[0] <= 12 and box[3] - box[1] <= 12:
+                found.append(box)
+    return sorted(found)[:2]
+
+
+def faces(canvas):
+    """His other three faces, made from the first by redrawing only the eyes or the mouth."""
+    px = canvas.load()
+    shades = sorted({px[x, y] for y in range(canvas.height) for x in range(canvas.width) if px[x, y][3]}, key=lambda c: sum(c[:3]))
+    ink, tongue, lid = shades[0], shades[1], shades[-2]
+    boxes = eyes(canvas)
+    assert len(boxes) == 2, f'expected two eyes, found {len(boxes)}'
+
+    def shut(curve):
+        face = canvas.copy()
+        fp = face.load()
+        for left, top, right, bottom in boxes:
+            for y in range(top, bottom + 1):
+                for x in range(left, right + 1):
+                    fp[x, y] = lid
+            width = right - left
+            for x in range(left, right + 1):
+                y = (top + bottom) // 2 + curve(x - left, width)
+                fp[x, y] = fp[x, y + 1] = ink
+        return face
+
+    blink = shut(lambda at, width: 0)
+    # A happy eye is an arch: highest in the middle, a pixel or two lower at each end.
+    happy = shut(lambda at, width: -1 + round(2.4 * abs(at - width / 2) / (width / 2)) ** 1)
+
+    talk = canvas.copy()
+    tp = talk.load()
+    # His mouth, open: a small dark oval under the nose with a little tongue in it.
+    centre = canvas.width // 2
+    nose_bottom = max(y for y in range(canvas.height // 3, canvas.height // 2) for x in (centre - 1, centre) if sum(px[x, y][:3]) < 200)
+    for dy, half in enumerate((2, 3, 3, 3, 2)):
+        for x in range(centre - half, centre + half):
+            tp[x, nose_bottom + 1 + dy] = tongue if dy >= 2 and abs(x - centre + 0.5) < half - 0.5 else ink
+    return {'blink': blink, 'happy': happy, 'talk': talk}
+
+
 def main(sheet_path, out_path):
     sheet = Image.open(sheet_path).convert('RGB')
     face, body = resample(sheet, FACE_AT), resample(sheet, BODY_AT)
@@ -199,6 +203,9 @@ def main(sheet_path, out_path):
     tail(canvas)
     canvas.save(out_path)
     print(f'{out_path}: lion {lion.width}x{lion.height} on {CANVAS[0]}x{CANVAS[1]}, {len(lion.getcolors(9999)) - 1} colours')
+    for name, face in faces(canvas).items():
+        face.save(out_path.replace('.png', f'-{name}.png'))
+        print(f"{out_path.replace('.png', f'-{name}.png')}")
 
 
 if __name__ == '__main__':
