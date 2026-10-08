@@ -21,7 +21,8 @@ const deepFocus: WheelFocus[] = ['all', 'overlaps', 'center', 'all', 'circles']
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
 
-type TodahReply = { reply: string, complete: boolean, scripted: boolean }
+// `capped` is set when the script took over because today's share of AI replies is used up.
+type TodahReply = { reply: string, complete: boolean, scripted: boolean, capped?: boolean }
 
 function initialStep(progress: Progress): Step {
   if (progress.onboardingDone) return 'done'
@@ -55,7 +56,13 @@ async function askTodah(progress: Progress, history: ChatMessage[], demo: boolea
         messages: history,
       }),
     })
-    if (response.status === 429) return { reply: lines.errors.aiCap, complete: true, scripted: false }
+    if (response.status === 429) {
+      const data = await response.json().catch(() => ({}))
+      // 'cap' means this one talk has run too long. Anything else is the shared AI being
+      // used up or busy, and the script carries on.
+      if (data.error === 'cap') return { reply: lines.errors.aiCap, complete: true, scripted: false }
+      return { ...scriptedReply(history), capped: data.error === 'daily' }
+    }
     if (!response.ok) return scriptedReply(history)
     const data = await response.json()
     return { reply: String(data.reply ?? ''), complete: Boolean(data.complete), scripted: false }
@@ -82,6 +89,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   const [answerDraft, setAnswerDraft] = useState('')
   const [pending, setPending] = useState(false)
   const [usedScript, setUsedScript] = useState(false)
+  const [capped, setCapped] = useState(false)
   const [notice, setNotice] = useState('')
   // Length of the chat we last asked Todah to reply to, so each turn is requested once.
   const requestedFor = useRef(-1)
@@ -105,6 +113,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
       setNotice('')
       const result = await askTodah(progress, history, demo)
       if (result.scripted) setUsedScript(true)
+      if (result.capped) setCapped(true)
       const nextChat: ChatMessage[] = result.reply ? [...history, { role: 'todah', text: result.reply }] : history
       if (result.complete) {
         saveProgress({ onboardingChat: nextChat, onboardingDone: true })
@@ -401,7 +410,10 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             )}
 
             <p className={styles.notice} role="status">
-              {notice || (usedScript && !demo && progress.aiConsent === 'yes' ? lines.errors.aiUnavailable : '')}
+              {notice ||
+                (usedScript && !demo && progress.aiConsent === 'yes'
+                  ? lion(capped ? lines.errors.aiDaily : lines.errors.aiUnavailable)
+                  : '')}
             </p>
           </>
         )}

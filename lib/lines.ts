@@ -151,6 +151,7 @@ export const lines = {
   errors: {
     aiUnavailable: 'My voice is a little faint right now, so I will stick to my trail notes.',
     aiCap: 'We have talked a lot this session. Let us rest here and pick the trail back up later.',
+    aiDaily: 'We have talked a lot today, so I will use my trail notes from here. My own voice is back tomorrow.',
     emptyAnswer: 'Type something first. A few words are plenty.',
     nameBlocked: 'That name is not welcome on this trail. Please pick another one.',
   },
@@ -161,6 +162,7 @@ export const lines = {
     points: [
       { title: 'On this device', body: 'Your name, answers, trail map, upgrades, and goal are saved in this browser so you can come back, for the lion you are playing and any you have kept. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
       { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
+      { title: 'A fair share of the AI', body: 'The AI is free and shared by every player, so each browser gets a set number of AI replies a day. To count them, RWR keeps one small cookie in your browser. It holds a date and a number and nothing about you. After the limit, Todah carries on from written questions.' },
       { title: 'My Pride', body: 'Your pride card holds your first name, your lion, Pride Power, and your main goal if you leave that switched on. It travels inside the link or QR code you share. RWR does not store it and its server never sees it, but anyone who has the link can read it, so share it only with people you trust.' },
       { title: 'Accounts', body: 'If you sign up, your email is stored by our login provider. Your answers are not stored in our database. Deleting your data below removes the account too.' },
       { title: 'What RWR never does', body: 'No ads, no trackers, and no selling or sharing of your data.' },

@@ -76,6 +76,8 @@ async function callGroq(system: string, messages: LlmMessage[], apiKey: string):
   })
   if (!response.ok) throw new ProviderError('Groq', response.status)
   const data = await response.json()
+  // Token counts only, to watch the daily budget. Never prompts or answers.
+  if (data?.usage) console.info(`[llm] Groq tokens: ${data.usage.prompt_tokens} in, ${data.usage.completion_tokens} out`)
   const text = String(data?.choices?.[0]?.message?.content ?? '').trim()
   if (!text) throw new ProviderError('Groq', 502)
   return text

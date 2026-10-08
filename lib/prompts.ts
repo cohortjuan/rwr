@@ -13,6 +13,8 @@ export type PromptContext = {
   phase?: Phase
   // Interview only: how many answers the player has given in this level so far.
   answers?: number
+  // Interview only: what the player said earlier on the trail, one line per thing.
+  memory?: string
   claimsJson?: string
   profileSummary?: string
 }
@@ -134,13 +136,39 @@ export const levelBriefs: Partial<Record<Phase, LevelBrief>> = {
 // kind of evidence, then a closing reflection with no question.
 function levelPrompt(context: PromptContext, brief: LevelBrief): string {
   const answers = context.answers ?? 1
+  // Todah remembers. What the player said earlier rides along, and at two moments he is asked
+  // to pick up the thread the way a friend who was listening would: on his first follow-up
+  // and in his closing words. In between he only has to avoid asking for what he already knows.
+  const remembers = Boolean(context.memory)
   const turn =
     answers >= LEVEL_ANSWERS
       ? `The player has now answered every question. This is your last message of the level. Do not ask
 anything. In two sentences, reflect back what you heard across the whole talk, in their own
-words where you can, with no judgment and no advice.`
+words where you can, with no judgment and no advice.${
+          remembers
+            ? `
+If this level honestly connects with something from earlier on the trail (listed below), add
+one more short sentence that says how, in their own words.`
+            : ''
+        }`
       : `The player has given ${answers} of ${LEVEL_ANSWERS} answers. This is follow-up ${answers} of ${LEVEL_FOLLOW_UPS}: reflect back what you
-just heard in one sentence, then ask ONE question.`
+just heard in one sentence, then ask ONE question.${
+          remembers && answers === 1
+            ? `
+If what they just said touches something from earlier on the trail (listed below), say so in a
+few warm words before your question, the way a friend would say "that sounds like the fixing
+you told me about".`
+            : ''
+        }`
+  const memory = remembers
+    ? `
+Earlier on this trail the player told you:
+${context.memory}
+Never force a link, and never treat an earlier claim as proven. If something above already
+answers what you were about to ask, do not ask it again: say what you remember and ask the
+next thing instead.
+`
+    : ''
   return `You are Todah, a warm, curious career-exploration guide in a retro 16-bit game.
 This is the level called ${describePhase(context.phase ?? 'Heart')}. The player has just been asked about ${brief.opener}.
 
@@ -149,7 +177,7 @@ the talk, find out:
 ${brief.probes.map((probe, index) => `${index + 1}. ${probe}`).join('\n')}
 
 ${turn}
-
+${memory}
 Rules:
 - Keep every message under 80 words.
 - Treat ${brief.about} as a claim to explore, never as something to grade. Ask for real

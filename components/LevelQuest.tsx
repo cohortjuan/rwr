@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import { LEVEL_SPARKS } from '@/lib/accessories'
-import { circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
+import { circles, circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
 import { LEVEL_ANSWERS, liveLevels, type LiveLevel } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { withLionName } from '@/lib/names'
@@ -22,7 +22,8 @@ import styles from './LevelQuest.module.css'
 
 type Step = 'intro' | 'consent' | 'chat' | 'summing' | 'review' | 'done'
 
-type TodahReply = { reply: string, complete: boolean, scripted: boolean }
+// `capped` is set when the script took over because today's share of AI replies is used up.
+type TodahReply = { reply: string, complete: boolean, scripted: boolean, capped?: boolean }
 type Summary = { claim: string, evidence: string[], scripted: boolean }
 
 const CLAIM_MAX = 300
@@ -57,6 +58,19 @@ function scriptedReply(circle: LiveLevel, history: ChatMessage[]): TodahReply {
   return { reply: line ?? text.scriptedClose, complete: !line, scripted: true }
 }
 
+// What Todah remembers going into this level: the claims already on the map from the other
+// circles and, for the first level, the first thing the player said in Quest 1. It is sent
+// only with AI consent, and goes through the same scrubbing as an answer.
+function memoryOf(progress: Progress, circle: LiveLevel) {
+  const claims = Object.fromEntries(
+    circles
+      .filter((other) => other !== circle && progress.compass[other].claim.trim())
+      .map((other) => [other, { claim: progress.compass[other].claim, evidence: circleScore(progress, other) }]),
+  )
+  const warmup = circle === 'heart' ? progress.onboardingChat.find((message) => message.role === 'user')?.text : undefined
+  return { claims, warmup: warmup?.slice(0, 300) }
+}
+
 async function askTodah(progress: Progress, circle: LiveLevel, history: ChatMessage[], demo: boolean): Promise<TodahReply> {
   // No consent, no AI call: the scripted questions run entirely in the browser.
   if (demo || progress.aiConsent !== 'yes') return scriptedReply(circle, history)
@@ -64,8 +78,12 @@ async function askTodah(progress: Progress, circle: LiveLevel, history: ChatMess
     const response = await fetch('/api/todah', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'interview', circle, messages: history }),
+      body: JSON.stringify({ mode: 'interview', circle, messages: history, ...memoryOf(progress, circle) }),
     })
+    if (response.status === 429) {
+      const data = await response.json().catch(() => ({}))
+      return { ...scriptedReply(circle, history), capped: data.error === 'daily' }
+    }
     if (!response.ok) return scriptedReply(circle, history)
     const data = await response.json()
     const reply = String(data.reply ?? '').trim()
@@ -119,6 +137,7 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
   const [answerDraft, setAnswerDraft] = useState('')
   const [pending, setPending] = useState(false)
   const [usedScript, setUsedScript] = useState(false)
+  const [capped, setCapped] = useState(false)
   const [notice, setNotice] = useState('')
   const [claim, setClaim] = useState('')
   const [evidence, setEvidence] = useState<string[]>([])
@@ -172,6 +191,7 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
       setNotice('')
       const result = await askTodah(progress, circle, history, demo)
       if (result.scripted) setUsedScript(true)
+      if (result.capped) setCapped(true)
       saveChat([...history, { role: 'todah', text: result.reply }])
       setPending(false)
       if (result.complete) setStep('summing')
@@ -410,7 +430,10 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
             )}
 
             <p className={quest.notice} role="status">
-              {notice || (usedScript && !demo && progress.aiConsent === 'yes' ? lines.errors.aiUnavailable : '')}
+              {notice ||
+                (usedScript && !demo && progress.aiConsent === 'yes'
+                  ? lion(capped ? lines.errors.aiDaily : lines.errors.aiUnavailable)
+                  : '')}
             </p>
           </>
         )}

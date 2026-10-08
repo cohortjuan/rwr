@@ -1,3 +1,4 @@
+import { checkLimit } from '@/lib/limit'
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
@@ -71,21 +72,33 @@ function readSummary(text: string, phase: Phase): { claim: string, evidence: str
   }
 }
 
-// The four claims sent for the Crossroads, as plain lines. Returns null unless every circle
-// has a claim of a sane length, so a half-walked trail never reaches the AI.
-function readClaims(value: unknown): string | null {
-  if (typeof value !== 'object' || value === null) return null
+// The claims a player has on the trail map, as one plain line per circle that has one.
+// Nothing sent is trusted: each claim is scrubbed and trimmed, and each count is clamped.
+function claimRows(value: unknown): Map<string, string> {
+  const rows = new Map<string, string>()
+  if (typeof value !== 'object' || value === null) return rows
   const claims = value as Record<string, unknown>
-  const rows: string[] = []
   for (const [index, circle] of circleOrder.entries()) {
     const entry = claims[circle] as { claim?: unknown, evidence?: unknown } | undefined
-    if (!entry || typeof entry.claim !== 'string') return null
+    if (!entry || typeof entry.claim !== 'string') continue
     const claim = scrub(entry.claim).trim().slice(0, 300)
+    if (!claim) continue
     const evidence = typeof entry.evidence === 'number' ? Math.max(0, Math.min(3, Math.floor(entry.evidence))) : 0
-    if (!claim) return null
-    rows.push(`${levels[index].name} (${levels[index].circle}): "${claim}". Evidence: ${evidence} of 3.`)
+    rows.set(circle, `${levels[index].name} (${levels[index].circle}): "${claim}". Evidence: ${evidence} of 3.`)
   }
-  return rows.join('\n')
+  return rows
+}
+
+// What Todah remembers going into a level: the claims from the other circles, and for the
+// first level, what the player said in the warm-up quest.
+function readMemory(body: Record<string, unknown>, circle: unknown): string | undefined {
+  const rows = claimRows(body.claims)
+  rows.delete(String(circle))
+  const lines = [...rows.values()]
+  if (typeof body.warmup === 'string' && body.warmup.trim()) {
+    lines.unshift(`In the warm-up quest, about a recent good day: "${scrub(body.warmup).trim().slice(0, 300)}"`)
+  }
+  return lines.length > 0 ? lines.join('\n') : undefined
 }
 
 // Only the game's own pages may call this route. It is not a full defence (headers can be
@@ -117,26 +130,33 @@ export async function POST(request: Request) {
   if (!incoming.every(isIncomingMessage)) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (incoming.length >= SESSION_MESSAGE_CAP) return Response.json({ error: 'cap' }, { status: 429 })
 
-  // The Crossroads is one message about the four claims, with no chat behind it.
-  if (mode === 'crossroads') {
-    const claims = readClaims(body.claims)
-    if (!claims) return Response.json({ error: 'bad_request' }, { status: 400 })
-    try {
-      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
-        { role: 'user', text: `The four circles:\n${claims}` },
-      ])
-      return Response.json({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
-  }
-
   const phase = phaseOf(body.circle)
   const answers = incoming.filter((message) => message.role === 'user').length
   // A level's interview and its summary both need a level that is built.
   if ((mode === 'interview' || mode === 'summary') && !phase) {
     return Response.json({ error: 'bad_request' }, { status: 400 })
+  }
+  if (mode === 'summary' && answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
+  // The Crossroads needs a claim in every circle, so a half-walked trail never reaches the AI.
+  const crossroads = mode === 'crossroads' ? claimRows(body.claims) : null
+  if (crossroads && crossroads.size < circleOrder.length) return Response.json({ error: 'bad_request' }, { status: 400 })
+
+  // Everything above is free. From here an AI reply is spent, so the visitor's share is checked.
+  const limit = checkLimit(request)
+  if (!limit.ok) return Response.json({ error: limit.reason }, { status: 429 })
+  const sent = (data: Record<string, unknown>) => Response.json(data, { headers: { 'Set-Cookie': limit.cookie } })
+
+  // The Crossroads is one message about the four claims, with no chat behind it.
+  if (crossroads) {
+    try {
+      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
+        { role: 'user', text: `The four circles:\n${[...crossroads.values()].join('\n')}` },
+      ])
+      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
   }
 
   const system = buildSystemPrompt({
@@ -144,18 +164,18 @@ export async function POST(request: Request) {
     entryChoice: entryChoices.includes(body.entryChoice as EntryChoice) ? (body.entryChoice as EntryChoice) : null,
     phase,
     answers,
+    memory: mode === 'interview' ? readMemory(body, body.circle) : undefined,
   })
 
   // The summary reads the whole talk as one piece of text, so the AI fills in a form about it
   // instead of carrying the conversation on.
   if (mode === 'summary' && phase) {
-    if (answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
     const transcript = (incoming as IncomingMessage[])
       .map((message) => (message.role === 'user' ? `Player: ${scrub(message.text)}` : `Guide: ${message.text}`))
       .join('\n')
     try {
       const result = await generateReply(system, [{ role: 'user', text: `The interview:\n${transcript}` }])
-      return Response.json({ ...readSummary(result.text, phase), provider: result.provider })
+      return sent({ ...readSummary(result.text, phase), provider: result.provider })
     } catch (error) {
       if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
       return Response.json({ error: 'unavailable' }, { status: 503 })
@@ -177,7 +197,7 @@ export async function POST(request: Request) {
     // A level always runs its full length, so the map gets every kind of evidence asked about.
     const done =
       mode === 'interview' ? answers >= LEVEL_ANSWERS : complete || (mode === 'onboarding' && answers >= ONBOARDING_ANSWERS)
-    return Response.json({ reply, complete: done, provider: result.provider })
+    return sent({ reply, complete: done, provider: result.provider })
   } catch (error) {
     if (error instanceof LlmUnavailableError) return Response.json({ error: 'unavailable' }, { status: 503 })
     console.error('[api/todah] unexpected error')
