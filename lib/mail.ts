@@ -16,10 +16,13 @@ export function mailReady(): boolean {
 
 export async function sendMail(subject: string, text: string): Promise<void> {
   const user = process.env.MAIL_USER
-  const pass = process.env.MAIL_PASS
+  const host = process.env.MAIL_HOST || 'smtp.gmail.com'
+  // Google shows an app password in four groups with spaces between. The spaces are not part
+  // of it, so one pasted as shown still works.
+  const pass = host === 'smtp.gmail.com' ? process.env.MAIL_PASS?.replace(/\s+/g, '') : process.env.MAIL_PASS
   if (!user || !pass) throw new Error('No mailbox is set up')
   const transport = nodemailer.createTransport({
-    host: process.env.MAIL_HOST || 'smtp.gmail.com',
+    host,
     port: PORT,
     // Port 465 is encrypted from the first byte. Other ports start plain and must upgrade.
     secure: PORT === 465,
