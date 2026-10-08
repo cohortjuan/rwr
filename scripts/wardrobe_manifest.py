@@ -18,14 +18,16 @@ was drawn out of proportion. `pinks` says the piece really is purple or pink, so
 lens that fades through three colours), or a (from, to) range of hue in degrees, which can
 also say how strong and how bright a pixel must be to count: (from, to, strength, brightness).
 `drawn` names the colour the piece was drawn in, which is then kept exactly as drawn.
-`single` names a second piece made from a pair: the same pictures with one side only. A
+`single` names a second piece made from a pair: the same pictures with one side only.
+`clean` drops everything that did not take the piece's colour, and any bits left apart from
+the main shape. It is for a piece drawn with part of the sheet's lion showing through it. A
 piece with two painted parts lists two. `colours` are the colours it is sold in, the first
 being the one it was drawn in. Each is a name from RAMPS, or a pair of names for a
 two-part piece.
 """
 
 # One wardrobe, one set of colours. Every piece is repainted from these ramps and nothing
-# else, which is what lets any two pieces be worn together: a red cap and red sneakers are
+# else, which is what lets any two pieces be worn together: a red cap and a red scarf are
 # the same red, and the neutrals (black, white, the metals) sit with all of it.
 # Each ramp runs dark to light: outline, shade, main, light, highlight.
 RAMPS = {
@@ -67,11 +69,11 @@ SHEETS = {
     # and tan on a gold lion are hard to tell from him), so the game keeps its drawn ones.
     '../docs/design/source/wardrobe-a.jpg': [
         {'id': 'beanie', 'box': (305, 2, 595, 298), 'pitch': (2.68, 2.5), 'match': (12, 52), 'areas': [(8, -10, 82, 20)],
-         'paint': [RED], 'colours': ['blue', 'red', 'green', 'purple', 'black']},
+         'paint': [RED], 'colours': ['blue', 'red', 'green', 'purple', 'black'], 'clean': True},
         {'id': 'aviators', 'box': (305, 330, 595, 598), 'anchor': 'top', 'pitch': (2.88, 2.66), 'areas': [(8, 14, 82, 42)],
          'paint': ['silver'], 'colours': ['silver', 'white', 'pink', 'teal']},
-        {'id': 'sunset', 'box': (605, 330, 895, 598), 'anchor': 'top', 'pitch': (2.88, 2.66), 'areas': [(12, 16, 78, 40)], 'pinks': True,
-         'paint': ['fade'], 'colours': ['sunset', 'fire', 'ocean']},
+        # The sunset shades on this sheet did not cut cleanly (their warm colours are the lion's
+        # own), so they are drawn by shades-art.py instead.
         {'id': 'glasses-round', 'box': (905, 330, 1195, 598), 'anchor': 'top', 'pitch': (2.88, 2.66), 'areas': [(8, 14, 84, 42)], 'keep': 'dark',
          'paint': ['dark'], 'colours': ['black', 'brown', 'blue', 'white']},
         {'id': 'glasses-square', 'box': (5, 636, 295, 895), 'anchor': 'top', 'pitch': (2.86, 2.64), 'areas': [(6, 14, 84, 42)], 'keep': RED,
@@ -100,8 +102,6 @@ SHEETS = {
          'paint': ['dark'], 'colours': ['black', 'red', 'blue', 'green', 'white']},
         {'id': 'head-bandana', 'box': (5, 606, 295, 892), 'areas': [(0, -4, 89, 38)],
          'paint': [GOLD, BLUE], 'colours': [('gold', 'blue'), ('white', 'red'), ('gold', 'green'), ('pink', 'purple'), ('white', 'black')]},
-        {'id': 'sneakers', 'box': (305, 608, 595, 892), 'areas': [(12, 82, 78, 101)],
-         'paint': ['light'], 'colours': ['white', 'black', 'red', 'blue', 'green']},
         {'id': 'indigo-jacket', 'box': (605, 608, 895, 892), 'areas': [(4, 42, 86, 100)],
          'paint': [BLUE], 'colours': ['blue', 'black', 'red', 'green', 'brown']},
         # A whole drawing that takes the lion's place. `box` is the drawing itself. He was drawn

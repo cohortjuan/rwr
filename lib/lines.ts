@@ -323,7 +323,6 @@ export const lines = {
       neck: 'NECK',
       body: 'JACKETS',
       bag: 'BAGS',
-      feet: 'SHOES',
       outfit: 'TRANSFORMATIONS',
     },
     notes: {
@@ -331,7 +330,7 @@ export const lines = {
       mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1. Every coat has a mane of the same name that completes its set.',
       essentials: 'Only a lioness carries these. One stands by her paw, on the other side from her bag, so the two can be worn together. Each has a paw mark.',
       bag: 'Bags are for a lioness.',
-      hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your sneakers, your bag, or nothing at all.',
+      hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your scarf, your jacket, or nothing at all.',
       outfit: 'A transformation changes the whole lion and is worn alone: while it is on, your other pieces wait in the wardrobe. More about the shishi on the ABOUT page.',
     },
     // What a lioness reads in place of a note above. She has no mane to match.
@@ -402,7 +401,6 @@ export const lines = {
       'aviator-jacket': 'Aviator jacket',
       'indigo-jacket': 'Indigo jacket',
       'micro-bag': 'Micro bag',
-      sneakers: 'Sneakers',
       shishi: 'Shishi guardian',
     },
     price: (n: number) => `${n} SPARKS`,

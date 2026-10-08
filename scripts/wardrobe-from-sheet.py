@@ -318,6 +318,41 @@ def repaint(piece, rules, names, ramps):
     return out
 
 
+def cleaned(piece, ramp):
+    """The piece with only its own colour kept, and only its one solid shape.
+
+    The beanie was drawn with the sheet lion's ears poking out beside it. Those ears are not
+    our lion's, so they go, along with the thin lines of beanie colour that outlined them.
+    What is kept is the solid body of the piece: every pixel within two of its solid middle.
+    """
+    own = {hexrgb(h) for h in ramp}
+    px = piece.load()
+    spots = {(x, y) for y in range(HEIGHT) for x in range(WIDTH) if px[x, y][3] and px[x, y][:3] in own}
+    around = [(dx, dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1) if dx or dy]
+    # The solid middle: pixels with the piece's colour on every side. A line one or two
+    # pixels thick has none.
+    middle = {(x, y) for x, y in spots if all((x + dx, y + dy) in spots for dx, dy in around)}
+    shapes, left = [], set(middle)
+    while left:
+        stack, shape = [left.pop()], set()
+        while stack:
+            x, y = stack.pop()
+            shape.add((x, y))
+            for dx, dy in around:
+                near = (x + dx, y + dy)
+                if near in left:
+                    left.remove(near)
+                    stack.append(near)
+        shapes.append(shape)
+    kept = max(shapes, key=len) if shapes else set()
+    for _ in range(2):
+        kept = kept | {(x, y) for x, y in spots if any((x + dx, y + dy) in kept for dx, dy in around)}
+    out = Image.new('RGBA', piece.size, (0, 0, 0, 0))
+    for spot in kept:
+        out.putpixel(spot, px[spot])
+    return out
+
+
 if __name__ == '__main__':
     from wardrobe_manifest import FADES as fades, RAMPS, SHEETS
     FADES.update(fades)
@@ -340,6 +375,8 @@ if __name__ == '__main__':
             for colour in colours:
                 names = colour if isinstance(colour, tuple) else (colour,)
                 shown = piece if colour == item.get('drawn') else repaint(piece, item['paint'], names, RAMPS)
+                if item.get('clean'):
+                    shown = cleaned(shown, RAMPS[names[-1]])
                 shown.save(f"{OUT}/{item['id']}--{names[-1]}.png")
                 if item.get('single'):
                     # One of a pair, sold as its own piece: the same picture with only the

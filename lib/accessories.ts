@@ -86,15 +86,14 @@ export const STEP_SPARKS = 3
 // Walking a level of the interview, once its claim is marked on the trail map.
 export const LEVEL_SPARKS = 5
 
-export const categories: AccessoryCategory[] = ['fur', 'mane', 'essentials', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'feet', 'outfit']
+export const categories: AccessoryCategory[] = ['fur', 'mane', 'essentials', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'outfit']
 // The order pieces are drawn in, bottom first: a costume under everything, then shoes and
 // jackets, what hangs over them, and last what sits on the face and head.
-export const drawOrder: AccessoryCategory[] = ['outfit', 'feet', 'body', 'neck', 'bag', 'shades', 'ears', 'hat', 'essentials']
+export const drawOrder: AccessoryCategory[] = ['outfit', 'body', 'neck', 'bag', 'shades', 'ears', 'hat', 'essentials']
 // What the lion has in a category when nothing else is chosen.
 export const defaults: Partial<Record<AccessoryCategory, string>> = { fur: 'golden', mane: 'mane-natural' }
 export const NATURAL_MANE: [string, string] = ['#c9601b', '#8f3f12']
 
-const INK = '#1a1226'
 const WHITE = '#ffffff'
 const GOLD = '#f2c14e'
 const GOLD_BRIGHT = '#ffe08a'
@@ -125,7 +124,7 @@ const options = (tones: Tone[], paint: (main: string, second: string) => Record<
   tones.map((id) => ({ id, swatch: tone[id][0], palette: paint(tone[id][0], tone[id][1]) }))
 
 // The colours a picture piece is sold in. Every picture piece is repainted from one shared set
-// of colour ramps (scripts/wardrobe_manifest.py), so a red cap and red sneakers are the same
+// of colour ramps (scripts/wardrobe_manifest.py), so a red cap and a red scarf are the same
 // red and the blacks, whites and metals sit with all of it. That is what lets any two pieces
 // be worn together.
 const shades = (ids: Tone[]): Variant[] => ids.map((id) => ({ id, swatch: tone[id][0], palette: {} }))
@@ -135,18 +134,6 @@ export function pieceImage(item: Accessory, variant?: Variant): string {
   const colour = variant ?? item.variants?.[0]
   return `/wardrobe/${item.id}${colour ? `--${colour.id}` : ''}.png`
 }
-
-// Two lenses over the eyes and a bar across the top. F is the frame, L the lens, W a glint.
-const shadesRows = [
-  'FFFFFFFFFFFFFFFFFFFFFFFFFFF',
-  'FLLLLLLLLF.......FLLLLLLLLF',
-  'FLWWLLLLLF.......FLWWLLLLLF',
-  'FLWLLLLLLF.......FLWLLLLLLF',
-  'FLLLLLLLLF.......FLLLLLLLLF',
-  'FLLLLLLLLF.......FLLLLLLLLF',
-  'FLLLLLLLLF.......FLLLLLLLLF',
-  '.FFFFFFFF.........FFFFFFFF.',
-]
 
 // A mane colour can be bought once he has his first hair on top to colour (Mane level 1).
 const mane = (id: string, price: number, colours: readonly [string, string]): Accessory => ({
@@ -279,19 +266,9 @@ export const accessories: Accessory[] = [
     ],
   },
 
-  // Every pair shares one shape (shadesRows), so they all sit over the eyes the same way.
-  {
-    id: 'shades',
-    category: 'shades',
-    price: 6,
-    variants: [
-      { id: 'black', swatch: INK, palette: { L: INK } },
-      { id: 'brown', swatch: '#5a3a22', palette: { L: '#5a3a22' } },
-      { id: 'blue', swatch: tone.blue[1], palette: { L: tone.blue[1] } },
-      { id: 'red', swatch: tone.red[1], palette: { L: tone.red[1] } },
-    ],
-    art: [{ x: 11, y: 14, rows: shadesRows, palette: { F: INK, L: INK, W: WHITE } }],
-  },
+  // Plain shades and the sunset aviators are drawn by scripts/shades-art.py, which finds his
+  // eyes on the sprite and centres a lens on each.
+  { id: 'shades', category: 'shades', price: 6, image: true, variants: shades(['black', 'brown', 'blue', 'red']) },
   { id: 'aviators', category: 'shades', price: 8, image: true, variants: shades(['silver', 'white', 'pink', 'teal']) },
   {
     // Lenses that fade through three colours.
@@ -354,7 +331,6 @@ export const accessories: Accessory[] = [
   { id: 'aviator-jacket', category: 'body', price: 15, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
   { id: 'indigo-jacket', category: 'body', price: 12, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
   { id: 'micro-bag', category: 'bag', price: 10, only: 'female', image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
-  { id: 'sneakers', category: 'feet', price: 10, image: true, variants: shades(['white', 'black', 'red', 'blue', 'green']) },
 
   {
     // A transformation, not a piece: a whole picture of a shishi, the guardian lion of East

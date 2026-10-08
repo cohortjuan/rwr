@@ -51,7 +51,7 @@ export type CircleEntry = { claim: string, evidence: string[] }
 export type OutreachKind = 'linkedin' | 'message' | 'talk' | 'interview'
 
 // The lion's wardrobe. One accessory from each category can be worn at a time.
-export type AccessoryCategory = 'fur' | 'mane' | 'essentials' | 'hat' | 'shades' | 'ears' | 'neck' | 'body' | 'bag' | 'feet' | 'outfit'
+export type AccessoryCategory = 'fur' | 'mane' | 'essentials' | 'hat' | 'shades' | 'ears' | 'neck' | 'body' | 'bag' | 'outfit'
 export type Outreach = { id: string, kind: OutreachKind, note: string, at: string }
 
 // Dev tools, for a dev account only (see lib/account.ts): look at any stage of the game without
