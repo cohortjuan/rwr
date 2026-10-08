@@ -18,8 +18,8 @@ import { hasSavedGame, startNewLion, switchToLion, useKeptLions, useProgress, ty
 import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import styles from './TitleScreen.module.css'
 
-// How long the turn's frames take to play. Keep in step with turnCycle in the stylesheet.
-const TURN_MS = 360
+// How long the walk takes. Keep in step with walkIn in the stylesheet.
+const WALK_MS = 3360
 
 // How long to wait to learn whether the browser allows sound before starting anyway.
 const AUDIO_CHECK_MS = 1000
@@ -32,23 +32,8 @@ export default function TitleScreen() {
   const hydrated = useHydrated()
   const reducedMotion = useReducedMotion()
   const progress = useProgress()
+  // He walks in side-on, stops on the last frame of his walk, and fades into the seated cub.
   const [walkDone, setWalkDone] = useState(false)
-  // Between the side-on walk and the front-facing sit he turns: he stops, looks round at the
-  // player, and half sits. `turned` marks that he arrived that way, for a small settle.
-  const [turning, setTurning] = useState(false)
-  const [turned, setTurned] = useState(false)
-
-  // The turn ends when its last frame has played. If that signal never comes (a browser that
-  // drops it, a tab that was hidden), he is seated anyway a moment later: he must never be
-  // left part-way round.
-  useEffect(() => {
-    if (!turning) return
-    const timer = window.setTimeout(() => {
-      setTurned(true)
-      setWalkDone(true)
-    }, TURN_MS + 250)
-    return () => window.clearTimeout(timer)
-  }, [turning])
   const [boxOpen, setBoxOpen] = useState(false)
   const email = useAccountEmail()
   const signedIn = Boolean(email)
@@ -72,6 +57,14 @@ export default function TitleScreen() {
     const timer = window.setTimeout(() => setAudioCheckDone(true), AUDIO_CHECK_MS)
     return () => window.clearTimeout(timer)
   }, [])
+
+  // The walk ends when its animation does. If that signal never comes (a browser that drops
+  // it, a tab that was hidden), he is seated anyway a moment later.
+  useEffect(() => {
+    if (!started || walkDone) return
+    const timer = window.setTimeout(() => setWalkDone(true), WALK_MS + 300)
+    return () => window.clearTimeout(timer)
+  }, [started, walkDone])
 
   // Reduced motion: the cub starts seated and never walks.
   const seated = walkDone || reducedMotion
@@ -146,11 +139,14 @@ export default function TitleScreen() {
           </div>
         )}
 
-        {!started ? null : seated && SEATED_SPRITE ? (
+        {/* The seated cub is on the page from the start of the walk, unseen, so his pictures
+            are loaded by the time he fades in. */}
+        {started && SEATED_SPRITE && (
           <div
-            className={turned ? styles.cubFacingIn : styles.cubFacing}
+            className={seated ? `${styles.cubFacing} ${styles.cubShown}` : styles.cubFacing}
             role="img"
             aria-label="Todah, a lion cub, sitting and facing you"
+            aria-hidden={!seated}
           >
             <LionAvatar
               wearing={wornIds(
@@ -162,26 +158,23 @@ export default function TitleScreen() {
               blink
             />
           </div>
-        ) : (
+        )}
+
+        {/* The walking cub. With reduced motion he is never drawn. Once the walk is over he
+            holds its last frame and fades out as the seated cub fades in. With no seated
+            drawing to fade to, he simply stays. */}
+        {started && !reducedMotion && (
           <div
-            className={seated ? styles.cubSeated : turning ? styles.cubTurning : styles.cubWalking}
+            className={seated && SEATED_SPRITE ? styles.cubWalkingOut : styles.cubWalking}
             onAnimationEnd={(event) => {
-              // The walk ends in a turn (two frames, played by the sprite inside), and the turn
-              // ends with him seated and facing the player.
-              if (!turning) {
-                if (event.target !== event.currentTarget) return
-                if (SEATED_SPRITE) {
-                  setTurning(true)
-                  return
-                }
-              }
-              setTurned(true)
-              setWalkDone(true)
+              // The sprite inside ends its own animation too. Only the walk itself counts.
+              if (event.target === event.currentTarget) setWalkDone(true)
             }}
             role="img"
-            aria-label="Todah, a lion cub"
+            aria-label="Todah, a lion cub, walking in"
+            aria-hidden={seated}
           >
-            <div className={seated ? styles.spriteStill : turning ? styles.spriteTurn : styles.spriteWalk} />
+            <div className={styles.spriteWalk} />
           </div>
         )}
 
