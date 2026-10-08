@@ -374,3 +374,32 @@ html[data-reduce-motion='true'] .cinemaWindow {
 html[data-reduce-motion='true'] .cinemaRoll {
   position: static;
 }
+
+/* The player's lion at the end of the credits. */
+.creditLion {
+  width: 120px;
+  margin: 8px auto 0;
+}
+
+.cinemaRoll .creditLion {
+  width: min(220px, 40vw);
+}
+
+/* The maker's credit at the very end. */
+.maker {
+  margin-top: 60px;
+}
+
+.makerFace {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 10px auto 6px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+}
+
+.makerLink {
+  color: var(--gold-bright);
+  font-size: 1rem;
+}

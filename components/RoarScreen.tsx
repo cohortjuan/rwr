@@ -3,11 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import LionAvatar from '@/components/LionAvatar'
 import SealedLetter from '@/components/SealedLetter'
+import { auraSize, maneSize, wornIds } from '@/lib/accessories'
 import { circles } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
-import { capsuleDue, countedCheers, saveProgress, useLionText, useProgress } from '@/lib/progress'
+import { capsuleDue, countedCheers, saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
 import { setRoaring } from '@/lib/roarSound'
 import { LOW_VOLUME, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
@@ -23,7 +25,10 @@ const CREDIT_SECONDS = 7
 const CREDITS_SHORTEST = 60
 // On the whole screen the lines have further to travel, so their pace is set directly, in
 // pixels a second. Larger lettering can move faster than the small window's and still be read.
-const CREDITS_PACE = 22
+const CREDITS_PACE = 25
+// The scroll wheel changes that pace, between this many times slower and this many faster.
+const SLOWEST = 0.25
+const FASTEST = 6
 // If the roar's sound never reports that it ended, the music comes back after this long.
 const ROAR_LONGEST_MS = 10000
 
@@ -38,6 +43,7 @@ const clip = (text: string) => {
 export default function RoarScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
+  const keptLions = useKeptLions()
   const lion = useLionText()
   const { sound, quiet } = useSettings()
   const confirmRef = useRef<HTMLDialogElement>(null)
@@ -75,10 +81,25 @@ export default function RoarScreen() {
     // rise: their own height and the height of the window they rise through.
     const roll = rollRef.current
     const frame = roll?.parentElement
-    if (rolling && roll && frame) {
-      roll.style.setProperty('--window', `${frame.clientHeight}px`)
-      roll.style.animationDuration = `${Math.round((roll.offsetHeight + frame.clientHeight) / CREDITS_PACE)}s`
+    if (!rolling || !roll || !frame) return
+    roll.style.setProperty('--window', `${frame.clientHeight}px`)
+    roll.style.animationDuration = `${Math.round((roll.offsetHeight + frame.clientHeight) / CREDITS_PACE)}s`
+
+    // The scroll wheel speeds the credits up or slows them down. Each notch changes the pace
+    // by a small share and the lines never jump: only how fast they rise changes. Listened
+    // for directly so the page behind does not scroll too.
+    // The pace is kept here and not read back from the animation, which takes a moment to
+    // take a new one on: several notches in one go would each start from the old pace.
+    let pace = 1
+    function changePace(event: WheelEvent) {
+      event.preventDefault()
+      const roller = roll?.getAnimations()[0]
+      if (!roller) return
+      pace = Math.max(SLOWEST, Math.min(FASTEST, pace * Math.exp(event.deltaY * 0.0012)))
+      roller.updatePlaybackRate(pace)
     }
+    dialog.addEventListener('wheel', changePace, { passive: false })
+    return () => dialog.removeEventListener('wheel', changePace)
   }, [rolling])
 
   // While the roar sounds the music is silent (see MusicPlayer). It is told when the roar
@@ -167,6 +188,63 @@ export default function RoarScreen() {
 
   if (!hydrated) return <main className="screen" />
 
+  // The maker's credit. It is shown only when the credits are rolled on the whole screen,
+  // after everything that is the player's, and not in the panel on the roar screen.
+  const makerCredit = (
+    <div className={`${styles.credit} ${styles.maker}`}>
+      <dt>{lines.roar.credits.madeBy}</dt>
+      <dd>
+        {/* A small local picture, so nothing is fetched from another site. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={styles.makerFace} src="/images/cohortjuan.jpg" alt="" width={96} height={96} />
+      </dd>
+      <dd>{lines.roar.credits.maker}</dd>
+      <dd>
+        <a
+          className={styles.makerLink}
+          href={lines.about.creditUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {lines.roar.credits.makerMore}
+        </a>
+      </dd>
+    </div>
+  )
+
+  // The lines of the credits, ending on the player's own lion as he is dressed today.
+  const creditLines = (
+    <>
+      {credits().map((line, index) => (
+        <div key={index} className={styles.credit}>
+          <dt>
+            <span className={styles.mark} aria-hidden="true">
+              {line.mark}
+            </span>{' '}
+            {line.label}
+          </dt>
+          <dd>{line.text}</dd>
+        </div>
+      ))}
+      <div className={styles.credit}>
+        <dd>
+          <LionAvatar
+            className={styles.creditLion}
+            wearing={wornIds(
+              progress,
+              keptLions.map((kept) => kept.progress),
+            )}
+            mane={maneSize(progress)}
+            aura={auraSize(progress)}
+            mood="happy"
+          />
+        </dd>
+        <dd className={styles.end}>{lines.roar.credits.end}</dd>
+      </div>
+    </>
+  )
+
   return (
     <main className={`screen ${justRoared ? styles.shake : ''} ${holding ? styles.rumble : ''}`}>
       {/* The sun comes up behind everything as the roar goes out. */}
@@ -217,20 +295,7 @@ export default function RoarScreen() {
                 className={justRoared ? styles.roll : undefined}
                 style={{ animationDuration: `${Math.max(CREDITS_SHORTEST, credits().length * CREDIT_SECONDS)}s` }}
               >
-                {credits().map((line, index) => (
-                  <div key={index} className={styles.credit}>
-                    <dt>
-                      <span className={styles.mark} aria-hidden="true">
-                        {line.mark}
-                      </span>{' '}
-                      {line.label}
-                    </dt>
-                    <dd>{line.text}</dd>
-                  </div>
-                ))}
-                <div className={styles.credit}>
-                  <dd className={styles.end}>{lines.roar.credits.end}</dd>
-                </div>
+                {creditLines}
               </dl>
             </div>
           </section>
@@ -314,20 +379,8 @@ export default function RoarScreen() {
             <p className={styles.cinemaTitle}>{lines.roar.credits.heading}</p>
             <div className={styles.cinemaWindow}>
               <dl ref={rollRef} className={styles.cinemaRoll} onAnimationEnd={() => setRolling(false)}>
-                {credits().map((line, index) => (
-                  <div key={index} className={styles.credit}>
-                    <dt>
-                      <span className={styles.mark} aria-hidden="true">
-                        {line.mark}
-                      </span>{' '}
-                      {line.label}
-                    </dt>
-                    <dd>{line.text}</dd>
-                  </div>
-                ))}
-                <div className={styles.credit}>
-                  <dd className={styles.end}>{lines.roar.credits.end}</dd>
-                </div>
+                {creditLines}
+                {makerCredit}
               </dl>
             </div>
             <p className={styles.cinemaHint}>{lines.roar.credits.hint}</p>

@@ -461,8 +461,8 @@ export const lines = {
     back: 'BACK TO WARDROBE',
   },
 
-  // A letter to yourself, sealed until a date the player picks. A draft Juan is deciding whether
-  // to keep (2026-10-09). It never leaves the device, and Todah never reads it.
+  // A letter to yourself, sealed until the goal is reached or a date the player picks. It never
+  // leaves the device, and Todah never reads it.
   capsule: {
     heading: '✉️ A LETTER TO YOURSELF',
     intro:
@@ -491,9 +491,9 @@ export const lines = {
     devNote: 'Makes a sealed letter arrive today, so the opening can be shown without waiting.',
   },
 
-  // The trail card: a keepsake from the first sitting, made of the player's own words. Juan
-  // liked it and asked for emoji in its text (2026-10-09). Emoji stay on the card: Todah's own
-  // speech is plain text everywhere else.
+  // The trail card: a keepsake from the first sitting, made of the player's own words. Emoji
+  // are used on the card, the credits and the sealed letter. Todah's own speech is plain text
+  // everywhere else.
   card: {
     name: 'TRAIL CARD',
     brand: '🦁 RWR · TRAIL CARD',
@@ -1159,15 +1159,14 @@ export const lines = {
     confirm: 'Are you ready to let Todah roar?',
     confirmYes: (sex: 'male' | 'female') => (sex === 'female' ? 'YES, LET HER ROAR' : 'YES, LET HIM ROAR'),
     confirmNo: 'NOT YET',
-    // The roar is let out by pressing and holding. A draft Juan is deciding whether to keep
-    // (2026-10-09), with the credits below.
+    // The roar is let out by pressing and holding, and the credits follow it.
     hold: '🦁 HOLD TO ROAR',
     holdHint: 'Press and hold until it is full. This one is yours to let out.',
     // The credits after the roar. Every line under these labels is the player's own.
     credits: {
       heading: '🎬 THE TRAIL BEHIND YOU',
       again: '🎬 ROLL THE CREDITS',
-      hint: 'Press any key or tap anywhere to go back',
+      hint: 'Scroll to speed it up or slow it down. Any key or a tap goes back.',
       // One emoji beside each label in the credits.
       marks: {
         starring: '🌟',
@@ -1194,6 +1193,10 @@ export const lines = {
       cheerCount: (n: number) => (n === 1 ? 'once, by a friend' : `${n} times, by friends`),
       reached: 'GOAL REACHED',
       end: '🌅 THE END. AND THE BEGINNING.',
+      // The maker's own credit, last of all.
+      madeBy: '🛠️ CREATED BY',
+      maker: 'cohortjuan',
+      makerMore: 'See my other apps on GitHub',
     },
     rewardTitle: '👑 PRIDE LEADER',
     rewardBody: (name: string) =>

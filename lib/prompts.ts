@@ -251,7 +251,7 @@ ${guardrails}`
 // - The AI never states demand or entry requirements: in testing it said a job needed a
 //   master's degree when it needs a bachelor's. The game links each path to a public source.
 // - Pay is given only as a rough range, which the game labels as possibly out of date and
-//   puts beside the link to current figures (asked for by Juan on 2026-10-09).
+//   puts beside the link to current figures.
 // - Nothing here may read as a promise or as the answer.
 function pathsPrompt(): string {
   return `You help a player of a retro career-exploration game see what kinds of work their four circles
