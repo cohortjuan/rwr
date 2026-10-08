@@ -81,15 +81,15 @@ export const lines = {
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
     ikigaiBrief:
-      'This trail borrows from Ikigai, a Japanese word for what makes life feel worth living. In Japan that is usually something small and daily, and often not a job at all. We use the career version: four circles called Heart, Craft, Cause, and Coin.',
+      'This trail follows a picture of four circles: what you love (Heart), what you are good at (Craft), what the world needs (Cause), and what you can be paid for (Coin). You may have seen it called Ikigai. That is a Japanese word, and in Japan it means something different, so let me be straight with you about where this comes from.',
     ikigaiGotIt: 'GOT IT',
     ikigaiMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
     ikigaiDeep: [
-      'Ikigai (say ee-kee-guy) joins two Japanese words: iki, life, and gai, worth. In Japan it is whatever makes a day worth getting up for. A craft, a garden, a grandchild, the first tea of the morning. It is felt in small things, and it has little to do with money or status.',
-      'The four circles are not from Japan. The picture was drawn in the West about ten years ago as a way to think about careers, and the word Ikigai was put on it later. It names the overlaps: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession.',
-      'The picture says that a missing circle leaves something feeling off. Paid and skilled but not in love: comfortable, yet empty. Loving it but unpaid: joyful, yet broke. That is useful for thinking about work. It is not true of Ikigai itself: plenty of what makes life worth living will never pay you, and it does not have to.',
-      'So here is the honest deal. This game is the career version. It can help you see where your work could sit closer to the middle. It cannot find your reason for living, and a job does not have to be one. What we keep from the real idea is its spirit: look at small, real moments from your own days, not big wishes.',
+      'The four circles are a picture of purpose. A Spanish writer, Andres Zuzunaga, drew it in 2011. In 2014 a blogger, Marc Winn, put the Japanese word Ikigai in the middle, and that is the version that travelled the world. So the picture is from Spain, not Japan, and it is new, not ancient.',
+      'The picture names its overlaps: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession. Miss a circle and work can feel off. Paid and skilled but not in love: comfortable, yet empty. Loving it but unpaid: joyful, yet broke. That is a useful way to think about a career, and it is all this game claims to be.',
+      'Ikigai (say ee-kee-guy) is something else. It joins iki, life, and gai, worth: what makes a day worth getting up for. A craft, a garden, a grandchild, the first tea of the morning. Mieko Kamiya, a Japanese doctor, wrote the best-known book on it in 1966. It is felt in small things, it does not need to pay, and it does not have to be a job.',
+      'So this game does not teach Ikigai, and it cannot find your reason for living. It borrows the four circles to help you think about work. What I hope we keep from the Japanese idea is one thing: paying attention to small, real moments in your own days instead of big wishes. There is more on the ABOUT page.',
       `We will walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. I ask the questions, you bring the evidence, and you decide what it means. I will never tell you what to be, and nothing here is a promise about any job.`,
     ],
     ikigaiNextPage: 'NEXT',
@@ -188,7 +188,7 @@ export const lines = {
     menuHeading: 'TALK TO TODAH',
     menu: [
       "I'm stuck on a question",
-      'Explain Ikigai to me',
+      'Explain the four circles to me',
       'Help me think through a career idea',
       'Help with my roadmap',
       'Just talk',
@@ -245,7 +245,7 @@ export const lines = {
     checkOpen: 'not yet',
     trailHeading: 'From your trail, in your own words:',
     mapTitle: 'TRAIL MAP',
-    mapScore: (score: number, max: number) => `IKIGAI EVIDENCE ${score}/${max}`,
+    mapScore: (score: number, max: number) => `TRAIL EVIDENCE ${score}/${max}`,
     mapBody: 'See how much evidence you have in each circle, and take one real-world step. Each step adds two Pride Power.',
     toMap: 'OPEN TRAIL MAP',
     // Helpful tips on the upgrades screen. One shows per visit, the first that fits the game
@@ -264,7 +264,7 @@ export const lines = {
       pride: 'PRIDE grows with real connections: friends who join and people you reach out to.',
       wardrobe: 'Cheers from friends and job interviews earn sparks. Spend them in the WARDROBE to dress your lion.',
       den: 'DEN grows with each career path you explore. A path is a lion with a main goal and evidence on its trail map.',
-      map: 'Your TRAIL MAP shows how much evidence you have in each Ikigai circle, and one small step to test the thinnest.',
+      map: 'Your TRAIL MAP shows how much evidence you have in each of the four circles, and one small step to test the thinnest.',
       goal: 'Set your main goal under GO TO MY GOAL. Only you decide when it is reached.',
       device: 'Everything here is saved in this browser only. On a shared computer, PRIVACY has a switch to turn saving off.',
     },
@@ -503,6 +503,65 @@ export const lines = {
     toMap: 'BACK TO MY TRAIL MAP',
   },
 
+  // The About page. Rules that must survive edits: credit the four circles to the people who
+  // drew them, never present them as Japanese, and never claim the game teaches ikigai.
+  about: {
+    chip: 'ABOUT',
+    heading: 'ABOUT RWR',
+    sections: [
+      {
+        title: 'WHAT THIS IS',
+        body: [
+          'RWR is a short, free game for thinking about work. A lion cub called Todah asks about real moments from your life, and together you mark the evidence on a map: what you love, what you are good at, who it helps, and what it can pay. Then you set one goal of your own. Todah roars only when you say you have reached it.',
+          'It is a place to think, not a test. It does not score you against anyone, name a career for you, or promise a job or any outcome.',
+        ],
+      },
+      {
+        title: 'WHAT THE AI DOES',
+        body: [
+          'If you allow it, an AI service writes what Todah says. It asks questions and reflects back what you said. You bring the evidence and you decide what it means. Before anything is marked on your map, you see it and can change every word.',
+          'The AI is told never to tell you what to be, never to guess at pay or your chances, and to stop and respond with care if you are having a hard time. If you would rather not use it, the whole game runs from written questions and nothing you type leaves your device.',
+        ],
+      },
+      {
+        title: 'WHERE THE FOUR CIRCLES COME FROM',
+        body: [
+          'The four circles are a diagram of purpose drawn in 2011 by Andres Zuzunaga, a Spanish writer. His four parts were what you love, what you are good at, what the world needs, and what you can be rewarded for. It first appeared in print in 2012, in a book by Borja Vilaseca.',
+          'In 2014 a blogger, Marc Winn, replaced the word "purpose" in the middle with the Japanese word "ikigai". That version spread around the world, and many people now believe the diagram is an old Japanese idea. It is not. RWR uses the diagram because it is a clear way to think about a career, and calls it what it is: the purpose diagram.',
+        ],
+      },
+      {
+        title: 'WHAT IKIGAI MEANS IN JAPAN',
+        body: [
+          'Ikigai joins two words: iki, life, and gai, worth or value. It is what makes life feel worth living. For many people in Japan that is something small and daily: time with family, a craft, a garden, a morning routine. It can be work, but it does not have to be, and it has nothing to do with being paid.',
+          'The best-known writing on it is by Mieko Kamiya, a psychiatrist, in her 1966 book Ikigai-ni-tsuite ("On the meaning of life"). She described two sides of it: the things that give a life meaning, and the feeling itself that life is worth living. She wrote that it has to be lived to be understood.',
+        ],
+      },
+      {
+        title: 'HOW RWR RELATES TO IKIGAI',
+        body: [
+          'Where it differs: RWR is about work, and one of its four circles is pay. Ikigai is about a whole life and asks nothing about money. RWR looks for four things at once. Ikigai can be one small thing. RWR ends with a goal to reach. Ikigai is not something to achieve: it is already there in ordinary days.',
+          'Where it tries to stay close: Todah asks for small, real moments, such as the last time you lost track of time, and not for big ambitions. Nothing counts until you have lived it, which is why the map marks evidence and not wishes. And the game never says work must be the thing that makes your life worth living. For many people it is not, and that is fine.',
+          'So RWR does not teach ikigai and is not a guide to it. The middle of our diagram says PURPOSE, the word its author put there. We mention ikigai only because the diagram is so often given that name, and we would rather say so plainly than borrow a word from a culture that is not ours. If we have described it badly, we would like to be corrected.',
+        ],
+      },
+      {
+        title: 'WHO MADE THIS',
+        body: [
+          'RWR was made by Juan for the 2026 Good Soil Fall Code Jam, working with an AI coding assistant. It is free, has no adverts, and does not sell anything you tell it. How your answers are handled is on the privacy page.',
+        ],
+      },
+    ],
+    sourcesHeading: 'WHERE TO READ MORE',
+    sources: [
+      { label: 'Ikigai (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Ikigai' },
+      { label: 'Mieko Kamiya and Ikigai-ni-tsuite (Ikigai Tribe)', url: 'https://ikigaitribe.com/blogpost/ikigai-ni-tsuite/' },
+      { label: 'The Venn diagram of purpose and its history (Ikigai Tribe)', url: 'https://ikigaitribe.com/blogpost/the-venn-diagram-of-purpose/' },
+    ],
+    toPrivacy: 'HOW RWR HANDLES YOUR DATA',
+    back: 'BACK TO TITLE',
+  },
+
   // Forgotten passwords: asking for a reset link, and choosing the new password.
   reset: {
     forgot: 'Forgot password?',
@@ -559,17 +618,18 @@ export const lines = {
       '/lookbook': 'LOOKBOOK',
       '/roar': 'ROAR',
       '/privacy': 'PRIVACY',
+      '/about': 'ABOUT',
     },
     off: 'TURN DEV TOOLS OFF',
     offNote: 'Puts this lion back to what it has earned.',
   },
 
-  // The trail map: evidence for each Ikigai circle. Rules that must survive edits: it is a
+  // The trail map: evidence for each of the four circles. Rules that must survive edits: it is a
   // map, not a verdict. It never names a best career and never promises an outcome.
   map: {
     heading: 'TRAIL MAP',
-    intro: 'Ikigai sits where four circles meet. This map shows how much evidence you have in each one. It is a map, not a verdict: only you decide where to walk.',
-    score: (score: number, max: number) => `IKIGAI EVIDENCE ${score}/${max}`,
+    intro: 'Purpose, for work, sits where four circles meet. This map shows how much evidence you have in each one. It is a map, not a verdict: only you decide where to walk.',
+    score: (score: number, max: number) => `TRAIL EVIDENCE ${score}/${max}`,
     circleScore: (score: number, max: number) => `${score}/${max}`,
     empty: 'Each circle is filled in by walking its level with Todah. Start with Heart.',
     walkFirst: 'Nothing here yet. Walk this level and what you say is marked here, for you to change afterwards.',

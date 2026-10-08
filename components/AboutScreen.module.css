@@ -1,0 +1,41 @@
+.heading {
+  font-size: clamp(1rem, 3.4vw, 1.5rem);
+  color: var(--gold-bright);
+  text-shadow: 0 0.12em 0 var(--crimson);
+  margin-bottom: 18px;
+}
+
+.section {
+  max-width: 68ch;
+  margin-bottom: 22px;
+  padding: 14px;
+  border: 3px solid var(--teal);
+  background: rgba(31, 91, 87, 0.3);
+}
+
+.section p {
+  margin: 0 0 10px;
+}
+
+.section p:last-child {
+  margin-bottom: 0;
+}
+
+.subheading {
+  margin-bottom: 10px;
+  font-size: 0.7rem;
+  color: var(--gold-bright);
+}
+
+.sources {
+  margin: 0;
+  padding-left: 1.1em;
+}
+
+.sources a {
+  color: var(--gold-bright);
+}
+
+.footer {
+  margin: 24px 0 0;
+}

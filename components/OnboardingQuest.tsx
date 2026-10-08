@@ -15,8 +15,8 @@ import styles from './OnboardingQuest.module.css'
 type Step = 'hello' | 'ikigai' | 'ikigaiDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
 
 // Which part of the Ikigai diagram lights up on each page of the deeper explanation:
-// the word, the overlaps, a missing circle, the middle, then the whole trail.
-const deepFocus: WheelFocus[] = ['all', 'overlaps', 'missing', 'center', 'circles']
+// where the picture comes from, its overlaps and a missing circle, the middle, then the trail.
+const deepFocus: WheelFocus[] = ['all', 'overlaps', 'center', 'all', 'circles']
 
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3
@@ -254,6 +254,9 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
             <button type="button" className="btn btn-quiet" onClick={() => go('intro')}>
               {lines.onboarding.ikigaiSkip}
             </button>
+            <Link className="btn btn-quiet" href="/about">
+              {lines.about.chip}
+            </Link>
           </DialogBox>
         )}
 

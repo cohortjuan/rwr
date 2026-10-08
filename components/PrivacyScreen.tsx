@@ -116,6 +116,9 @@ export default function PrivacyScreen() {
         <p className={styles.footer}>
           <Link className="btn btn-quiet" href="/">
             {lines.privacy.back}
+          </Link>{' '}
+          <Link className="btn btn-quiet" href="/about">
+            {lines.about.heading}
           </Link>
         </p>
       </div>

@@ -138,7 +138,7 @@ export default function IkigaiWheel({ focus }: { focus: WheelFocus }) {
           </span>
         ))}
 
-      {(focus === 'center' || focus === 'all') && <span className={styles.center}>IKIGAI</span>}
+      {(focus === 'center' || focus === 'all') && <span className={styles.center}>PURPOSE</span>}
     </figure>
   )
 }

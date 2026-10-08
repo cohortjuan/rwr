@@ -1,6 +1,6 @@
 # RWR: 16-bit Career Adventure
 
-A retro 16-bit game that helps people explore their Ikigai (what they love, what they are good
+A retro 16-bit game that helps people explore the four circles of the purpose diagram (what they love, what they are good
 at, what the world needs, and what they can be paid for) and turn it into a career roadmap.
 
 Built for the 2026 Good Soil Fall Code Jam. Theme: **Season of Change**. A career transition is
@@ -29,7 +29,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Login box: log in / sign up (Supabase Auth) or play as guest
 - Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback ("trail
   notes"). Todah's text types out and his mouth moves while he talks
-- Trail map: the four Ikigai circles scored 0 to 3 on evidence the player ticks, not on
+- Trail map: the four circles scored 0 to 3 on evidence the player ticks, not on
   confidence. It names the strongest and thinnest circle and one small real-world step, and
   never names a "best career". For "what the world needs" the player picks from the UN's 17
   Sustainable Development Goals and is pointed to public job-outlook data to check it
@@ -65,9 +65,12 @@ prophet: nothing in the game promises a job or an outcome.
 - Finishing a level earns 5 sparks, and the skill named in Craft can be added to the Claws
   upgrade in one press
 - Guests can try any wardrobe piece on. Owning one still needs an account
-- Quest 1 says plainly what the game is: the career version of Ikigai, a Western picture
-  about ten years old, and not the Japanese idea itself, which is mostly about small daily
-  things and rarely about a job. It also says what the AI does: it asks, the player decides
+- Quest 1 and the About page (`/about`) say plainly where the game's ideas come from. The
+  four circles are the purpose diagram drawn by Andres Zuzunaga in 2011, which Marc Winn
+  relabelled "ikigai" in 2014. Ikigai itself is a Japanese idea about what makes life worth
+  living, described by Mieko Kamiya in 1966, and has nothing to do with being paid. RWR uses
+  the diagram, puts PURPOSE in its middle, and does not claim to teach ikigai. Both also say
+  what the AI does: it asks, the player decides
 - Fur and mane come in matching sets built on colour theory: every coat has a mane of the same
   name, a deeper and stronger step from the coat's own colour, the way the natural mane sits
   with the golden coat. The two are separate pieces, so it takes one of each to match, and any

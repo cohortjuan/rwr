@@ -1,9 +1,14 @@
-/* A small way into the dev tools, shown only to a dev account. */
-.chip {
+/* Small links in the top corner: ABOUT on the title screen, DEV for a dev account. */
+.chips {
   position: fixed;
   top: 26px;
   left: 28px;
   z-index: 40;
+  display: flex;
+  gap: 8px;
+}
+
+.chip {
   padding: 7px 9px;
   font-family: var(--font-pixel), monospace;
   font-size: 0.55rem;
