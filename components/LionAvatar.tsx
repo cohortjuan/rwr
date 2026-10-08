@@ -62,9 +62,12 @@ export default function LionAvatar({
   blink = false,
   className,
 }: Props) {
-  const worn = wearing
+  const chosen = wearing
     .map(parseToken)
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
+  // A transformation is worn alone: while it is on, only it and the coat are drawn.
+  const alone = chosen.some((entry) => entry.item.alone)
+  const worn = alone ? chosen.filter((entry) => entry.item.alone || entry.item.category === 'fur') : chosen
   const fur = worn.find((entry) => entry.item.category === 'fur')?.item
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
   // Before the mane starts to grow there is nothing to colour: the cub's own tuft is part of

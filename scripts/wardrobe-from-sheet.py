@@ -45,7 +45,7 @@ far = lambda a, b: abs(a[0] - b[0]) + abs(a[1] - b[1]) + abs(a[2] - b[2])
 smear = lambda c: c[0] - c[1] > 34 and c[2] - c[1] > 34
 
 
-def register(soft, box):
+def register(soft, box, anchor='bottom', hint=(2.82, 2.8), rows=None):
     """Where this cell's lion sits: (left, top, pitch across, pitch down) in sheet pixels.
 
     Tries a range of sizes and positions and keeps the one where the game's outline best
@@ -63,19 +63,27 @@ def register(soft, box):
                     if 0 <= nx < WIDTH and 0 <= ny < HEIGHT:
                         outside.append((nx, ny))
                     break
-    edge, outside = edge[::2], outside[::2]
+    if rows:
+        # A hat sits on his head, and the model does not always keep his head and body in the
+        # same proportion. So for a hat only his head is matched, wherever his feet end up.
+        edge = [spot for spot in edge if rows[0] + HEAD <= spot[1] < rows[1] + HEAD]
+        outside = [spot for spot in outside if rows[0] + HEAD <= spot[1] < rows[1] + HEAD]
+    else:
+        edge, outside = edge[::2], outside[::2]
     x0, y0, x1, y1 = box
     solid = lambda sx, sy: x0 <= sx <= x1 and y0 <= sy <= y1 and not magenta(soft[int(sx), int(sy)])
     best = (-1, 0, 0, 0, 0)
-    # He stands on the bottom of his cell, so the fit is anchored there and at the middle.
-    for pitch_x in [2.60 + 0.02 * n for n in range(18)]:
-        for pitch_y in [2.60 + 0.02 * n for n in range(18)]:
-            if abs(pitch_x - pitch_y) > 0.09:
-                continue
+    # The fit is anchored at the middle of the cell, and at whichever end of him is whole: his
+    # feet on the bottom edge, or the top of his head when his feet are cut off.
+    # The model does not keep his proportions exactly: on one sheet he came out 6 percent wider
+    # than tall. So width and height are fitted separately, each near its own rough size.
+    reach = 14 if rows else 4
+    for pitch_x in [hint[0] - 0.1 + 0.02 * n for n in range(11)]:
+        for pitch_y in [hint[1] - (0.2 if rows else 0.1) + 0.02 * n for n in range(21 if rows else 11)]:
             for shift_x in range(-6, 7, 2):
-                for shift_y in range(-4, 5, 2):
+                for shift_y in range(-reach, reach + 1, 2):
                     left = (x0 + x1) / 2 - WIDTH * pitch_x / 2 + shift_x
-                    top = y1 - HEIGHT * pitch_y + shift_y
+                    top = (y1 - HEIGHT * pitch_y if anchor == 'bottom' else y0 - HEAD * pitch_y) + shift_y
                     score = sum(solid(left + (x + 0.5) * pitch_x, top + (y + 0.5) * pitch_y) for x, y in edge)
                     score += sum(not solid(left + (x + 0.5) * pitch_x, top + (y + 0.5) * pitch_y) for x, y in outside)
                     if score > best[0]:
@@ -83,8 +91,10 @@ def register(soft, box):
     return best[1:], best[0] / (len(edge) + len(outside))
 
 
-def extract(sheet, soft, box, areas, whole=False, pinks=False):
-    (left, top, pitch_x, pitch_y), fit = register(soft, box)
+def extract(sheet, soft, item):
+    box, areas = item['box'], item.get('areas', [])
+    whole, pinks, keep = item.get('whole', False), item.get('pinks', False), item.get('keep')
+    (left, top, pitch_x, pitch_y), fit = register(soft, box, item.get('anchor', 'bottom'), item.get('pitch', (2.82, 2.8)), item.get('match'))
     read = lambda x, y: soft[min(sheet.width - 1, max(0, int(left + (x + 0.5) * pitch_x))), min(sheet.height - 1, max(0, int(top + (y + 0.5) * pitch_y)))]
     inside = lambda x, y: any(a[0] <= x < a[2] and a[1] + HEAD <= y < a[3] + HEAD for a in areas)
     piece = Image.new('RGBA', (WIDTH, HEIGHT), (0, 0, 0, 0))
@@ -141,6 +151,14 @@ def extract(sheet, soft, box, areas, whole=False, pinks=False):
                             queue.append(nxt)
             if len(island) < 14:
                 chosen -= set(island)
+    if keep:
+        # Glasses: only the frame is kept, so his own eyes show through and still blink. The
+        # eyes the model drew behind the lenses are dark too, so anything lying on the game's
+        # own dark pixels (his eyes) is left out.
+        chosen = {
+            (x, y) for x, y in chosen
+            if (painted(read(x, y), keep) or painted(read(x, y), 'ink')) and not (BASE[x, y][3] and sum(BASE[x, y][:3]) < 200)
+        }
     for x, y in chosen:
         px[x, y] = read(x, y) + (255,)
     # A small fixed set of colours takes out what JPEG smeared.
@@ -180,6 +198,7 @@ def fit_vest(piece):
 
 
 FITS = {'vest': fit_vest}
+FADES = {}
 
 hexrgb = lambda h: (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16))
 
@@ -187,13 +206,23 @@ hexrgb = lambda h: (int(h[1:3], 16), int(h[3:5], 16), int(h[5:7], 16))
 def painted(colour, rule):
     """Whether a pixel is part of what takes the colour, by the piece's `paint` rule."""
     h, s, v = colorsys.rgb_to_hsv(colour[0] / 255, colour[1] / 255, colour[2] / 255)
+    if rule == 'ink':
+        return v <= 0.3
     if rule == 'dark':
         return v <= 0.55 and s <= 0.45
+    if rule == 'silver':
+        return s <= 0.22 and v >= 0.45
+    if rule == 'fade':
+        return s >= 0.35 and v >= 0.3
     if rule == 'light':
         return v >= 0.5 and s <= 0.4
     if rule == 'grey':
         return s <= 0.22
-    return rule[0] <= h * 360 <= rule[1] and s >= 0.22
+    hue = h * 360
+    # A range such as (335, 22) wraps round through red.
+    within = rule[0] <= hue <= rule[1] if rule[0] <= rule[1] else hue >= rule[0] or hue <= rule[1]
+    strength, brightness = (rule[2], rule[3]) if len(rule) > 2 else (0.22, 0.0)
+    return within and s >= strength and v >= brightness
 
 
 def repaint(piece, rules, names, ramps):
@@ -201,6 +230,23 @@ def repaint(piece, rules, names, ramps):
     out = piece.copy()
     px = out.load()
     for rule, name in zip(rules, names):
+        if rule == 'fade':
+            fade = FADES[name]
+            if fade:
+                # A lens that runs cyan to purple to pink: each pixel's place in that run picks
+                # its place in the new three-colour fade.
+                stops = [hexrgb(h) for h in fade]
+                for y in range(HEIGHT):
+                    for x in range(WIDTH):
+                        colour = piece.getpixel((x, y))
+                        if not colour[3] or not painted(colour, 'fade'):
+                            continue
+                        hue = colorsys.rgb_to_hsv(colour[0] / 255, colour[1] / 255, colour[2] / 255)[0] * 360
+                        t = max(0.0, min(1.0, (hue - 175) / 165)) * 2
+                        low, part = stops[min(1, int(t))], t - min(1, int(t))
+                        high = stops[min(2, int(t) + 1)]
+                        px[x, y] = tuple(round(low[c] + (high[c] - low[c]) * part) for c in range(3)) + (255,)
+            continue
         ramp = [hexrgb(h) for h in ramps[name]]
         spots = [(x, y) for y in range(HEIGHT) for x in range(WIDTH) if px[x, y][3] and painted(piece.getpixel((x, y)), rule)]
         if not spots:
@@ -221,7 +267,8 @@ def repaint(piece, rules, names, ramps):
 
 
 if __name__ == '__main__':
-    from wardrobe_manifest import RAMPS, SHEETS
+    from wardrobe_manifest import FADES as fades, RAMPS, SHEETS
+    FADES.update(fades)
     os.makedirs(OUT, exist_ok=True)
     only = set(sys.argv[1:])
     for path, cells in SHEETS.items():
@@ -230,7 +277,7 @@ if __name__ == '__main__':
         for item in cells:
             if only and item['id'] not in only:
                 continue
-            piece, fit = extract(sheet, soft, item['box'], item.get('areas', []), item.get('whole', False), item.get('pinks', False))
+            piece, fit = extract(sheet, soft, item)
             if item.get('fit'):
                 FITS[item['fit']](piece)
             colours = item.get('colours', [])
@@ -240,6 +287,7 @@ if __name__ == '__main__':
             # comes from the same ramps and the same reds, blues and blacks turn up everywhere.
             for colour in colours:
                 names = colour if isinstance(colour, tuple) else (colour,)
-                repaint(piece, item['paint'], names, RAMPS).save(f"{OUT}/{item['id']}--{names[-1]}.png")
+                shown = piece if colour == item.get('drawn') else repaint(piece, item['paint'], names, RAMPS)
+                shown.save(f"{OUT}/{item['id']}--{names[-1]}.png")
             count = sum(n for n, c in piece.getcolors(99999) if c[3])
             print(f"{item['id']}: {count} pixels, outline fit {fit:.0%}")

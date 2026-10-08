@@ -13,6 +13,7 @@ import {
   defaults,
   INTERVIEW_SPARKS,
   LEVEL_SPARKS,
+  STEP_SPARKS,
   maneSize,
   owns,
   sparks,
@@ -127,10 +128,11 @@ export default function WardrobeScreen() {
             <h2 className={styles.subheading}>{lines.wardrobe.earnHeading}</h2>
             <ul className={styles.earn}>
               <li>{lines.wardrobe.earnLevel(LEVEL_SPARKS)}</li>
+              <li>{lines.wardrobe.earnStep(STEP_SPARKS)}</li>
               <li>{lines.wardrobe.earnCheer(CHEER_SPARKS)}</li>
               <li>{lines.wardrobe.earnInterview(INTERVIEW_SPARKS)}</li>
             </ul>
-            <p className={styles.fine}>{lines.wardrobe.earnedSoFar(purse.levels, purse.cheers, purse.interviews)}</p>
+            <p className={styles.fine}>{lines.wardrobe.earnedSoFar(purse.levels, purse.steps, purse.cheers, purse.interviews)}</p>
             <div className={styles.links}>
               <Link className="btn" href="/pride">
                 {lines.wardrobe.toPride}

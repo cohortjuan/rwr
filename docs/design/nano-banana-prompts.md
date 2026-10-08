@@ -96,3 +96,30 @@ Every cell is the attached lion, unchanged, wearing ONE item:
 
 Items that come in several colours in the game are asked for in bright red. The other colours
 are made from that one.
+
+## One piece on its own: the puffer vest
+
+The vest on sheet 3 came out as a box over his whole front, so it is not in the game yet. A
+single piece drawn large cuts out more cleanly than one cell of a sheet. Upload
+`docs/design/accessory-base.png`, and the green-vest picture as a second image for the fit.
+Save the result as `docs/design/incoming/puffer-vest.png`.
+
+```
+Edit the first image. Add ONE thing to the lion cub: a black puffer vest.
+
+The fit is the point. Copy the way the green vest sits in the second image:
+- It covers only his shoulders and upper chest, like a bib with a collar, with a V at the neck.
+- It comes down to a point between his two front legs.
+- It wraps a little way round each side of his body.
+- BOTH FRONT LEGS AND PAWS ARE IN FRONT OF THE VEST AND FULLY VISIBLE. The vest does not
+  cover his legs, his paws, his belly or his back legs.
+- Quilted puffer panels, a zip down the middle, a tiny paw-print badge on one side.
+
+Rules:
+- Use the lion in the FIRST image. Do not use the lion in the second image.
+- Change nothing else. Do not redraw, move, resize or recolour the lion or his tail.
+- Keep the background flat pure magenta (#FF00FF). No shadows, no floor, no text.
+- Pixel art at the same pixel size as the lion, with a dark outline. The thinnest line is one
+  lion pixel wide. No anti-aliasing, no blur.
+- No logos or lettering. No magenta or hot pink on the vest.
+```

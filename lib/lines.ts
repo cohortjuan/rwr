@@ -285,8 +285,9 @@ export const lines = {
     earnCheer: (n: number) => `A cheer from a friend in your pride: +${n}, once per friend per day.`,
     earnInterview: (n: number) => `Landing a job interview: +${n}. Log it under MY PRIDE.`,
     earnLevel: (n: number) => `Walking a level with Todah and marking your map: +${n} each.`,
-    earnedSoFar: (levels: number, cheers: number, interviews: number) =>
-      `So far: ${levels} ${levels === 1 ? 'level' : 'levels'}, ${cheers} ${cheers === 1 ? 'cheer' : 'cheers'} and ${interviews} ${interviews === 1 ? 'interview' : 'interviews'}.`,
+    earnStep: (n: number) => `Doing a real-world trail step: +${n} each.`,
+    earnedSoFar: (levels: number, steps: number, cheers: number, interviews: number) =>
+      `So far: ${levels} ${levels === 1 ? 'level' : 'levels'}, ${steps} ${steps === 1 ? 'trail step' : 'trail steps'}, ${cheers} ${cheers === 1 ? 'cheer' : 'cheers'} and ${interviews} ${interviews === 1 ? 'interview' : 'interviews'}.`,
     tryOn: 'TRY ON',
     tryOff: 'TAKE OFF',
     tryNote: 'Guests can try any piece on. To keep one, sign up and earn it.',
@@ -298,7 +299,7 @@ export const lines = {
       shades: 'SHADES AND GLASSES',
       ears: 'EARS',
       neck: 'NECK',
-      body: 'JACKETS AND VESTS',
+      body: 'JACKETS',
       bag: 'BAGS',
       feet: 'SHOES',
       outfit: 'TRANSFORMATIONS',
@@ -307,7 +308,7 @@ export const lines = {
       fur: 'Fur changes the coat only. The mane keeps its own colour, so to match a coat, pick the mane of the same name.',
       mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1. Every coat has a mane of the same name that completes its set.',
       hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your sneakers, your bag, or nothing at all.',
-      outfit: 'A transformation changes the whole lion. It has its own mane, so yours rests while you wear it. More about the shishi on the ABOUT page.',
+      outfit: 'A transformation changes the whole lion and is worn alone: while it is on, your other pieces wait in the wardrobe. More about the shishi on the ABOUT page.',
     },
     colourLabel: (name: string) => `Colour: ${name}`,
     colours: {
@@ -324,6 +325,7 @@ export const lines = {
       grey: 'grey',
       brown: 'brown',
       gold: 'gold',
+      yellow: 'yellow',
       silver: 'silver',
       rose: 'rose gold',
       sunset: 'sunset',
@@ -364,7 +366,6 @@ export const lines = {
       'head-bandana': 'Silk bandana',
       'shield-shades': 'Shield shades',
       'hoop-earrings': 'Hoop earrings',
-      'puffer-vest': 'Puffer vest',
       'aviator-jacket': 'Aviator jacket',
       'indigo-jacket': 'Indigo jacket',
       'micro-bag': 'Micro bag',
@@ -588,6 +589,7 @@ export const lines = {
       title: 'THE SHISHI',
       body: [
         'One outfit turns your lion into a shishi. Guardian lions stand in pairs at gates and temples across East Asia: shi in China, where they come from, and shishi or komainu in Japan. In the lion dance, a shishi chases off bad luck and brings in good.',
+        'Its four colours are the dance\'s own. Red, yellow and black are the three lions of the southern Chinese dance, named for the sworn brothers Guan Gong, Liu Bei and Zhang Fei. Green is the cloth of the Japanese lion dance, shishi-mai.',
         'Todah is a lion, and this one is here as a salute to those lions, not as a joke at their expense. If we have drawn or described it badly, we would like to be told.',
       ],
     },

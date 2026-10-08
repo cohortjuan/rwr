@@ -124,9 +124,12 @@ function composeLion(
   picture: LetterPicture,
 ): HTMLCanvasElement {
   const { canvas, context } = sheet(sprite.width * 4 + 1, Math.round(((GRID.height + HEADROOM) * sprite.width * 4) / GRID.width))
-  const worn = picture.wearing
+  const chosen = picture.wearing
     .map(parseToken)
     .filter((entry): entry is { item: Accessory, variant?: Variant } => entry !== undefined)
+  // A transformation is worn alone: while it is on, only it and the coat are drawn.
+  const alone = chosen.some((entry) => entry.item.alone)
+  const worn = alone ? chosen.filter((entry) => entry.item.alone || entry.item.category === 'fur') : chosen
   const fur = worn.find((entry) => entry.item.category === 'fur')?.item
   const maneColour = worn.find((entry) => entry.item.category === 'mane')?.item.mane
 

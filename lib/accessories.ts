@@ -11,8 +11,10 @@ import { slotLevel, slots } from '@/lib/upgrades'
 
 // The wardrobe: accessories the lion can wear, one from each category at a time.
 //
-// Sparks buy them. Sparks come from walking a level of the interview, from encouragement (a
-// cheer from a friend), and from landing a job interview, never from money. A few pieces are gifts for progress instead.
+// Sparks buy them. Sparks come from walking a level of the interview, from doing a real-world
+// trail step, from encouragement (a cheer from a friend), and from landing a job interview,
+// never from money. Prices are set so that the four levels alone (20 sparks) buy a few pieces
+// and a player who also does their trail steps can dress the lion head to foot. A few pieces are gifts for progress instead.
 //
 // Buying never changes how grown the lion looks. A mane colour changes only the mane's
 // colour: its size comes from the Mane upgrade's level (see maneSize).
@@ -64,6 +66,8 @@ export type Accessory = {
   image?: boolean
   // A whole costume with a mane of its own, so the lion's grown mane is not drawn under it.
   hidesMane?: boolean
+  // Worn by itself: while this is on, nothing else the lion is wearing is drawn.
+  alone?: boolean
 }
 
 // Cells of headroom above the sprite, for hats and the mane's crest.
@@ -72,6 +76,8 @@ export const GRID = { width: 51, height: 58 }
 
 export const CHEER_SPARKS = 1
 export const INTERVIEW_SPARKS = 25
+// A real-world trail step done (see lib/compass.ts): the kind of effort sparks are for.
+export const STEP_SPARKS = 3
 // Walking a level of the interview, once its claim is marked on the trail map.
 export const LEVEL_SPARKS = 5
 
@@ -150,18 +156,18 @@ const mane = (id: string, price: number, colours: readonly [string, string]): Ac
 // stays one colour family from highlight to shadow.
 const furs: Accessory[] = [
   { id: 'golden', category: 'fur', price: 0 },
-  { id: 'snow', category: 'fur', price: 25, filter: 'grayscale(1) brightness(1.35) contrast(0.9)' },
-  { id: 'shadow', category: 'fur', price: 25, filter: 'grayscale(0.85) brightness(0.55) contrast(1.15)' },
-  { id: 'ember', category: 'fur', price: 25, filter: 'hue-rotate(-22deg) saturate(1.5)' },
-  { id: 'rose', category: 'fur', price: 25, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
-  { id: 'sky', category: 'fur', price: 35, filter: 'hue-rotate(170deg) saturate(0.9)' },
+  { id: 'snow', category: 'fur', price: 8, filter: 'grayscale(1) brightness(1.35) contrast(0.9)' },
+  { id: 'shadow', category: 'fur', price: 8, filter: 'grayscale(0.85) brightness(0.55) contrast(1.15)' },
+  { id: 'ember', category: 'fur', price: 8, filter: 'hue-rotate(-22deg) saturate(1.5)' },
+  { id: 'rose', category: 'fur', price: 8, filter: 'hue-rotate(-60deg) saturate(1.1) brightness(1.05)' },
+  { id: 'sky', category: 'fur', price: 10, filter: 'hue-rotate(170deg) saturate(0.9)' },
 ]
 
 // The mane that completes a fur's set: the natural mane's two colours put through that fur's
 // tint. It stands to its coat exactly as the natural mane stands to the golden coat, and it
 // matches the tail tip the tint has already coloured on the sprite.
 const setMane = (fur: Accessory): Accessory =>
-  mane(fur.id, 25, [applyFilter(NATURAL_MANE[0], fur.filter), applyFilter(NATURAL_MANE[1], fur.filter)])
+  mane(fur.id, 6, [applyFilter(NATURAL_MANE[0], fur.filter), applyFilter(NATURAL_MANE[1], fur.filter)])
 
 export const accessories: Accessory[] = [
   ...furs,
@@ -171,14 +177,14 @@ export const accessories: Accessory[] = [
   // belong to no set: white, and two cool colours that sit opposite the warm coats.
   { id: 'mane-natural', category: 'mane', price: 0, mane: NATURAL_MANE },
   ...furs.filter((fur) => fur.filter).map(setMane),
-  mane('white', 25, tone.white),
-  mane('purple', 25, tone.purple),
-  mane('teal', 25, tone.teal),
+  mane('white', 6, tone.white),
+  mane('purple', 6, tone.purple),
+  mane('teal', 6, tone.teal),
 
   {
     id: 'cap',
     category: 'hat',
-    price: 25,
+    price: 6,
     variants: options(['red', 'blue', 'green', 'black'], (main, shade) => ({ R: main, D: shade })),
     art: [
       {
@@ -199,30 +205,7 @@ export const accessories: Accessory[] = [
       },
     ],
   },
-  {
-    id: 'beanie',
-    category: 'hat',
-    price: 25,
-    variants: options(['blue', 'red', 'green', 'purple'], (main) => ({ B: main })),
-    art: [
-      {
-        x: 15,
-        y: -2,
-        rows: [
-          '.........WWW.........',
-          '........WWWWW........',
-          '......BBBBBBBBB......',
-          '....BBBBBBBBBBBBB....',
-          '..BBBBBBBBBBBBBBBBB..',
-          '.BBBBBBBBBBBBBBBBBBB.',
-          'BBBBBBBBBBBBBBBBBBBBB',
-          'BWBBWBBWBBWBBWBBWBBWB',
-          'BWBBWBBWBBWBBWBBWBBWB',
-        ],
-        palette: { B: tone.blue[0], W: WHITE },
-      },
-    ],
-  },
+  { id: 'beanie', category: 'hat', price: 5, image: true, variants: shades(['blue', 'red', 'green', 'purple', 'black']) },
   {
     id: 'explorer',
     category: 'hat',
@@ -294,7 +277,7 @@ export const accessories: Accessory[] = [
   {
     id: 'shades',
     category: 'shades',
-    price: 20,
+    price: 6,
     variants: [
       { id: 'black', swatch: INK, palette: { L: INK } },
       { id: 'brown', swatch: '#5a3a22', palette: { L: '#5a3a22' } },
@@ -303,167 +286,44 @@ export const accessories: Accessory[] = [
     ],
     art: [{ x: 11, y: 14, rows: shadesRows, palette: { F: INK, L: INK, W: WHITE } }],
   },
+  { id: 'aviators', category: 'shades', price: 8, image: true, variants: shades(['silver', 'white', 'pink', 'teal']) },
   {
-    // A light frame. (A gold frame vanished into the fur.)
-    id: 'aviators',
-    category: 'shades',
-    price: 30,
-    variants: options(['silver', 'white', 'pink', 'teal'], (main) => ({ F: main })),
-    art: [{ x: 11, y: 14, rows: shadesRows, palette: { F: tone.silver[0], L: INK, W: WHITE } }],
-  },
-  {
+    // Lenses that fade through three colours.
     id: 'sunset',
     category: 'shades',
-    price: 30,
+    price: 8,
+    image: true,
     variants: [
-      { id: 'sunset', swatch: '#e84fb0', palette: { A: '#4fd8e8', B: '#7b3fe4', C: '#e84fb0' } },
-      { id: 'fire', swatch: '#f08a2a', palette: { A: '#ffe08a', B: '#f08a2a', C: '#c83e52' } },
-      { id: 'ocean', swatch: '#3f6fd8', palette: { A: '#7fe0d0', B: '#3f6fd8', C: '#27468f' } },
-    ],
-    art: [
-      {
-        x: 11,
-        y: 14,
-        rows: [
-          'KKKKKKKKKKKKKKKKKKKKKKKKKKK',
-          'KAAAAAAAAK.......KAAAAAAAAK',
-          'KAWWAAAAAK.......KAWWAAAAAK',
-          'KAAAAAAAAK.......KAAAAAAAAK',
-          'KBBBBBBBBK.......KBBBBBBBBK',
-          'KBBBBBBBBK.......KBBBBBBBBK',
-          'KCCCCCCCCK.......KCCCCCCCCK',
-          '.KKKKKKKK.........KKKKKKKK.',
-        ],
-        palette: { K: INK, A: '#4fd8e8', B: '#7b3fe4', C: '#e84fb0', W: WHITE },
-      },
+      { id: 'sunset', swatch: '#e84fb0', palette: {} },
+      { id: 'fire', swatch: '#f08a2a', palette: {} },
+      { id: 'ocean', swatch: '#3f6fd8', palette: {} },
     ],
   },
-  {
-    // Eyeglasses: frames only, so the eyes show through.
-    id: 'glasses-round',
-    category: 'shades',
-    price: 20,
-    variants: options(['black', 'brown', 'blue', 'white'], (main) => ({ F: main })),
-    art: [
-      {
-        x: 11,
-        y: 14,
-        rows: [
-          '..FFFFFF...........FFFFFF..',
-          '.F......F.........F......F.',
-          'F........FFFFFFFFF........F',
-          'F........F.......F........F',
-          'F........F.......F........F',
-          'F........F.......F........F',
-          '.F......F.........F......F.',
-          '..FFFFFF...........FFFFFF..',
-        ],
-        palette: { F: tone.black[0] },
-      },
-    ],
-  },
-  {
-    id: 'glasses-square',
-    category: 'shades',
-    price: 20,
-    variants: options(['red', 'blue', 'green', 'black'], (main) => ({ F: main })),
-    art: [
-      {
-        x: 11,
-        y: 14,
-        rows: [
-          'FFFFFFFFFF.......FFFFFFFFFF',
-          'F........F.......F........F',
-          'F........FFFFFFFFF........F',
-          'F........F.......F........F',
-          'F........F.......F........F',
-          'F........F.......F........F',
-          'F........F.......F........F',
-          'FFFFFFFFFF.......FFFFFFFFFF',
-        ],
-        palette: { F: tone.red[0] },
-      },
-    ],
-  },
+  // Eyeglasses are frames only, so his eyes show through and still blink.
+  { id: 'glasses-round', category: 'shades', price: 5, image: true, variants: shades(['black', 'brown', 'blue', 'white']) },
+  { id: 'glasses-square', category: 'shades', price: 5, image: true, variants: shades(['red', 'blue', 'green', 'black']) },
 
-  {
-    id: 'bandana',
-    category: 'neck',
-    price: 0,
-    gift: 'quest',
-    variants: options(['teal', 'red', 'purple', 'blue'], (main) => ({ T: main })),
-    art: [
-      {
-        x: 12,
-        y: 31,
-        rows: [
-          'TTTTTTTTTTTTTTTTTTTTTTTTTTT',
-          '.TTTTWTTTTTTTWTTTTTTTWTTTT.',
-          '...TTTTTTTTTTTTTTTTTTTTT...',
-          '.....TTTTTTTTWTTTTTTTT.....',
-          '.......TTTTTTTTTTTTT.......',
-          '.........TTTTWTTTT.........',
-          '...........TTTTT...........',
-          '.............T.............',
-        ],
-        palette: { T: tone.teal[0], W: WHITE },
-      },
-    ],
-  },
-  {
-    id: 'scarf',
-    category: 'neck',
-    price: 20,
-    variants: options(['red', 'blue', 'green', 'purple'], (main, shade) => ({ R: main, D: shade })),
-    art: [
-      {
-        x: 12,
-        y: 31,
-        rows: [
-          '.RRRRRRRRRRRRRRRRRRRRRRRRR.',
-          'RRDRRDRRDRRDRRDRRDRRDRRDRRR',
-          '.RRRRRRRRRRRRRRRRRRRRRRRRR.',
-          '................RRRR.......',
-          '................RDRR.......',
-          '................RRRR.......',
-          '................R.RR.......',
-        ],
-        palette: { R: tone.red[0], D: tone.red[1] },
-      },
-    ],
-  },
-  {
-    id: 'bow-tie',
-    category: 'neck',
-    price: 20,
-    variants: options(['purple', 'red', 'black', 'blue'], (main) => ({ P: main })),
-    art: [
-      {
-        x: 20,
-        y: 32,
-        rows: ['PP.......PP', 'PPPP...PPPP', 'PPPPPKPPPPP', 'PPPP...PPPP', 'PP.......PP'],
-        palette: { P: tone.purple[0], K: INK },
-      },
-    ],
-  },
+  { id: 'bandana', category: 'neck', price: 0, gift: 'quest', image: true, variants: shades(['teal', 'red', 'purple', 'blue']) },
+  { id: 'scarf', category: 'neck', price: 5, image: true, variants: shades(['red', 'blue', 'green', 'purple', 'black']) },
+  { id: 'bow-tie', category: 'neck', price: 4, image: true, variants: shades(['purple', 'red', 'black', 'blue']) },
   {
     // A gold chain with a lion's head on the pendant.
     id: 'chain',
     category: 'neck',
-    price: 35,
+    price: 18,
     needsPower: 15,
     image: true,
     variants: shades(['gold', 'silver', 'rose']),
     sparkles: [{ x: 26, y: 42 }],
   },
-  { id: 'cuban-chain', category: 'neck', price: 35, image: true, variants: shades(['silver', 'gold', 'rose', 'black']) },
+  { id: 'cuban-chain', category: 'neck', price: 15, image: true, variants: shades(['silver', 'gold', 'rose', 'black']) },
 
-  { id: 'lion-cap', category: 'hat', price: 30, image: true, variants: shades(['black', 'red', 'blue', 'green', 'white']) },
+  { id: 'lion-cap', category: 'hat', price: 7, image: true, variants: shades(['black', 'red', 'blue', 'green', 'white']) },
   {
     // Two colours each: the pattern and its ground.
     id: 'head-bandana',
     category: 'hat',
-    price: 25,
+    price: 4,
     image: true,
     variants: [
       { id: 'blue', swatch: tone.gold[0], palette: {} },
@@ -473,24 +333,32 @@ export const accessories: Accessory[] = [
       { id: 'black', swatch: tone.black[0], palette: {} },
     ],
   },
-  { id: 'shield-shades', category: 'shades', price: 30, image: true, variants: shades(['black', 'blue', 'red', 'teal']) },
-  { id: 'hoop-earrings', category: 'ears', price: 25, image: true, variants: shades(['gold', 'silver', 'rose']) },
+  { id: 'shield-shades', category: 'shades', price: 9, image: true, variants: shades(['black', 'blue', 'red', 'teal']) },
+  { id: 'hoop-earrings', category: 'ears', price: 8, image: true, variants: shades(['gold', 'silver', 'rose']) },
 
-  { id: 'puffer-vest', category: 'body', price: 40, image: true, variants: shades(['black', 'red', 'blue', 'green', 'purple', 'white']) },
-  { id: 'aviator-jacket', category: 'body', price: 45, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
-  { id: 'indigo-jacket', category: 'body', price: 40, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
-  { id: 'micro-bag', category: 'bag', price: 30, image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
-  { id: 'sneakers', category: 'feet', price: 30, image: true, variants: shades(['white', 'black', 'red', 'blue', 'green']) },
+  { id: 'aviator-jacket', category: 'body', price: 15, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
+  { id: 'indigo-jacket', category: 'body', price: 12, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
+  { id: 'micro-bag', category: 'bag', price: 10, image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
+  { id: 'sneakers', category: 'feet', price: 10, image: true, variants: shades(['white', 'black', 'red', 'blue', 'green']) },
 
   {
     // A transformation, not a piece: the whole lion redrawn as a shishi, the guardian lion of
-    // East Asia. It has its own curled mane.
+    // East Asia. It has its own curled mane and is worn alone, with nothing else on top. Its
+    // colours are the lion dance's own: red, gold and black are the three lions of the southern
+    // Chinese dance, and green is the cloth of the Japanese one.
     id: 'shishi',
     category: 'outfit',
-    price: 60,
+    price: 30,
     needsPower: 20,
     image: true,
     hidesMane: true,
+    alone: true,
+    variants: [
+      { id: 'red', swatch: tone.red[0], palette: {} },
+      { id: 'yellow', swatch: '#f0b400', palette: {} },
+      { id: 'black', swatch: tone.black[0], palette: {} },
+      { id: 'green', swatch: tone.green[0], palette: {} },
+    ],
   },
 ]
 
@@ -534,15 +402,17 @@ export function sparks(progress: Progress): {
   cheers: number
   interviews: number
   levels: number
+  steps: number
   earned: number
   balance: number
 } {
   const cheers = countedCheers(progress)
   const interviews = progress.outreach.filter((entry) => entry.kind === 'interview').length
   const levels = progress.levelsDone.length
-  const earned = cheers * CHEER_SPARKS + interviews * INTERVIEW_SPARKS + levels * LEVEL_SPARKS
+  const steps = progress.stepsDone.length
+  const earned = cheers * CHEER_SPARKS + interviews * INTERVIEW_SPARKS + levels * LEVEL_SPARKS + steps * STEP_SPARKS
   const spent = progress.bought.reduce((sum, id) => sum + (byId.get(id)?.price ?? 0), 0)
-  return { cheers, interviews, levels, earned, balance: Math.max(0, earned - spent) }
+  return { cheers, interviews, levels, steps, earned, balance: Math.max(0, earned - spent) }
 }
 
 function giftEarned(item: Accessory, progress: Progress, others: Progress[]): boolean {
