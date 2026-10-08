@@ -118,3 +118,144 @@
 .confirm::backdrop {
   background: rgba(15, 12, 41, 0.75);
 }
+
+/* Hold to roar: a wide button that fills from the left while it is held. */
+.hold {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 64px;
+  margin: 6px 0 8px;
+  padding: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background: var(--cream);
+  border: 4px solid var(--ink);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.meter,
+.meterOn {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-bright) 70%, #fff3c4 100%);
+  /* Let go early and it drains quickly. */
+  transition: width 0.25s linear;
+}
+
+.meterOn {
+  width: 100%;
+  /* Keep in step with HOLD_MS in RoarScreen.tsx. */
+  transition: width 1.5s linear;
+}
+
+.holdLabel {
+  position: relative;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.85rem;
+}
+
+.holdHint {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+/* The ground trembles while the roar builds. */
+.rumble {
+  animation: rumble 0.12s steps(2) infinite;
+}
+
+@keyframes rumble {
+  0% {
+    transform: translate(1px, 0);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  100% {
+    transform: translate(0, -1px);
+  }
+}
+
+/* Sunrise: light floods up from the horizon once, then clears. */
+.sunrise {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 90% at 50% 110%, #fff3c4 0%, #ffe08a 22%, #f2c14e 40%, rgba(242, 193, 78, 0) 72%);
+  animation: sunrise 2.6s ease-out forwards;
+}
+
+@keyframes sunrise {
+  0% {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+}
+
+/* The credits. The window can always be scrolled by hand: the roll is extra. */
+.creditsPanel {
+  margin-top: 18px;
+}
+
+.credits {
+  height: 260px;
+  overflow-y: auto;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.credits dl {
+  margin: 0;
+}
+
+.roll {
+  animation: roll 26s linear;
+}
+
+@keyframes roll {
+  from {
+    transform: translateY(260px);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.credit {
+  margin: 0 0 18px;
+}
+
+.credit dt {
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.55rem;
+  color: var(--gold-bright);
+}
+
+.credit dd {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.end {
+  margin-top: 26px !important;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem !important;
+  color: var(--gold-bright);
+}
