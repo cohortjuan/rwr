@@ -55,21 +55,114 @@ def cut_out(img):
             continue
         clear[y][x] = True
         queue.extend(((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)))
-    # The fringe: JPEG leaves a smear just outside the outline, tan next to the background and
-    # paler behind it. It is at most two pixels deep, so it is peeled in two steps and no more:
-    # first anything lighter than the outline's browns that touches the background, then only
-    # the pale pixels that the first step uncovered. The outline's own dark and mid browns stop it.
-    touches = lambda x, y: any(
-        0 <= x + dx < w and 0 <= y + dy < h and clear[y + dy][x + dx] for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-    )
-    removed = 0
-    for limit in (400, 560):
-        fringe = [(x, y) for y in range(h) for x in range(w) if not clear[y][x] and sum(p[x, y]) >= limit and touches(x, y)]
-        removed += len(fringe)
-        for x, y in fringe:
-            clear[y][x] = True
-    print(f'fringe pixels peeled: {removed}')
     return clear
+
+
+STEPS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+
+def outline(lion):
+    """Leaves nothing outside the dark outline, and no gap in it.
+
+    JPEG smears a pale-to-tan fringe just outside the line, and here and there the line itself
+    came through brown instead of dark. Working from the edge inwards:
+    - a patch of fringe that the dark line already separates from the lion is removed whole,
+    - where a lighter pixel is all that stands between the lion's inside and the background,
+      it is part of the line that lost its colour, so it is made dark,
+    - a loose strand that hangs off such a pixel is removed.
+    It repeats until only dark pixels face the background.
+    """
+    w, h = lion.size
+    px = lion.load()
+    ink = min((px[x, y] for y in range(h) for x in range(w) if px[x, y][3]), key=lambda c: sum(c[:3]))
+    solid = lambda x, y: 0 <= x < w and 0 <= y < h and px[x, y][3] > 0
+    dark = lambda x, y: sum(px[x, y][:3]) < 200
+    removed = sealed = 0
+    while True:
+        # How far each pixel is from the background, counted in steps.
+        depth = {}
+        ring = [(x, y) for y in range(h) for x in range(w) if solid(x, y) and any(not solid(x + dx, y + dy) for dx, dy in STEPS)]
+        level = 1
+        while ring:
+            for spot in ring:
+                depth[spot] = level
+            ring = list({(x + dx, y + dy) for x, y in ring for dx, dy in STEPS if solid(x + dx, y + dy) and (x + dx, y + dy) not in depth})
+            level += 1
+        facing = [(x, y) for (x, y), d in depth.items() if d == 1 and not dark(x, y)]
+        if not facing:
+            break
+        # Patches of lighter pixels joined edge to edge.
+        patch_of, patches = {}, []
+        for start in ((x, y) for y in range(h) for x in range(w) if solid(x, y) and not dark(x, y)):
+            if start in patch_of:
+                continue
+            patch, queue = [], [start]
+            patch_of[start] = len(patches)
+            while queue:
+                x, y = queue.pop()
+                patch.append((x, y))
+                for dx, dy in STEPS:
+                    nxt = (x + dx, y + dy)
+                    if solid(*nxt) and not dark(*nxt) and nxt not in patch_of:
+                        patch_of[nxt] = len(patches)
+                        queue.append(nxt)
+            patches.append(patch)
+        # A patch that reaches well inside is part of the lion. One that does not is fringe.
+        inside = [any(depth[spot] >= 4 for spot in patch) for patch in patches]
+        for x, y in facing:
+            if not inside[patch_of[(x, y)]]:
+                px[x, y] = (0, 0, 0, 0)
+                removed += 1
+            elif any(solid(x + dx, y + dy) and not dark(x + dx, y + dy) and depth[(x + dx, y + dy)] > 1 for dx, dy in STEPS):
+                px[x, y] = ink
+                sealed += 1
+            else:
+                px[x, y] = (0, 0, 0, 0)
+                removed += 1
+    print(f'outline: {removed} pixels shaved off outside it, {sealed} gaps in it closed')
+
+
+def tail(canvas):
+    """Gives him his tail back. The sheet's cub was drawn without one.
+
+    It comes up from behind his right hip and ends in a darker tuft beside his shoulder, where
+    the first Todah carried his. It is painted only on empty pixels, so his body stays in
+    front of it, and it gets the same dark outline as the rest of him.
+    """
+    px = canvas.load()
+    w, h = canvas.size
+    shades = sorted({px[x, y] for y in range(h) for x in range(w) if px[x, y][3]}, key=lambda c: sum(c[:3]))
+    ink, tuft, shade, fur, light = shades[0], shades[1], shades[2], shades[-3], shades[-2]
+    empty = lambda x, y: 0 <= x < w and 0 <= y < h and px[x, y][3] == 0
+    painted = set()
+
+    def dab(x, y, colour):
+        if empty(x, y) or (x, y) in painted:
+            px[x, y] = colour
+            painted.add((x, y))
+
+    # The tail itself: a curve three pixels thick, lit on the upper side.
+    start, bend, end = (70.0, 72.0), (84.0, 71.0), (82.0, 57.0)
+    for step in range(81):
+        t = step / 80
+        cx = (1 - t) ** 2 * start[0] + 2 * (1 - t) * t * bend[0] + t ** 2 * end[0]
+        cy = (1 - t) ** 2 * start[1] + 2 * (1 - t) * t * bend[1] + t ** 2 * end[1]
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                dab(round(cx) + dx, round(cy) + dy, shade if (dx == 1 and t > 0.45) or (dy == 1 and t <= 0.45) else fur)
+
+    # The tuft: a flame shape leaning a little outward, darker than his coat.
+    rows = {-7: (0, 0), -6: (-1, 1), -5: (-2, 1), -4: (-2, 2), -3: (-3, 2), -2: (-3, 3), -1: (-3, 3), 0: (-3, 3), 1: (-2, 3), 2: (-2, 2), 3: (-1, 1)}
+    tx, ty = 82, 52
+    for dy, (left, right) in rows.items():
+        for dx in range(left, right + 1):
+            dab(tx + dx, ty + dy, shade if dx <= left + 1 and -5 <= dy <= 0 else tuft)
+    dab(tx - 1, ty - 3, light)
+
+    # The outline: any empty pixel that touches the new tail.
+    for x, y in [(x + dx, y + dy) for x, y in painted for dx, dy in STEPS]:
+        if empty(x, y):
+            px[x, y] = ink
 
 
 def main(sheet_path, out_path):
@@ -87,6 +180,8 @@ def main(sheet_path, out_path):
             if not clear[y][x]:
                 dst[x, y] = src[x, y] + (255,)
     lion = lion.crop(lion.getbbox())
+    outline(lion)
+    lion = lion.crop(lion.getbbox())
 
     # A lone dark pixel with no dark neighbour is a smear, not a line.
     px = lion.load()
@@ -101,6 +196,7 @@ def main(sheet_path, out_path):
 
     canvas = Image.new('RGBA', CANVAS, (0, 0, 0, 0))
     canvas.alpha_composite(lion, ((CANVAS[0] - lion.width) // 2, CANVAS[1] - lion.height))
+    tail(canvas)
     canvas.save(out_path)
     print(f'{out_path}: lion {lion.width}x{lion.height} on {CANVAS[0]}x{CANVAS[1]}, {len(lion.getcolors(9999)) - 1} colours')
 

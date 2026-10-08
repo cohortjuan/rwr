@@ -53,7 +53,7 @@ Cells 5 to 11 are the same cub redrawn in a new pose, at the same size on the sh
 10. Body still side-on facing right, head turned to look straight at the viewer.
 11. Three-quarter view: turning toward the viewer and lowering into a sit.
 12. No change. An exact copy.
-In the side views he has a tail with a darker tuft. Keep his head the same size in every cell.
+He has a tail with a darker tuft in every view. Keep his head the same size in every cell.
 ```
 
 ## Sheet 2: the wardrobe we have, redrawn (`wardrobe-a.png`)
