@@ -57,6 +57,17 @@ prophet: nothing in the game promises a job or an outcome.
   becomes one claim and its evidence. The player checks and corrects that before it is marked
   on the trail map. Cause also asks the player to pick the needs they care about, and Coin
   never estimates pay. Without AI consent the same levels run from scripted questions
+- The Crossroads (`/crossroads`): after the four levels, the circles are laid side by side,
+  Todah names what lines up and one gap, and the player sets their own main goal. Todah never
+  names a career
+- The trail map is filled in by walking the levels. Once a circle has a claim the player can
+  edit its words and evidence there
+- Finishing a level earns 5 sparks, and the skill named in Craft can be added to the Claws
+  upgrade in one press
+- Guests can try any wardrobe piece on. Owning one still needs an account
+- Quest 1 says plainly what the game is: the career version of Ikigai, a Western picture
+  about ten years old, and not the Japanese idea itself, which is mostly about small daily
+  things and rarely about a job. It also says what the AI does: it asks, the player decides
 - Fur and mane come in matching sets built on colour theory: every coat has a mane of the same
   name, a deeper and stronger step from the coat's own colour, the way the natural mane sits
   with the golden coat. The two are separate pieces, so it takes one of each to match, and any
@@ -74,7 +85,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
-Not built yet: crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
+Not built yet: the roadmap, crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
 the database.
 
 ## Technologies

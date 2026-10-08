@@ -13,7 +13,7 @@ import {
   trailSteps,
   type TrailStep,
 } from '@/lib/compass'
-import { levels, liveLevels, type LiveLevel } from '@/lib/levels'
+import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
 import { saveProgress, useLionText, useProgress, type Circle } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
@@ -138,6 +138,9 @@ export default function TrailMapScreen() {
             const entry = progress.compass[circle]
             const text = lines.map.circles[circle]
             const hasClaim = entry.claim.trim().length > 0
+            // The words and ticks can be changed here once the level has put something on the
+            // map. (Still open while the claim is being retyped, so the box does not vanish.)
+            const opened = hasClaim || progress.levelsDone.includes(circle)
             return (
               <section key={circle} className="panel">
                 <h2 className={styles.circleHeading}>
@@ -146,13 +149,12 @@ export default function TrailMapScreen() {
                 </h2>
                 <p className={styles.circleMeaning}>{levelOf(circle).circle}</p>
 
-                {liveLevels.includes(circle as LiveLevel) && (
-                  <p>
-                    <Link className="btn btn-quiet" href={`/level/${circle}`}>
-                      {lion(lines.level.fromMap)}
-                    </Link>
-                  </p>
-                )}
+                <p>
+                  <Link className={hasClaim ? 'btn btn-quiet' : 'btn'} href={`/level/${circle}`}>
+                    {lion(hasClaim ? lines.map.walkAgain : lines.level.fromMap)}
+                  </Link>
+                </p>
+                {!opened && <p className={styles.small}>{lion(lines.map.walkFirst)}</p>}
 
                 {circle === 'heart' && questAnswers.length > 0 && (
                   <div className={styles.quotes}>
@@ -165,74 +167,87 @@ export default function TrailMapScreen() {
                   </div>
                 )}
 
-                {circle === 'cause' && (
-                  <div className={styles.needs}>
-                    <p className={styles.small}>{lines.map.needsHeading(NEEDS_MAX)}</p>
-                    <div className={styles.chips}>
-                      {needIds.map((id) => {
-                        const picked = progress.needs.includes(id)
-                        return (
-                          <button
-                            key={id}
-                            type="button"
-                            className={picked ? styles.chipOn : styles.chip}
-                            aria-pressed={picked}
-                            disabled={!picked && progress.needs.length >= NEEDS_MAX}
-                            onClick={() => toggleNeed(id)}
-                          >
-                            {lines.map.needs[id]}
-                          </button>
-                        )
-                      })}
+                {opened && (
+                  <>
+                  {circle === 'cause' && (
+                    <div className={styles.needs}>
+                      <p className={styles.small}>{lines.map.needsHeading(NEEDS_MAX)}</p>
+                      <div className={styles.chips}>
+                        {needIds.map((id) => {
+                          const picked = progress.needs.includes(id)
+                          return (
+                            <button
+                              key={id}
+                              type="button"
+                              className={picked ? styles.chipOn : styles.chip}
+                              aria-pressed={picked}
+                              disabled={!picked && progress.needs.length >= NEEDS_MAX}
+                              onClick={() => toggleNeed(id)}
+                            >
+                              {lines.map.needs[id]}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      <p className={styles.fine}>{lines.map.needsSource}</p>
                     </div>
-                    <p className={styles.fine}>{lines.map.needsSource}</p>
-                  </div>
-                )}
+                  )}
 
-                <div className="field">
-                  <label htmlFor={`claim-${circle}`}>{text.question}</label>
-                  <textarea
-                    id={`claim-${circle}`}
-                    rows={2}
-                    maxLength={300}
-                    placeholder={text.placeholder}
-                    value={entry.claim}
-                    onChange={(event) => setClaim(circle, event.target.value)}
-                  />
-                </div>
-
-                <p className={styles.small}>{hasClaim ? lines.map.evidenceHeading : lines.map.claimHint}</p>
-                <div className={styles.ticks}>
-                  {Object.entries(text.evidence).map(([id, label]) => (
-                    <Tick
-                      key={id}
-                      on={entry.evidence.includes(id)}
-                      label={label}
-                      disabled={!hasClaim}
-                      onToggle={() => toggleEvidence(circle, id)}
+                  <div className="field">
+                    <label htmlFor={`claim-${circle}`}>{text.question}</label>
+                    <textarea
+                      id={`claim-${circle}`}
+                      rows={2}
+                      maxLength={300}
+                      placeholder={text.placeholder}
+                      value={entry.claim}
+                      onChange={(event) => setClaim(circle, event.target.value)}
                     />
-                  ))}
-                </div>
-
-                {(circle === 'cause' || circle === 'coin') && (
-                  <div className={styles.sources}>
-                    <p className={styles.small}>{lines.map.outsideHeading}</p>
-                    <ul>
-                      {lines.map.sources[circle].map((source) => (
-                        <li key={source.label}>
-                          <a href={source.url} target="_blank" rel="noopener noreferrer">
-                            {source.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                    <p className={styles.fine}>{lines.map.outsideNote}</p>
                   </div>
+
+                  <p className={styles.small}>{hasClaim ? lines.map.evidenceHeading : lines.map.claimHint}</p>
+                  <div className={styles.ticks}>
+                    {Object.entries(text.evidence).map(([id, label]) => (
+                      <Tick
+                        key={id}
+                        on={entry.evidence.includes(id)}
+                        label={label}
+                        disabled={!hasClaim}
+                        onToggle={() => toggleEvidence(circle, id)}
+                      />
+                    ))}
+                  </div>
+
+                  {(circle === 'cause' || circle === 'coin') && (
+                    <div className={styles.sources}>
+                      <p className={styles.small}>{lines.map.outsideHeading}</p>
+                      <ul>
+                        {lines.map.sources[circle].map((source) => (
+                          <li key={source.label}>
+                            <a href={source.url} target="_blank" rel="noopener noreferrer">
+                              {source.label}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className={styles.fine}>{lines.map.outsideNote}</p>
+                    </div>
+                  )}
+                  </>
                 )}
               </section>
             )
           })}
         </div>
+
+        {circles.every((circle) => progress.compass[circle].claim.trim()) && (
+          <section className={`panel ${styles.steps}`}>
+            <p>{lines.map.crossroads}</p>
+            <Link className="btn" href="/crossroads">
+              {lines.map.toCrossroads}
+            </Link>
+          </section>
+        )}
 
         <section className={`panel ${styles.steps}`}>
           <h2 className={styles.circleHeading}>{lines.map.stepsHeading}</h2>

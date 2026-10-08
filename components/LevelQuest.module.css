@@ -107,3 +107,11 @@
 .sources a {
   color: var(--gold-bright);
 }
+
+.sparks {
+  margin: 0 0 14px;
+  text-align: center;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+}

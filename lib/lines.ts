@@ -81,15 +81,16 @@ export const lines = {
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
     ikigaiBrief:
-      'This trail follows Ikigai, a Japanese idea of what makes life feel worth living. For work, it sits where four things meet: what you love (Heart), what you are good at (Craft), what the world needs (Cause), and what you can be paid for (Coin).',
+      'This trail borrows from Ikigai, a Japanese word for what makes life feel worth living. In Japan that is usually something small and daily, and often not a job at all. We use the career version: four circles called Heart, Craft, Cause, and Coin.',
     ikigaiGotIt: 'GOT IT',
     ikigaiMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
     ikigaiDeep: [
-      'Ikigai (say ee-kee-guy) joins two Japanese words: iki, life, and gai, worth. In Japan it can be anything that makes a day worth getting up for, big or small. A craft, a garden, a grandchild.',
-      'The four-circle picture is a newer, Western way to draw it for careers. Where two circles overlap you get a name: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession.',
-      'Miss a circle and something feels off. Paid and skilled but not in love? Comfortable, yet empty. Loving it but unpaid? Joyful, yet broke. The middle, where all four meet, is the sweet spot people call Ikigai.',
-      `Nobody lands in the middle in one step, and that is fine. We will walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. We look for honest evidence instead of perfect answers. I am a guide, not a fortune teller, so nothing here is a promise about any job.`,
+      'Ikigai (say ee-kee-guy) joins two Japanese words: iki, life, and gai, worth. In Japan it is whatever makes a day worth getting up for. A craft, a garden, a grandchild, the first tea of the morning. It is felt in small things, and it has little to do with money or status.',
+      'The four circles are not from Japan. The picture was drawn in the West about ten years ago as a way to think about careers, and the word Ikigai was put on it later. It names the overlaps: love plus skill is Passion, love plus need is Mission, need plus pay is Vocation, skill plus pay is Profession.',
+      'The picture says that a missing circle leaves something feeling off. Paid and skilled but not in love: comfortable, yet empty. Loving it but unpaid: joyful, yet broke. That is useful for thinking about work. It is not true of Ikigai itself: plenty of what makes life worth living will never pay you, and it does not have to.',
+      'So here is the honest deal. This game is the career version. It can help you see where your work could sit closer to the middle. It cannot find your reason for living, and a job does not have to be one. What we keep from the real idea is its spirit: look at small, real moments from your own days, not big wishes.',
+      `We will walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. I ask the questions, you bring the evidence, and you decide what it means. I will never tell you what to be, and nothing here is a promise about any job.`,
     ],
     ikigaiNextPage: 'NEXT',
     ikigaiDone: 'READY',
@@ -98,7 +99,7 @@ export const lines = {
     startQuest: 'START QUEST',
     whatIsThis: 'WHAT IS THIS?',
     explain:
-      'RWR is a short game for thinking about work. We walk the four circles of Ikigai one at a time, then sketch a roadmap together. I am a guide, not a fortune teller, so nothing here is a promise about any job.',
+      'RWR is a short game for thinking about work. We walk four circles, one at a time: what you love, what you are good at, who it helps, and what it can pay. At each one I ask for real moments from your life and we mark the evidence on a map. Then you set one goal of your own. I ask and you decide: I am a guide, not a fortune teller, and I will never tell you what to be.',
     explainContinue: 'GOT IT, START QUEST',
     askName: 'What should I call you?',
     nameLabel: 'Your name or nickname',
@@ -278,8 +279,12 @@ export const lines = {
     earnHeading: 'HOW TO EARN SPARKS',
     earnCheer: (n: number) => `A cheer from a friend in your pride: +${n}, once per friend per day.`,
     earnInterview: (n: number) => `Landing a job interview: +${n}. Log it under MY PRIDE.`,
-    earnedSoFar: (cheers: number, interviews: number) =>
-      `So far: ${cheers} ${cheers === 1 ? 'cheer' : 'cheers'} and ${interviews} ${interviews === 1 ? 'interview' : 'interviews'}.`,
+    earnLevel: (n: number) => `Walking a level with Todah and marking your map: +${n} each.`,
+    earnedSoFar: (levels: number, cheers: number, interviews: number) =>
+      `So far: ${levels} ${levels === 1 ? 'level' : 'levels'}, ${cheers} ${cheers === 1 ? 'cheer' : 'cheers'} and ${interviews} ${interviews === 1 ? 'interview' : 'interviews'}.`,
+    tryOn: 'TRY ON',
+    tryOff: 'TAKE OFF',
+    tryNote: 'Guests can try any piece on. To keep one, sign up and earn it.',
     toPride: 'OPEN MY PRIDE',
     categories: { fur: 'FUR', mane: 'MANE COLOUR', hat: 'HATS', shades: 'SHADES AND GLASSES', neck: 'NECK' },
     notes: {
@@ -391,6 +396,12 @@ export const lines = {
     replaceNote: 'This replaces what your trail map says for this circle now.',
     done: (name: string, score: number, max: number) =>
       `Marked, ${name}. This circle has ${score} of ${max} evidence. Whatever the number, it is a place to start from, not a grade.`,
+    sparks: (n: number) => `+${n} SPARKS FOR THE WARDROBE`,
+    toClaws: 'ADD THIS SKILL TO CLAWS',
+    inClaws: 'ADDED TO CLAWS. OPEN UPGRADES TO GIVE IT PROOF.',
+    toCrossroads: 'ON TO THE CROSSROADS',
+    aiNote:
+      'One more thing worth checking outside your own head: how AI is changing this kind of work. I will not guess at that, and nobody can promise you an answer, but people doing the work today can tell you what has changed for them.',
     toMap: 'OPEN MY TRAIL MAP',
     toUpgrades: 'SEE LION UPGRADES',
     fromMap: 'WALK THIS LEVEL WITH TODAH',
@@ -458,6 +469,40 @@ export const lines = {
     },
   },
 
+  // The Crossroads: a look across the four circles, then the player sets their own goal.
+  // Rules that must survive edits: Todah names what he notices and hands the meaning back. He
+  // never names a career, never ranks the circles, and never promises an outcome.
+  crossroads: {
+    name: 'THE CROSSROADS',
+    intro: (name: string) =>
+      `This is the Crossroads, ${name}. Four circles, laid side by side. I will tell you what I notice. What it means is yours to say.`,
+    locked: 'The Crossroads opens once all four circles have a claim. Here is what is left to walk:',
+    walk: (level: string) => `WALK ${level}`,
+    circlesHeading: 'YOUR FOUR CIRCLES',
+    thinking: 'Todah is looking across the map...',
+    noticeHeading: 'WHAT TODAH NOTICES',
+    // Used when the AI is off or down. Built from the map alone.
+    scripted: (strongest: string, thinnest: string | null) =>
+      thinnest && thinnest !== strongest
+        ? `Your strongest evidence is in ${strongest}, and the least tested circle so far is ${thinnest}. Not tested yet is not the same as wrong. What do you make of that gap?`
+        : `Your evidence is even across the circles, with ${strongest} a little ahead. When you lay the four side by side, what do you notice?`,
+    scriptedEmpty: 'You have a claim in every circle, and none of them is tested yet. That is an honest place to stand. Which one would you most like to test first?',
+    goalHeading: 'YOUR MAIN GOAL',
+    goalIntro:
+      'Now pick one goal to walk toward. Make it something you will know you have reached, and make it yours. Todah roars only when you say it is done.',
+    goalLabel: 'My main goal',
+    goalPlaceholder: 'For example: get paid for my first bookkeeping job',
+    goalSave: 'SET MY GOAL',
+    goalChange: 'CHANGE MY GOAL',
+    goalSet: (goal: string) => `Your main goal: ${goal}`,
+    goalBlocked: 'Write the goal first. One plain sentence is plenty.',
+    done: (name: string) =>
+      `That is a goal worth walking toward, ${name}. I cannot promise where the trail leads, but I will be here when you get there. Build your lion while you walk.`,
+    toRoar: 'GO TO THE ROAR',
+    toUpgrades: 'BUILD MY LION',
+    toMap: 'BACK TO MY TRAIL MAP',
+  },
+
   // Forgotten passwords: asking for a reset link, and choosing the new password.
   reset: {
     forgot: 'Forgot password?',
@@ -506,6 +551,7 @@ export const lines = {
       '/level/craft': 'LEVEL 2',
       '/level/cause': 'LEVEL 3',
       '/level/coin': 'LEVEL 4',
+      '/crossroads': 'CROSSROADS',
       '/upgrades': 'UPGRADES',
       '/map': 'TRAIL MAP',
       '/pride': 'MY PRIDE',
@@ -525,7 +571,11 @@ export const lines = {
     intro: 'Ikigai sits where four circles meet. This map shows how much evidence you have in each one. It is a map, not a verdict: only you decide where to walk.',
     score: (score: number, max: number) => `IKIGAI EVIDENCE ${score}/${max}`,
     circleScore: (score: number, max: number) => `${score}/${max}`,
-    empty: 'Start with any circle below. Write what you believe, then tick only what is true.',
+    empty: 'Each circle is filled in by walking its level with Todah. Start with Heart.',
+    walkFirst: 'Nothing here yet. Walk this level and what you say is marked here, for you to change afterwards.',
+    walkAgain: 'WALK THIS LEVEL AGAIN',
+    crossroads: 'All four circles have a claim. The Crossroads is where you look across them and set a goal.',
+    toCrossroads: 'GO TO THE CROSSROADS',
     strongest: (circle: string) => `Strongest evidence so far: ${circle}.`,
     thinnest: (circle: string) => `Thinnest evidence so far: ${circle}.`,
     full: 'Every circle has full evidence. Walk it for a while and come back when something changes.',

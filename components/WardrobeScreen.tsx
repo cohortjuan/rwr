@@ -12,6 +12,7 @@ import {
   CHEER_SPARKS,
   defaults,
   INTERVIEW_SPARKS,
+  LEVEL_SPARKS,
   maneSize,
   owns,
   sparks,
@@ -45,12 +46,18 @@ export default function WardrobeScreen() {
   const signedIn = Boolean(account.email)
   const [loginOpen, setLoginOpen] = useState(false)
   const [status, setStatus] = useState('')
+  // What a guest is trying on: one token per group, kept only while this screen is open.
+  const [trying, setTrying] = useState<Record<string, string>>({})
 
   if (!hydrated) return <main className="screen" />
 
   const others = keptLions.map((kept) => kept.progress)
   const purse = sparks(progress)
-  const wearing = wornIds(progress, others)
+  const owned = wornIds(progress, others)
+  // A guest owns nothing, so what they see on the lion is whatever they are trying on.
+  const wearing = signedIn
+    ? owned
+    : [...owned.filter((token) => !((accessory(token)?.category ?? '') in trying)), ...Object.values(trying)]
   const mane = maneSize(progress)
   const wornIn = (category: string) => wearing.find((token) => accessory(token)?.category === category)
 
@@ -84,9 +91,24 @@ export default function WardrobeScreen() {
     setStatus(lines.wardrobe.bought(itemName(item)))
   }
 
+  // Trying on changes only what this screen shows. Nothing is owned, saved, or shared.
+  function tryOn(item: Accessory, colour?: string) {
+    playSfx('select', sound)
+    setTrying((current) => {
+      const rest = { ...current }
+      if (rest[item.category] && accessory(rest[item.category]) === item) delete rest[item.category]
+      else rest[item.category] = wornToken(item, colour)
+      return rest
+    })
+  }
+
   // Colours are free to try and to switch. The lion shows one once the piece is worn.
   function pickColour(item: Accessory, colour: string) {
     playSfx('select', sound)
+    // A piece being tried on changes colour on the lion straight away.
+    if (trying[item.category] && accessory(trying[item.category]) === item) {
+      setTrying({ ...trying, [item.category]: wornToken(item, colour) })
+    }
     saveProgress({ tones: { ...progress.tones, [item.id]: colour } })
   }
 
@@ -99,15 +121,16 @@ export default function WardrobeScreen() {
         </header>
 
         <section className={`panel ${styles.top}`}>
-          <LionAvatar className={styles.preview} wearing={wearing} mane={mane} blink />
+          <LionAvatar className={styles.preview} wearing={wearing} mane={trying.mane ? Math.max(mane, 1) : mane} blink />
           <div>
             <p className={styles.sparks}>{lines.wardrobe.sparks(purse.balance)}</p>
             <h2 className={styles.subheading}>{lines.wardrobe.earnHeading}</h2>
             <ul className={styles.earn}>
+              <li>{lines.wardrobe.earnLevel(LEVEL_SPARKS)}</li>
               <li>{lines.wardrobe.earnCheer(CHEER_SPARKS)}</li>
               <li>{lines.wardrobe.earnInterview(INTERVIEW_SPARKS)}</li>
             </ul>
-            <p className={styles.fine}>{lines.wardrobe.earnedSoFar(purse.cheers, purse.interviews)}</p>
+            <p className={styles.fine}>{lines.wardrobe.earnedSoFar(purse.levels, purse.cheers, purse.interviews)}</p>
             <div className={styles.links}>
               <Link className="btn" href="/pride">
                 {lines.wardrobe.toPride}
@@ -130,6 +153,7 @@ export default function WardrobeScreen() {
         {!signedIn && (
           <section className={`panel ${styles.account}`}>
             <p>{lines.wardrobe.accountNote}</p>
+            <p>{lines.wardrobe.tryNote}</p>
             <button type="button" className="btn" onClick={() => setLoginOpen(true)}>
               {lines.wardrobe.accountButton}
             </button>
@@ -204,7 +228,18 @@ export default function WardrobeScreen() {
                         </button>
                       )}
                       {!signedIn && defaults[item.category] !== item.id && (
-                        <p className={styles.fine}>{lines.wardrobe.accountNeeded}</p>
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-quiet"
+                            aria-pressed={worn}
+                            aria-label={`${worn ? lines.wardrobe.tryOff : lines.wardrobe.tryOn}: ${itemName(item)}`}
+                            onClick={() => tryOn(item, colour?.id)}
+                          >
+                            {worn ? lines.wardrobe.tryOff : lines.wardrobe.tryOn}
+                          </button>
+                          <p className={styles.fine}>{lines.wardrobe.accountNeeded}</p>
+                        </>
                       )}
                       {signedIn && !mine && !item.gift && (
                         <>

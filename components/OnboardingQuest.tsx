@@ -15,8 +15,8 @@ import styles from './OnboardingQuest.module.css'
 type Step = 'hello' | 'ikigai' | 'ikigaiDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
 
 // Which part of the Ikigai diagram lights up on each page of the deeper explanation:
-// the word, the overlaps, a missing circle, then the middle.
-const deepFocus: WheelFocus[] = ['all', 'overlaps', 'missing', 'center']
+// the word, the overlaps, a missing circle, the middle, then the whole trail.
+const deepFocus: WheelFocus[] = ['all', 'overlaps', 'missing', 'center', 'circles']
 
 // The live quest is a warm-up question plus two follow-ups.
 const ANSWERS_NEEDED = 3

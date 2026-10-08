@@ -99,6 +99,9 @@ export type Progress = {
   // are finished. Like the Quest 1 chat, this stays on the device.
   levelChat: Partial<Record<Circle, ChatMessage[]>>
   levelsDone: Circle[]
+  // What Todah said at the Crossroads, kept so it is asked for once. `for` is the four claims
+  // it was about: if they change, it is asked for again.
+  crossroads: { text: string, for: string } | null
   // null in every game except one a dev account has switched dev tools on for.
   dev: DevOverrides | null
 }
@@ -139,6 +142,7 @@ export const emptyProgress: Progress = {
   stepsDone: [],
   levelChat: {},
   levelsDone: [],
+  crossroads: null,
   dev: null,
 }
 

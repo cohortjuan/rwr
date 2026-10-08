@@ -31,6 +31,12 @@ flowchart LR
   form and only then is it saved to the trail map. If the AI is off, down, or returns
   anything unexpected, the level falls back to scripted questions and an empty form. All four
   levels share this one component: a level is its brief in `lib/prompts.ts` and its lines.
+- **Crossroads** (`/crossroads`, `components/CrossroadsScreen.tsx`): opens once every circle
+  has a claim. One call in `crossroads` mode sends the four claims and their evidence counts
+  and gets back a short message: what lines up, one gap, one open question. The prompt
+  forbids naming careers or giving advice. The message is saved with the claims it was about,
+  so it is asked for again only if they change. Then the player sets `goalText`, the goal the
+  roar waits on. Without the AI the message is built from the strongest and thinnest circle.
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.
@@ -41,7 +47,7 @@ flowchart LR
   real-world trail steps (2 each), and 7 from one-off milestones (finish Quest 1, set a goal,
   write all four claims, send a cheer, and the roar, worth 3). `powerParts` in
   `lib/progress.ts` holds the sum.
-- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from cheers received (1 each,
+- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from levels walked (5 each), cheers received (1 each,
   once per friend per day, only from someone in the pride) and interviews logged (25 each).
   They buy accessories, one worn per category. Guests can look but only a signed-in player
   can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the

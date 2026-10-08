@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
+import { LEVEL_SPARKS } from '@/lib/accessories'
 import { circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
 import { LEVEL_ANSWERS, liveLevels, type LiveLevel } from '@/lib/levels'
 import { lines } from '@/lib/lines'
@@ -268,6 +269,18 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
     setStep('done')
   }
 
+  // Craft is the one level whose answer is also a line on the resume: the skill named in the
+  // claim can be dropped into the Claws upgrade, where the player then gives it proof.
+  const skill = progress.compass.craft.claim.trim().replace(/^i\s*(am|'m)\s+good\s+at\s+/i, '').replace(/[.!]+$/, '')
+  const claws = progress.upgrades.claws ?? ''
+  const inClaws = skill.length > 0 && claws.toLowerCase().includes(skill.toLowerCase())
+
+  function addToClaws() {
+    if (!skill || inClaws) return
+    playSfx('select', sound)
+    saveProgress({ upgrades: { ...progress.upgrades, claws: claws.trim() ? `${claws.trim()}, ${skill}` : skill } })
+  }
+
   // Walking the level again starts a fresh talk. The map keeps what it says until the new
   // talk is marked on it.
   function again() {
@@ -481,6 +494,7 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                   <p className={styles.fine}>{lines.map.outsideNote}</p>
                 </div>
               )}
+              {circle === 'coin' && <p className={styles.small}>{lion(lines.level.aiNote)}</p>}
               {progress.compass[circle].claim.trim() && <p className={styles.small}>{lines.level.replaceNote}</p>}
               <p className={quest.notice} role="alert">
                 {notice}
@@ -500,6 +514,7 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
         {step === 'done' && (
           <>
             <p className={quest.banner}>{text.banner}</p>
+            <p className={styles.sparks}>{lines.level.sparks(LEVEL_SPARKS)}</p>
             <DialogBox
               text={[lines.level.done(name, circleScore(progress, circle), EVIDENCE_MAX), nextLevel ? '' : lines.level.allDone]
                 .filter(Boolean)
@@ -511,7 +526,17 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                   {lines.level.next(lines.level.circles[nextLevel].name)}
                 </Link>
               )}
-              <Link className={nextLevel ? 'btn btn-quiet' : 'btn'} href="/map">
+              {!nextLevel && (
+                <Link className="btn" href="/crossroads">
+                  {lines.level.toCrossroads}
+                </Link>
+              )}
+              {circle === 'craft' && skill && (
+                <button type="button" className="btn btn-quiet" disabled={inClaws} onClick={addToClaws}>
+                  {inClaws ? lines.level.inClaws : lines.level.toClaws}
+                </button>
+              )}
+              <Link className="btn btn-quiet" href="/map">
                 {lines.level.toMap}
               </Link>
               <Link className="btn btn-quiet" href="/upgrades">

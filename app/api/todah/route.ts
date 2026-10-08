@@ -16,7 +16,7 @@ const ONBOARDING_ANSWERS = 3
 // The most a claim written by the AI may run to before the player edits it.
 const CLAIM_MAX = 160
 
-const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'help']
+const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'help']
 const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
@@ -71,6 +71,23 @@ function readSummary(text: string, phase: Phase): { claim: string, evidence: str
   }
 }
 
+// The four claims sent for the Crossroads, as plain lines. Returns null unless every circle
+// has a claim of a sane length, so a half-walked trail never reaches the AI.
+function readClaims(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null) return null
+  const claims = value as Record<string, unknown>
+  const rows: string[] = []
+  for (const [index, circle] of circleOrder.entries()) {
+    const entry = claims[circle] as { claim?: unknown, evidence?: unknown } | undefined
+    if (!entry || typeof entry.claim !== 'string') return null
+    const claim = scrub(entry.claim).trim().slice(0, 300)
+    const evidence = typeof entry.evidence === 'number' ? Math.max(0, Math.min(3, Math.floor(entry.evidence))) : 0
+    if (!claim) return null
+    rows.push(`${levels[index].name} (${levels[index].circle}): "${claim}". Evidence: ${evidence} of 3.`)
+  }
+  return rows.join('\n')
+}
+
 // Only the game's own pages may call this route. It is not a full defence (headers can be
 // forged outside a browser), but it stops other websites from spending the AI quota.
 function isSameOrigin(request: Request): boolean {
@@ -99,6 +116,21 @@ export async function POST(request: Request) {
   const incoming = Array.isArray(body.messages) ? body.messages : []
   if (!incoming.every(isIncomingMessage)) return Response.json({ error: 'bad_request' }, { status: 400 })
   if (incoming.length >= SESSION_MESSAGE_CAP) return Response.json({ error: 'cap' }, { status: 429 })
+
+  // The Crossroads is one message about the four claims, with no chat behind it.
+  if (mode === 'crossroads') {
+    const claims = readClaims(body.claims)
+    if (!claims) return Response.json({ error: 'bad_request' }, { status: 400 })
+    try {
+      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
+        { role: 'user', text: `The four circles:\n${claims}` },
+      ])
+      return Response.json({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
 
   const phase = phaseOf(body.circle)
   const answers = incoming.filter((message) => message.role === 'user').length

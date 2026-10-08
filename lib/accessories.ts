@@ -11,8 +11,8 @@ import { slotLevel, slots } from '@/lib/upgrades'
 
 // The wardrobe: accessories the lion can wear, one from each category at a time.
 //
-// Sparks buy them. Sparks come from encouragement (a cheer from a friend) and from landing a
-// job interview, never from money. A few pieces are gifts for progress instead.
+// Sparks buy them. Sparks come from walking a level of the interview, from encouragement (a
+// cheer from a friend), and from landing a job interview, never from money. A few pieces are gifts for progress instead.
 //
 // Buying never changes how grown the lion looks. A mane colour changes only the mane's
 // colour: its size comes from the Mane upgrade's level (see maneSize).
@@ -67,6 +67,8 @@ export const GRID = { width: 51, height: 58 }
 
 export const CHEER_SPARKS = 1
 export const INTERVIEW_SPARKS = 25
+// Walking a level of the interview, once its claim is marked on the trail map.
+export const LEVEL_SPARKS = 5
 
 export const categories: AccessoryCategory[] = ['fur', 'mane', 'hat', 'shades', 'neck']
 // What the lion has in a category when nothing else is chosen.
@@ -495,12 +497,19 @@ export function maneSize(progress: Progress): number {
 }
 
 // Sparks earned and spent in this game. The balance never shows below zero.
-export function sparks(progress: Progress): { cheers: number, interviews: number, earned: number, balance: number } {
+export function sparks(progress: Progress): {
+  cheers: number
+  interviews: number
+  levels: number
+  earned: number
+  balance: number
+} {
   const cheers = countedCheers(progress)
   const interviews = progress.outreach.filter((entry) => entry.kind === 'interview').length
-  const earned = cheers * CHEER_SPARKS + interviews * INTERVIEW_SPARKS
+  const levels = progress.levelsDone.length
+  const earned = cheers * CHEER_SPARKS + interviews * INTERVIEW_SPARKS + levels * LEVEL_SPARKS
   const spent = progress.bought.reduce((sum, id) => sum + (byId.get(id)?.price ?? 0), 0)
-  return { cheers, interviews, earned, balance: Math.max(0, earned - spent) }
+  return { cheers, interviews, levels, earned, balance: Math.max(0, earned - spent) }
 }
 
 function giftEarned(item: Accessory, progress: Progress, others: Progress[]): boolean {

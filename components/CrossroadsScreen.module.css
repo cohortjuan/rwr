@@ -1,0 +1,73 @@
+.heading {
+  margin-bottom: 14px;
+  font-size: 0.75rem;
+  color: var(--gold-bright);
+}
+
+/* The four circles side by side on a wide screen, stacked on a phone. */
+.circles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.circles li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 3px solid var(--teal);
+  background: rgba(15, 12, 41, 0.35);
+  overflow-wrap: anywhere;
+}
+
+.circleName {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.6rem;
+  color: var(--gold-bright);
+}
+
+.meaning {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.pips {
+  display: flex;
+  gap: 3px;
+}
+
+.pip,
+.pipOn {
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--gold);
+}
+
+.pipOn {
+  background: var(--gold);
+}
+
+.goal {
+  margin-top: 18px;
+}
+
+.goalText {
+  font-weight: 700;
+  color: var(--gold-bright);
+  overflow-wrap: anywhere;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
