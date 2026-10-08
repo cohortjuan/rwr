@@ -174,6 +174,16 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
     saveProgress({ onboardingChat: [...chat, { role: 'user', text }] })
   }
 
+  // Going back to an earlier answer drops everything said after it, since the later questions
+  // were about the old answer. The old words are put back in the box to edit.
+  function changeAnswer(index: number) {
+    playSfx('select', sound)
+    setAnswerDraft(chat[index].text)
+    setNotice('')
+    requestedFor.current = -1
+    saveProgress({ onboardingChat: chat.slice(0, index) })
+  }
+
   const name = progress.playerName || 'traveler'
   const lion = (text: string) => withLionName(text, progress.lionName)
 
@@ -340,6 +350,17 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
                   <li key={index} className={message.role === 'user' ? styles.logUser : styles.logTodah}>
                     <span className={styles.logWho}>{message.role === 'user' ? name : lion('TODAH')}</span>
                     {message.role === 'user' ? message.text : lion(withName(message.text, name))}
+                    {message.role === 'user' && !pending && (
+                      <button
+                        type="button"
+                        className={styles.change}
+                        aria-label={lines.onboarding.changeLabel}
+                        title={lines.onboarding.changeLabel}
+                        onClick={() => changeAnswer(index)}
+                      >
+                        {lines.onboarding.change}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ol>

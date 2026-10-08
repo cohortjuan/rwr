@@ -13,6 +13,24 @@
   color: var(--gold-bright);
 }
 
+/* Under one of the player's own answers: go back and answer it again. */
+.change {
+  display: block;
+  margin-top: 6px;
+  padding: 2px 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.5rem;
+  color: var(--gold-bright);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.change:hover {
+  color: var(--cream);
+}
+
 /* A small way out, top left. Progress is saved, so leaving loses nothing. */
 .back {
   padding: 6px 10px;

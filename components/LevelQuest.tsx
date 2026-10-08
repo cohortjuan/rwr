@@ -224,6 +224,18 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
     saveChat([...chat, { role: 'user', text: answer }])
   }
 
+  // Going back to an earlier answer drops everything said after it, since the later questions
+  // were about the old answer. The old words are put back in the box to edit.
+  function changeAnswer(index: number) {
+    playSfx('select', sound)
+    setAnswerDraft(chat[index].text)
+    setNotice('')
+    summedUp.current = false
+    requestedFor.current = -1
+    saveChat(chat.slice(0, index))
+    setStep('chat')
+  }
+
   function toggleEvidence(id: string) {
     playSfx('select', sound)
     setEvidence(evidence.includes(id) ? evidence.filter((item) => item !== id) : [...evidence, id])
@@ -335,6 +347,17 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
               <li key={index} className={message.role === 'user' ? quest.logUser : quest.logTodah}>
                 <span className={quest.logWho}>{message.role === 'user' ? name : lion('TODAH')}</span>
                 {message.role === 'user' ? message.text : lion(withName(message.text, name))}
+                {message.role === 'user' && !pending && step !== 'summing' && (
+                  <button
+                    type="button"
+                    className={quest.change}
+                    aria-label={lines.onboarding.changeLabel}
+                    title={lines.onboarding.changeLabel}
+                    onClick={() => changeAnswer(index)}
+                  >
+                    {lines.onboarding.change}
+                  </button>
+                )}
               </li>
             ))}
           </ol>
