@@ -2,8 +2,9 @@
 .stagePoweringOn {
   position: relative;
   width: 100%;
-  height: 100dvh;
-  min-height: 300px;
+  /* The whole screen, or the glass of the old TV set when that is drawn round it. */
+  height: calc(100dvh - var(--tv-top) - var(--tv-bottom));
+  min-height: min(300px, calc(100dvh - var(--tv-top) - var(--tv-bottom)));
   overflow: hidden;
   background: var(--sky-1);
   cursor: pointer;

@@ -43,7 +43,8 @@ export const metadata: Metadata = {
 // first frame instead of flashing the default first. Keep the key in step with lib/settings.ts.
 const applySavedSettings =
   'try{var s=JSON.parse(localStorage.getItem("rwr.settings.v1")||"{}"),d=document.documentElement;' +
-  'd.dataset.theme=s.night?"night":"day";d.dataset.reduceMotion=s.motionOff?"true":"false"}catch(e){}'
+  'd.dataset.theme=s.night?"night":"day";d.dataset.reduceMotion=s.motionOff?"true":"false";' +
+  'd.dataset.tv=s.tv===false?"off":"on"}catch(e){}'
 
 // Phones: fit the screen width and tint the browser bar to match the top of the screen.
 export const viewport: Viewport = {

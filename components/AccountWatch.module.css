@@ -1,8 +1,8 @@
 /* Small links in the top corner: ABOUT on the title screen, DEV for a dev account. */
 .chips {
   position: fixed;
-  top: 26px;
-  left: 28px;
+  top: calc(26px + var(--tv-top));
+  left: calc(28px + var(--tv-side));
   z-index: 40;
   display: flex;
   gap: 8px;

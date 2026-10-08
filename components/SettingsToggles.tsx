@@ -32,6 +32,10 @@ export default function SettingsToggles() {
     document.documentElement.dataset.theme = settings.night ? 'night' : 'day'
   }, [settings.night])
 
+  useEffect(() => {
+    document.documentElement.dataset.tv = settings.tv ? 'on' : 'off'
+  }, [settings.tv])
+
   return (
     <>
       <button
@@ -74,6 +78,15 @@ export default function SettingsToggles() {
         onClick={() => saveSettings({ motionOff: !settings.motionOff })}
       >
         {settings.motionOff ? lines.settings.motionOff : lines.settings.motionOn}
+      </button>
+      {/* Only on a wide screen, where there is a TV set to switch off. */}
+      <button
+        type="button"
+        className={`${styles.toggle} ${styles.tv}`}
+        aria-pressed={settings.tv}
+        onClick={() => saveSettings({ tv: !settings.tv })}
+      >
+        {settings.tv ? lines.settings.tvOn : lines.settings.tvOff}
       </button>
       </div>
     </>

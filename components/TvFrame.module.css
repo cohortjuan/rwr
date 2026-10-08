@@ -5,9 +5,11 @@
   pointer-events: none;
 }
 
+/* The tube's glass. Edge to edge when there is no set, and inside the set when there is. */
 .glass {
   position: absolute;
-  inset: 0;
+  inset: var(--tv-top) var(--tv-side) var(--tv-bottom);
+  border-radius: var(--tv-curve);
   background:
     /* scanlines */
     repeating-linear-gradient(
@@ -17,8 +19,9 @@
       transparent 1px,
       transparent 3px
     ),
-    /* glare */
-    linear-gradient(155deg, rgba(255, 255, 255, 0.07) 0%, transparent 22%),
+    /* glare: light from the room on curved glass */
+    radial-gradient(90% 55% at 24% -12%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 62%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.06) 0%, transparent 22%),
     /* vignette */
     radial-gradient(ellipse at center, transparent 60%, rgba(10, 6, 20, 0.5) 100%);
   animation: flicker 5s steps(1) infinite;
@@ -35,4 +38,256 @@
   50% {
     opacity: 1;
   }
+}
+
+/* The set. Hidden unless the screen is wide and the player has left it on: the same test as
+   in app/globals.css, which is where its sizes come from. */
+.set {
+  display: none;
+}
+
+@media (orientation: landscape) and (min-width: 560px) and (min-height: 300px) {
+  :root:not([data-tv='off']) .set {
+    display: block;
+  }
+}
+
+/* The cabinet: matt black plastic, lit from above, with a hole cut for the tube. The hole is
+   square, and the tube's surround below covers its corners. */
+.cabinet {
+  position: absolute;
+  inset: 0;
+  background:
+    /* the grain of moulded plastic */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")
+      0 0 / 160px 160px,
+    /* light catching the top edge */
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0, rgba(255, 255, 255, 0.03) 3px, rgba(255, 255, 255, 0) 9px),
+    /* the sides falling away into shadow */
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.55) 0,
+      rgba(0, 0, 0, 0) 2.4%,
+      rgba(0, 0, 0, 0) 97.6%,
+      rgba(0, 0, 0, 0.55) 100%
+    ),
+    linear-gradient(180deg, #303034 0%, #252528 38%, #1b1b1d 100%);
+  clip-path: polygon(
+    evenodd,
+    0 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 0,
+    var(--tv-side) var(--tv-top),
+    var(--tv-side) calc(100% - var(--tv-bottom)),
+    calc(100% - var(--tv-side)) calc(100% - var(--tv-bottom)),
+    calc(100% - var(--tv-side)) var(--tv-top),
+    var(--tv-side) var(--tv-top)
+  );
+}
+
+/* The tube. Its glass is set back, so its edge is in shadow. The shadows outside it are the
+   lit ridge where the surround meets the cabinet, and the shade the surround casts there. */
+.tube {
+  position: absolute;
+  inset: var(--tv-top) var(--tv-side) var(--tv-bottom);
+  border-radius: var(--tv-curve);
+  box-shadow:
+    0 0 0 calc(var(--tv-lip) + 1px) #5a5a62,
+    0 calc(var(--tv-lip) * 0.15) calc(var(--tv-lip) * 0.7) calc(var(--tv-lip) * 1.2) rgba(0, 0, 0, 0.6),
+    inset 0 0 0 2px #000,
+    inset 0 0 calc(var(--tv-lip) * 1.4) calc(var(--tv-lip) * 0.4) rgba(0, 0, 0, 0.62);
+}
+
+/* The surround: plastic that slopes in from the cabinet to the glass. Each is a ring, made by
+   painting a box and masking out its middle. Light comes from above, so the slope along the
+   top is in shadow and the one along the bottom is lit. */
+.tube::before,
+.tube::after {
+  content: '';
+  position: absolute;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.tube::before {
+  inset: calc(var(--tv-lip) * -1);
+  padding: var(--tv-lip);
+  border-radius: calc(var(--tv-curve) + var(--tv-lip));
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0, rgba(0, 0, 0, 0) 6%, rgba(0, 0, 0, 0) 94%, rgba(0, 0, 0, 0.35) 100%),
+    linear-gradient(180deg, #0c0c0e 0%, #17171a 22%, #1f1f23 62%, #3a3a40 100%);
+}
+
+/* A step halfway down the slope, catching the light. */
+.tube::after {
+  inset: calc(var(--tv-lip) * -0.45);
+  padding: 1px;
+  border-radius: calc(var(--tv-curve) + var(--tv-lip) * 0.45);
+  background: linear-gradient(180deg, #2c2c31 0%, #46464d 60%, #6a6a73 100%);
+}
+
+/* Under the tube: speakers, buttons and sockets. Everything here is sized in em, and one em
+   is a tenth of the panel's height, so the whole panel scales with the set. */
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--tv-bottom);
+  font-size: calc(var(--tv-bottom) / 10);
+}
+
+.panel > span {
+  position: absolute;
+  display: block;
+}
+
+/* A speaker grille: rows of small holes punched in a shallow recess. */
+.speakerLeft,
+.speakerRight {
+  top: 2.7em;
+  width: 27%;
+  height: 3.1em;
+  border-radius: 0.25em;
+  background:
+    radial-gradient(circle at 50% 50%, #030304 0 34%, rgba(3, 3, 4, 0) 42%) 0 0 / 0.5em 0.5em,
+    linear-gradient(180deg, #19191b, #232326);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.9),
+    0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.speakerLeft {
+  left: 6%;
+}
+
+.speakerRight {
+  right: 6%;
+}
+
+/* The maker's badge, in raised silver letters. */
+.badge {
+  top: 3.5em;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-pixel), monospace;
+  font-size: 1.15em;
+  line-height: 1;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  color: #9d9da6;
+  text-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.35),
+    0 1px 1px #000;
+}
+
+/* Small printed labels, as on any set. */
+.label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.5em;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: #8a8a93;
+  white-space: nowrap;
+}
+
+.labelPower {
+  top: 17.6em;
+  left: 6%;
+}
+
+.labelIn {
+  top: 13.3em;
+  right: 6%;
+}
+
+/* A seam across the cabinet, above the buttons. */
+.groove {
+  top: 6.35em;
+  left: 2.5%;
+  right: 2.5%;
+  height: 2px;
+  background: linear-gradient(180deg, #060607 0 50%, #3d3d43 50% 100%);
+}
+
+.power {
+  top: 6.95em;
+  left: 6%;
+  width: 3.6em;
+  height: 1.2em;
+  border-radius: 0.2em;
+  background: linear-gradient(180deg, #3a3a3f 0%, #232326 45%, #151517 100%);
+  box-shadow:
+    0 0 0 1px #050506,
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* The set is on. */
+.led {
+  top: 7.32em;
+  left: calc(6% + 4.5em);
+  width: 0.46em;
+  height: 0.46em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #d8ffe0 0, #3bf06a 45%, #128a34 100%);
+  box-shadow: 0 0 0.6em 0.1em rgba(59, 240, 106, 0.7);
+}
+
+.buttons {
+  top: 7.1em;
+  left: 0;
+  right: 0;
+  display: flex !important;
+  justify-content: center;
+  gap: 0.8em;
+}
+
+.buttons i {
+  width: 1.05em;
+  height: 1.05em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 30%, #55555c 0, #2a2a2e 45%, #0f0f11 100%);
+  box-shadow:
+    0 0 0 1px #040405,
+    0 1px 1px 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Video and sound in: a yellow socket and a white one, in a recess. */
+.sockets {
+  top: 7.1em;
+  right: 6%;
+  display: flex !important;
+  gap: 0.5em;
+  padding: 0.25em 0.45em;
+  border-radius: 0.2em;
+  background: #0c0c0d;
+  box-shadow:
+    inset 0 1px 2px #000,
+    0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sockets i {
+  width: 0.95em;
+  height: 0.95em;
+  border-radius: 50%;
+  background: radial-gradient(circle, #050505 0 26%, #c9a51d 30% 62%, #7b6410 66% 100%);
+}
+
+.sockets i + i {
+  background: radial-gradient(circle, #050505 0 26%, #d9d9de 30% 62%, #86868c 66% 100%);
+}
+
+/* The base the set stands on. */
+.foot {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.85em;
+  background: linear-gradient(180deg, #050506 0, #26262a 0.14em, #19191b 0.4em, #0b0b0c 100%);
 }

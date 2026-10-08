@@ -60,6 +60,9 @@ export const lines = {
     soundOff: 'SOUND: OFF',
     motionOn: 'MOTION: ON',
     motionOff: 'MOTION: OFF',
+    // The old TV set drawn round the game on a wide screen.
+    tvOn: 'TV SET: ON',
+    tvOff: 'TV SET: OFF',
     toNight: 'Switch to night mode',
     toDay: 'Switch to day mode',
   },

@@ -102,7 +102,8 @@ prophet: nothing in the game promises a job or an outcome.
   player can name. Names go through a filter that refuses slurs
 - Roar reward: set a goal, confirm it is reached, Todah becomes Pride Leader
 - Looping music, sound effects, and old-school TV scanlines over every screen, with TV static
-  behind POWER ON
+  behind POWER ON. On a wide screen (a computer, or a tablet or phone held sideways) the game
+  is framed by an old TV set drawn in CSS, which TV SET in the corner switches off
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 

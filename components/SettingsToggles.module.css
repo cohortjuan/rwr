@@ -4,8 +4,8 @@
   --px: 2.5px;
 
   position: fixed;
-  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px));
-  right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px));
+  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + var(--tv-top));
+  right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px) + var(--tv-side));
   z-index: 20;
   display: grid;
   place-items: center;
@@ -36,8 +36,8 @@
 
 .bar {
   position: fixed;
-  right: clamp(20px, 3vw, 40px);
-  bottom: clamp(18px, 2.6vw, 34px);
+  right: calc(clamp(20px, 3vw, 40px) + var(--tv-side));
+  bottom: calc(clamp(18px, 2.6vw, 34px) + var(--tv-bottom));
   z-index: 20;
   display: flex;
   gap: 8px;
@@ -80,7 +80,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 4px;
-    right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px));
+    right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px) + var(--tv-side));
   }
 
   .toggle {
@@ -93,13 +93,13 @@
 /* Signed-in badge with LOG OUT, in the top-left corner (the moon has the top-right). */
 .account {
   position: fixed;
-  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + 5px);
-  left: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-left, 0px));
+  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + 5px + var(--tv-top));
+  left: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-left, 0px) + var(--tv-side));
   z-index: 20;
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: calc(100vw - 150px);
+  max-width: calc(100vw - 150px - 2 * var(--tv-side));
 }
 
 .email {
@@ -116,5 +116,17 @@
 @media (max-width: 640px) {
   .email {
     display: none;
+  }
+}
+
+/* The switch for the old TV set. It is shown only where the set can be: a screen wider than
+   it is tall (the same test as in app/globals.css). */
+.tv {
+  display: none;
+}
+
+@media (orientation: landscape) and (min-width: 560px) and (min-height: 300px) {
+  .tv {
+    display: block;
   }
 }

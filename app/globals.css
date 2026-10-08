@@ -81,9 +81,51 @@ textarea {
   font-family: var(--font-pixel), monospace;
 }
 
+/* The old TV set (components/TvFrame). It is drawn round the game when the screen is wider
+   than it is tall, unless the player has switched it off. These say how far its plastic
+   reaches in from each edge, and how round the glass is. They are zero when there is no set,
+   so everything pinned to an edge of the screen can simply add them. */
+:root {
+  --tv-top: 0px;
+  --tv-side: 0px;
+  --tv-bottom: 0px;
+  --tv-curve: 0px;
+  --tv-lip: 0px;
+}
+
+@media (orientation: landscape) and (min-width: 560px) and (min-height: 300px) {
+  :root:not([data-tv='off']) {
+    --tv-top: clamp(16px, 5vh, 46px);
+    --tv-side: clamp(18px, 3.8vw, 62px);
+    --tv-bottom: clamp(46px, 15vh, 128px);
+    --tv-curve: calc(var(--tv-top) * 0.9);
+    --tv-lip: calc(var(--tv-top) * 0.5);
+    /* Anything scrolled to, or tabbed to, stops inside the glass and not under the plastic. */
+    scroll-padding: var(--tv-top) 0 var(--tv-bottom);
+    scrollbar-color: #45454b #131315;
+  }
+
+  /* The page itself sits inside the glass. */
+  :root:not([data-tv='off']) body {
+    padding: var(--tv-top) var(--tv-side) var(--tv-bottom);
+  }
+
+  /* So do the boxes that open over the page, and the shade behind them. */
+  :root:not([data-tv='off']) dialog {
+    inset: var(--tv-top) var(--tv-side) var(--tv-bottom);
+    max-width: calc(100vw - 2 * var(--tv-side) - 20px);
+    max-height: calc(100dvh - var(--tv-top) - var(--tv-bottom) - 12px);
+  }
+
+  :root:not([data-tv='off']) dialog::backdrop {
+    inset: var(--tv-top, 0px) var(--tv-side, 0px) var(--tv-bottom, 0px);
+    border-radius: var(--tv-curve, 0px);
+  }
+}
+
 /* Shared page shell for the screens after the title. */
 .screen {
-  min-height: 100dvh;
+  min-height: calc(100dvh - var(--tv-top) - var(--tv-bottom));
   /* The top padding keeps content below the round day/night button in the corner. */
   padding: 78px clamp(20px, 3vw, 40px) 110px;
   display: flex;
