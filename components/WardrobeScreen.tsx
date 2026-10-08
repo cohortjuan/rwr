@@ -251,7 +251,7 @@ export default function WardrobeScreen() {
                           ))}
                         </div>
                       )}
-                      <p className={styles.itemState}>
+                      <p className={!worn && !mine && !item.gift ? styles.price : styles.itemState}>
                         {worn
                           ? lines.wardrobe.wearing
                           : mine

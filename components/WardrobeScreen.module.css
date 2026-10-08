@@ -113,9 +113,25 @@
 .itemState {
   margin: 0;
   font-family: var(--font-pixel), monospace;
-  font-size: 0.5rem;
+  font-size: 0.55rem;
   line-height: 1.6;
   color: var(--gold-bright);
+}
+
+/* What a piece costs. It is the one number a player is looking for on the card, so it is
+   set larger than the other states, and larger again on a phone. */
+.price {
+  margin: 0;
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: var(--gold-bright);
+}
+
+@media (max-width: 640px) {
+  .price {
+    font-size: 0.8rem;
+  }
 }
 
 .card .fine,
