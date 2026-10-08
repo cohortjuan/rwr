@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { lines } from '@/lib/lines'
 import { saveProgress, useLionText, useProgress } from '@/lib/progress'
-import { useHydrated, useSettings } from '@/lib/settings'
+import { LOW_VOLUME, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './RoarScreen.module.css'
 
@@ -16,7 +16,7 @@ export default function RoarScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
   const lion = useLionText()
-  const { sound } = useSettings()
+  const { sound, quiet } = useSettings()
   const confirmRef = useRef<HTMLDialogElement>(null)
   const roarRef = useRef<HTMLAudioElement>(null)
   const [goalDraft, setGoalDraft] = useState('')
@@ -38,6 +38,7 @@ export default function RoarScreen() {
     const audio = roarRef.current
     if (!sound || !audio) return
     audio.currentTime = 0
+    audio.volume = quiet ? LOW_VOLUME : 1
     audio.play().catch(() => {})
   }
 

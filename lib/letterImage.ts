@@ -8,6 +8,9 @@ import {
   type Accessory,
   type AccessoryArt,
   type Variant,
+  floorSpots,
+  FRONT_PAWS,
+  PICTURE_WIDTH,
 } from '@/lib/accessories'
 import { applyFilter } from '@/lib/colour'
 import { maneArt } from '@/lib/maneArt'
@@ -168,11 +171,31 @@ function composeLion(
     drawArt(context, { ...shape, palette: { M: base, D: shade } })
   }
   const drawn = worn.filter((entry) => entry.item.art || entry.item.image)
-  drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category))
+  // Pieces on the floor take their spots in the order they were put on, before sorting. The
+  // one tucked behind the paws is drawn before the others on the floor.
+  const spots = floorSpots(drawn.map((entry) => entry.item))
+  const tucked = (item: Accessory) => (spots.get(item.id)?.tucked ? 0 : 1)
+  drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category) || tucked(a.item) - tucked(b.item))
+  const scale = canvas.width / PICTURE_WIDTH
   for (const { item, variant } of drawn) {
     // A picture piece covers the whole stage, headroom included.
     const piece = item.image ? pieces.get(pieceImage(item, variant)) : undefined
-    if (piece) context.drawImage(piece, 0, 0, canvas.width, canvas.height)
+    if (piece) {
+      // A finely drawn piece is scaled smoothly. The rest stay hard pixels.
+      // A piece tucked behind the front paws: the paws as they are now are kept aside, and
+      // put back over the piece once it is drawn.
+      const paws = spots.get(item.id)?.tucked
+        ? FRONT_PAWS.map((paw) => {
+            const kept = sheet(paw.width * scale, paw.height * scale)
+            kept.context.drawImage(canvas, paw.x * scale, paw.y * scale, paw.width * scale, paw.height * scale, 0, 0, paw.width * scale, paw.height * scale)
+            return { paw, kept: kept.canvas }
+          })
+        : []
+      context.imageSmoothingEnabled = Boolean(item.fine)
+      context.drawImage(piece, ((spots.get(item.id)?.shift ?? 0) + (item.shift ?? 0)) * scale, 0, canvas.width, canvas.height)
+      context.imageSmoothingEnabled = false
+      for (const { paw, kept } of paws) context.drawImage(kept, paw.x * scale, paw.y * scale)
+    }
     for (const art of item.art ?? []) drawArt(context, { ...art, palette: { ...art.palette, ...variant?.palette } })
   }
   return canvas

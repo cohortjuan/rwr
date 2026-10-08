@@ -56,8 +56,16 @@ export const lines = {
   },
 
   settings: {
-    soundOn: 'SOUND: ON',
-    soundOff: 'SOUND: OFF',
+    // The one SETTINGS button in the corner, and the box it opens.
+    open: 'SETTINGS',
+    heading: 'SETTINGS',
+    sound: 'SOUND',
+    soundFull: 'FULL',
+    soundLow: 'LOW',
+    soundNone: 'OFF',
+    tvNote: 'The old TV set is drawn round the game on a wide screen.',
+    privacy: 'PRIVACY AND YOUR DATA',
+    close: 'CLOSE',
     motionOn: 'MOTION: ON',
     motionOff: 'MOTION: OFF',
     // The old TV set drawn round the game on a wide screen.
@@ -328,7 +336,7 @@ export const lines = {
     notes: {
       fur: 'Fur changes the coat only. The mane keeps its own colour, so to match a coat, pick the mane of the same name.',
       mane: 'A colour changes only the colour. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1. Every coat has a mane of the same name that completes its set.',
-      essentials: 'Only a lioness carries these. One stands by her paw, on the other side from her bag, so the two can be worn together. Each has a paw mark.',
+      essentials: 'Only a lioness carries these. They stand on the floor by her paws, and up to three can be out at once: the first at her left, the second at her right, a third in the middle. Put out a fourth and the first is put away.',
       bag: 'Bags are for a lioness.',
       hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your scarf, your jacket, or nothing at all.',
       outfit: 'A transformation changes the whole lion and is worn alone: while it is on, your other pieces wait in the wardrobe. More about the shishi on the ABOUT page.',

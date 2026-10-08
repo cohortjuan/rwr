@@ -1,9 +1,13 @@
 import {
   drawOrder,
+  floorSpots,
+  FRONT_PAWS,
   GRID,
   HEADROOM,
   NATURAL_MANE,
   parseToken,
+  PICTURE_HEIGHT,
+  PICTURE_WIDTH,
   pieceImage,
   type Accessory,
   type AccessoryArt,
@@ -84,7 +88,14 @@ export default function LionAvatar({
   const [base, shade] = maneColour ?? NATURAL_MANE
 
   const drawn = worn.filter((entry) => entry.item.art || entry.item.image)
-  drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category))
+  // Pieces on the floor take their spots in the order they were put on, before sorting. The
+  // one tucked behind the paws is drawn before the others on the floor.
+  const spots = floorSpots(drawn.map((entry) => entry.item))
+  const tucked = (item: Accessory) => (spots.get(item.id)?.tucked ? 0 : 1)
+  drawn.sort((a, b) => drawOrder.indexOf(a.item.category) - drawOrder.indexOf(b.item.category) || tucked(a.item) - tucked(b.item))
+  // One of the lion's pixels across and down, in the units the pieces are drawn in.
+  const across = GRID.width / PICTURE_WIDTH
+  const down = (GRID.height + HEADROOM) / PICTURE_HEIGHT
 
   return (
     <div className={`${styles.stage} ${className ?? ''}`} aria-hidden="true">
@@ -112,9 +123,9 @@ export default function LionAvatar({
             <g key={item.id}>
               {item.image && (
                 <image
-                  className={styles.piece}
+                  className={item.fine ? undefined : styles.piece}
                   href={pieceImage(item, variant)}
-                  x={0}
+                  x={((spots.get(item.id)?.shift ?? 0) + (item.shift ?? 0)) * across}
                   y={0}
                   width={GRID.width}
                   height={GRID.height + HEADROOM}
@@ -125,6 +136,31 @@ export default function LionAvatar({
                 rects({ ...art, palette: { ...art.palette, ...variant?.palette } }, `${item.id}-${layer}`),
               )}
               {item.sparkles?.map((glint, index) => sparkle(glint.x, glint.y, index, item.id))}
+            {/* A piece tucked behind the front paws: the paws are drawn again on top of it,
+                each cut from the sprite and given the same coat colour. */}
+            {spots.get(item.id)?.tucked &&
+              FRONT_PAWS.map((paw) => (
+                <svg
+                  key={paw.x}
+                  x={paw.x * across}
+                  y={paw.y * down}
+                  width={paw.width * across}
+                  height={paw.height * down}
+                  viewBox={`${paw.x * across} ${paw.y * down} ${paw.width * across} ${paw.height * down}`}
+                  preserveAspectRatio="none"
+                  style={{ filter: fur?.filter }}
+                >
+                  <image
+                    className={styles.piece}
+                    href="/sprites/todah-sit.png"
+                    x={0}
+                    y={HEADROOM}
+                    width={GRID.width}
+                    height={GRID.height}
+                    preserveAspectRatio="none"
+                  />
+                </svg>
+              ))}
             </g>
           ))}
         </svg>

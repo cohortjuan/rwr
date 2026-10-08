@@ -10,7 +10,7 @@
   cursor: pointer;
   user-select: none;
   /* Cub size follows the width, but never outgrows a short screen (phone held sideways). */
-  --cub: min(clamp(150px, 21vw, 300px), 44vh);
+  --cub: min(clamp(150px, 21vw, 300px), calc((100dvh - var(--tv-top) - var(--tv-bottom)) * 0.44));
 
   /* Day colours: a golden savannah at sunset. */
   --sky-1: #dba238;

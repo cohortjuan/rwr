@@ -12,7 +12,7 @@ import {
 } from '@/lib/assets'
 import { setAudioGate } from '@/lib/audioGate'
 import { useProgress } from '@/lib/progress'
-import { useSettings } from '@/lib/settings'
+import { LOW_VOLUME, useSettings } from '@/lib/settings'
 
 // Taps, clicks, and key presses that browsers accept as permission to start audio.
 const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
@@ -26,7 +26,9 @@ const gestures = ['pointerup', 'touchend', 'mouseup', 'click', 'keydown']
 // their volumes change. Volume runs through Web Audio gain nodes because iPhones ignore an
 // audio element's own volume setting.
 export default function MusicPlayer() {
-  const { sound } = useSettings()
+  const { sound, quiet } = useSettings()
+  // The low sound setting turns the music down with everything else.
+  const loud = quiet ? LOW_VOLUME : 1
   const pathname = usePathname()
   const onTitle = pathname === '/'
   const { goalAchievedAt } = useProgress()
@@ -38,8 +40,8 @@ export default function MusicPlayer() {
   const levelsRef = useRef<number[]>([0, 0])
 
   // With no background track, the theme itself drops to background level after the title.
-  const quietLevel = onReward ? 0 : MUSIC_BACKGROUND_VOLUME
-  const themeLevel = onTitle ? MUSIC_VOLUME : MUSIC_BACKGROUND_TRACK ? 0 : quietLevel
+  const quietLevel = onReward ? 0 : MUSIC_BACKGROUND_VOLUME * loud
+  const themeLevel = onTitle ? MUSIC_VOLUME * loud : MUSIC_BACKGROUND_TRACK ? 0 : quietLevel
   const backgroundLevel = onTitle ? 0 : quietLevel
   // The roar must not start over the music, so that change is a quick cut, not a crossfade.
   const fadeSeconds = onReward ? MUSIC_CUT_SECONDS : MUSIC_FADE_SECONDS

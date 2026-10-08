@@ -17,10 +17,13 @@ import {
   defaults,
   INTERVIEW_SPARKS,
   LEVEL_SPARKS,
+  MANY,
   STEP_SPARKS,
   maneSize,
   owns,
+  putOn,
   sparks,
+  takenOff,
   wornIds,
   wornToken,
   type Accessory,
@@ -52,8 +55,8 @@ export default function WardrobeScreen() {
   const signedIn = Boolean(account.email)
   const [loginOpen, setLoginOpen] = useState(false)
   const [status, setStatus] = useState('')
-  // What a guest is trying on: one token per group, kept only while this screen is open.
-  const [trying, setTrying] = useState<Record<string, string>>({})
+  // What a guest is trying on: the tokens in each group, kept only while this screen is open.
+  const [trying, setTrying] = useState<Record<string, string[]>>({})
   // The box that renames the lion or changes it between a lion and a lioness. `changes` counts
   // how often it has opened, so each time it starts from the lion as it is now.
   const [changing, setChanging] = useState(false)
@@ -67,7 +70,7 @@ export default function WardrobeScreen() {
   // A guest owns nothing, so what they see on the lion is whatever they are trying on.
   const wearing = signedIn
     ? owned
-    : [...owned.filter((token) => !((accessory(token)?.category ?? '') in trying)), ...Object.values(trying)]
+    : [...owned.filter((token) => !((accessory(token)?.category ?? '') in trying)), ...Object.values(trying).flat()]
   const mane = maneSize(progress)
   const sex = progress.lionSex
   // A lioness reads her own note where the usual one talks about a mane.
@@ -77,25 +80,23 @@ export default function WardrobeScreen() {
       : category in lines.wardrobe.notes
         ? lines.wardrobe.notes[category as NoteId]
         : ''
-  const wornIn = (category: string) => wearing.find((token) => accessory(token)?.category === category)
+  const wornIn = (category: string) => wearing.filter((token) => accessory(token)?.category === category)
 
   // A group's default (golden fur, the natural mane) is what the lion has when nothing else is chosen.
   const isWorn = (item: Accessory) => {
     const current = wornIn(item.category)
-    return current ? accessory(current) === item : defaults[item.category] === item.id
+    return current.length > 0 ? current.some((token) => accessory(token) === item) : defaults[item.category] === item.id
   }
 
   function wear(item: Accessory) {
     if (!signedIn) return
     playSfx('select', sound)
-    saveProgress({ wearing: { ...progress.wearing, [item.category]: item.id } })
+    saveProgress({ wearing: putOn(progress.wearing, item) })
   }
 
   function takeOff(item: Accessory) {
     playSfx('select', sound)
-    const rest = { ...progress.wearing }
-    delete rest[item.category]
-    saveProgress({ wearing: rest })
+    saveProgress({ wearing: takenOff(progress.wearing, item) })
   }
 
   // Buying puts the piece straight on.
@@ -104,7 +105,7 @@ export default function WardrobeScreen() {
     playSfx('levelUp', sound)
     saveProgress({
       bought: [...progress.bought, item.id],
-      wearing: { ...progress.wearing, [item.category]: item.id },
+      wearing: putOn(progress.wearing, item),
     })
     setStatus(lines.wardrobe.bought(itemName(item)))
   }
@@ -114,8 +115,13 @@ export default function WardrobeScreen() {
     playSfx('select', sound)
     setTrying((current) => {
       const rest = { ...current }
-      if (rest[item.category] && accessory(rest[item.category]) === item) delete rest[item.category]
-      else rest[item.category] = wornToken(item, colour)
+      const on = rest[item.category] ?? []
+      // Tapping a piece that is on takes it off. Otherwise it goes on: alone in a group that
+      // holds one, or beside the others in a group that holds several.
+      const kept = on.filter((token) => accessory(token) !== item)
+      const next = kept.length < on.length ? kept : [...kept, wornToken(item, colour)].slice(-(MANY[item.category] ?? 1))
+      if (next.length > 0) rest[item.category] = next
+      else delete rest[item.category]
       return rest
     })
   }
@@ -132,8 +138,11 @@ export default function WardrobeScreen() {
   function pickColour(item: Accessory, colour: string) {
     playSfx('select', sound)
     // A piece being tried on changes colour on the lion straight away.
-    if (trying[item.category] && accessory(trying[item.category]) === item) {
-      setTrying({ ...trying, [item.category]: wornToken(item, colour) })
+    if (trying[item.category]?.some((token) => accessory(token) === item)) {
+      setTrying({
+        ...trying,
+        [item.category]: trying[item.category].map((token) => (accessory(token) === item ? wornToken(item, colour) : token)),
+      })
     }
     saveProgress({ tones: { ...progress.tones, [item.id]: colour } })
   }

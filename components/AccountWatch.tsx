@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { cancelRecovery, setNewPassword, useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { saveProgress, useProgress } from '@/lib/progress'
@@ -10,12 +8,10 @@ import styles from './AccountWatch.module.css'
 
 // Account jobs that belong to every screen, so this sits in the layout:
 // - the new password box, which opens wherever a reset link lands the player
-// - the chips in the top corner: ABOUT on the title screen, and DEV for a dev account
 // - switching dev tools off in a game when the player is not on a dev account
 export default function AccountWatch() {
   const account = useAccount()
   const progress = useProgress()
-  const pathname = usePathname()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -55,18 +51,6 @@ export default function AccountWatch() {
 
   return (
     <>
-      <div className={styles.chips}>
-        {pathname === '/' && (
-          <Link className={styles.chip} href="/about">
-            {lines.about.chip}
-          </Link>
-        )}
-        {account.dev && pathname !== '/dev' && (
-          <Link className={styles.chip} href="/dev">
-            {lines.dev.chip}
-          </Link>
-        )}
-      </div>
 
       <dialog ref={dialogRef} className={styles.dialog} aria-labelledby="new-password-heading" onClose={close}>
         <h2 id="new-password-heading" className={styles.heading}>

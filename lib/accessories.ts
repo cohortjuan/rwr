@@ -70,6 +70,15 @@ export type Accessory = {
   // A whole picture of its own: while this is on, it is all that is drawn. Not the lion
   // underneath, not his tail, and nothing else he is wearing.
   alone?: boolean
+  // A picture with finer detail than the lion's own pixels, cut straight from its drawing. It
+  // is drawn smoothly, where every other picture is drawn as hard pixels.
+  fine?: boolean
+  // A piece that stands on the floor. `left` is where its picture puts its left edge and
+  // `width` how wide it is, both in the lion's pixels, so it can be moved to another spot on
+  // the floor when more than one is out (see floorShifts).
+  floor?: { left: number, width: number }
+  // Moves the whole picture sideways by this many of the lion's pixels (right is positive).
+  shift?: number
   // Only for a lion, or only for a lioness. A lion grows a mane and can colour it. A lioness
   // has no mane, and has pieces of her own in its place.
   only?: LionSex
@@ -321,16 +330,17 @@ export const accessories: Accessory[] = [
   // One of the pair, worn on one ear.
   { id: 'hoop-earring', category: 'ears', price: 5, image: true, variants: shades(['gold', 'silver', 'rose']) },
   // A lioness's essentials (scripts/essentials-art.py). She has no mane to colour, so this
-  // group stands where MANE COLOUR does for a lion. Each is a small thing standing by her paw,
-  // on the other side from her bag, and carries a paw mark.
-  { id: 'perfume', category: 'essentials', price: 6, only: 'female', image: true, variants: shades(['gold', 'pink', 'purple', 'teal']) },
-  { id: 'passport', category: 'essentials', price: 5, only: 'female', image: true, variants: shades(['blue', 'red', 'green', 'black', 'brown']) },
-  { id: 'wallet', category: 'essentials', price: 6, only: 'female', image: true, variants: shades(['brown', 'black', 'red', 'green', 'pink']) },
-  { id: 'phone', category: 'essentials', price: 8, only: 'female', image: true, variants: shades(['purple', 'black', 'pink', 'teal', 'white']) },
+  // group stands where MANE COLOUR does for a lion. They are cut from their drawings as they
+  // were drawn, and stand on the floor by her paws. Up to three can be out at once.
+  { id: 'perfume', category: 'essentials', price: 6, only: 'female', image: true, fine: true, floor: { left: 1, width: 20 }, variants: shades(['gold', 'pink', 'purple', 'teal']) },
+  { id: 'passport', category: 'essentials', price: 5, only: 'female', image: true, fine: true, floor: { left: 1, width: 20 }, variants: shades(['brown', 'blue', 'red', 'green', 'black']) },
+  { id: 'wallet', category: 'essentials', price: 6, only: 'female', image: true, fine: true, floor: { left: 1, width: 23 }, variants: shades(['brown', 'black', 'red', 'green', 'pink']) },
+  { id: 'phone', category: 'essentials', price: 8, only: 'female', image: true, fine: true, floor: { left: 1, width: 16 }, variants: shades(['purple', 'black', 'pink', 'teal', 'white']) },
 
   { id: 'aviator-jacket', category: 'body', price: 15, image: true, variants: shades(['black', 'brown', 'red', 'blue', 'olive']) },
   { id: 'indigo-jacket', category: 'body', price: 12, image: true, variants: shades(['blue', 'black', 'red', 'green', 'brown']) },
-  { id: 'micro-bag', category: 'bag', price: 10, only: 'female', image: true, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
+  // The bag hangs a little out to her side, clear of what stands between her paws.
+  { id: 'micro-bag', category: 'bag', price: 10, only: 'female', image: true, shift: 5, variants: shades(['blue', 'red', 'green', 'purple', 'pink', 'black']) },
 
   {
     // A transformation, not a piece: a whole picture of a shishi, the guardian lion of East
@@ -445,10 +455,67 @@ export function categoriesFor(sex: LionSex): AccessoryCategory[] {
   return categories.filter((category) => accessories.some((item) => item.category === category && fits(item, sex)))
 }
 
+// Most groups hold one piece at a time. These hold more: the number is how many.
+export const MANY: Partial<Record<AccessoryCategory, number>> = { essentials: 3 }
+
+// A group that holds several keeps their ids in one string, in the order they were put on.
+const TOGETHER = '+'
+type Wearing = Progress['wearing']
+
+// The ids of what is on in a group, oldest first.
+export function wornInGroup(wearing: Wearing, category: AccessoryCategory): string[] {
+  return (wearing[category] ?? '').split(TOGETHER).filter(Boolean)
+}
+
+// What is being worn once this piece goes on. In a group that holds one, it takes the place
+// of what was there. In a group that holds several it joins them, and when the group is
+// full the one that has been out longest is put away.
+export function putOn(wearing: Wearing, item: Accessory): Wearing {
+  const most = MANY[item.category] ?? 1
+  const ids = [...wornInGroup(wearing, item.category).filter((id) => id !== item.id), item.id].slice(-most)
+  return { ...wearing, [item.category]: ids.join(TOGETHER) }
+}
+
+export function takenOff(wearing: Wearing, item: Accessory): Wearing {
+  const rest = { ...wearing }
+  const ids = wornInGroup(wearing, item.category).filter((id) => id !== item.id)
+  if (ids.length > 0) rest[item.category] = ids.join(TOGETHER)
+  else delete rest[item.category]
+  return rest
+}
+
+// The lion's picture is 89 pixels wide and 111 tall. Pieces are moved in those pixels.
+export const PICTURE_WIDTH = 89
+export const PICTURE_HEIGHT = 111
+
+// Her two front paws, in the lion's pixels of the 89 x 111 picture: left edge, top, width and
+// height. A piece tucked behind them is drawn first and the paws are drawn again over it.
+export const FRONT_PAWS = [
+  { x: 25, y: 97, width: 18, height: 14 },
+  { x: 46, y: 97, width: 16, height: 14 },
+]
+
+// Where each floor piece stands: how far it moves from where its picture has it, in the
+// lion's pixels, and whether it is tucked behind her front paws. The first one out stands at
+// the left and the second at the right, both in front. A third goes in the middle, behind her
+// paws, so the three do not stand in a stiff row.
+export function floorSpots(items: Accessory[]): Map<string, { shift: number, tucked: boolean }> {
+  const spots = new Map<string, { shift: number, tucked: boolean }>()
+  items
+    .filter((item) => item.floor)
+    .forEach((item, index) => {
+      const { left, width } = item.floor!
+      const spot = index % 3
+      const at = spot === 0 ? left : spot === 1 ? PICTURE_WIDTH - 1 - width : Math.round((PICTURE_WIDTH - width) / 2)
+      spots.set(item.id, { shift: at - left, tucked: spot === 2 })
+    })
+  return spots
+}
+
 // Tokens for what the lion is wearing, limited to pieces it owns, in its chosen colours.
 export function wornIds(progress: Progress, others: Progress[] = []): string[] {
   return categories
-    .map((category) => byId.get(progress.wearing[category] ?? ''))
+    .flatMap((category) => wornInGroup(progress.wearing, category).map((id) => byId.get(id)))
     .filter((item): item is Accessory => item !== undefined && fits(item, progress.lionSex) && owns(progress, item, others))
     .map((item) => wornToken(item, progress.tones[item.id]))
 }

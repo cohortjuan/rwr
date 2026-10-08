@@ -72,6 +72,13 @@ export function preloadSfx() {
 
 let context: AudioContext | null = null
 
+// How loud effects play, as a share of full: 1, or less on the low sound setting.
+let loudness = 1
+
+export function setSfxLoudness(value: number) {
+  loudness = value
+}
+
 function playPattern(audio: AudioContext, name: SfxName) {
   const pattern = patterns[name]
   const now = audio.currentTime
@@ -80,7 +87,7 @@ function playPattern(audio: AudioContext, name: SfxName) {
     const gain = audio.createGain()
     oscillator.type = 'square'
     oscillator.frequency.value = note.frequency
-    gain.gain.setValueAtTime(pattern.volume, now + note.start)
+    gain.gain.setValueAtTime(pattern.volume * loudness, now + note.start)
     gain.gain.exponentialRampToValueAtTime(0.0001, now + note.start + note.length)
     oscillator.connect(gain)
     gain.connect(audio.destination)
@@ -99,7 +106,7 @@ async function playSample(audio: AudioContext, sample: Sample) {
   const source = audio.createBufferSource()
   const gain = audio.createGain()
   source.buffer = buffer
-  gain.gain.value = sample.volume
+  gain.gain.value = sample.volume * loudness
   source.connect(gain)
   gain.connect(audio.destination)
   source.start()
