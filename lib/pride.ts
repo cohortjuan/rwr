@@ -48,7 +48,7 @@ export function buildCard(progress: Progress, now: number, others: Progress[] = 
   }
 }
 
-function toBase64Url(text: string): string {
+export function toBase64Url(text: string): string {
   let binary = ''
   new TextEncoder().encode(text).forEach((byte) => {
     binary += String.fromCharCode(byte)
@@ -56,7 +56,7 @@ function toBase64Url(text: string): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-function fromBase64Url(data: string): string {
+export function fromBase64Url(data: string): string {
   const binary = atob(data.replace(/-/g, '+').replace(/_/g, '/'))
   return new TextDecoder().decode(Uint8Array.from(binary, (character) => character.charCodeAt(0)))
 }

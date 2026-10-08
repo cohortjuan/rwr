@@ -156,6 +156,28 @@ export default function TrailMapScreen() {
                 </p>
                 {!opened && <p className={styles.small}>{lion(lines.map.walkFirst)}</p>}
 
+                {circle === 'craft' && (
+                  <div className={styles.quotes}>
+                    {progress.witnesses.length > 0 && (
+                      <>
+                        <p className={styles.small}>{lines.witness.onMap}</p>
+                        <ul>
+                          {progress.witnesses.slice(0, 3).map((witness) => (
+                            <li key={witness.key}>
+                              {witness.text} ({witness.name})
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                    <p>
+                      <Link className="btn btn-quiet" href="/witness">
+                        {lines.witness.ask}
+                      </Link>
+                    </p>
+                  </div>
+                )}
+
                 {circle === 'heart' && questAnswers.length > 0 && (
                   <div className={styles.quotes}>
                     <p className={styles.small}>{lion(lines.map.fromQuest)}</p>
@@ -245,7 +267,12 @@ export default function TrailMapScreen() {
             <p>{lines.map.crossroads}</p>
             <Link className="btn" href="/crossroads">
               {lines.map.toCrossroads}
-            </Link>
+            </Link>{' '}
+            {progress.goalText.trim() && (
+              <Link className="btn btn-quiet" href="/road">
+                {lines.crossroads.toRoad}
+              </Link>
+            )}
           </section>
         )}
 

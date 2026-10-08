@@ -145,7 +145,10 @@ export default function CrossroadsScreen() {
                     <p className={styles.goalText}>{lines.crossroads.goalSet(progress.goalText)}</p>
                     <p>{lion(lines.crossroads.done(name))}</p>
                     <div className={styles.buttons}>
-                      <Link className="btn" href="/upgrades">
+                      <Link className="btn" href="/road">
+                        {lines.crossroads.toRoad}
+                      </Link>
+                      <Link className="btn btn-quiet" href="/upgrades">
                         {lines.crossroads.toUpgrades}
                       </Link>
                       <Link className="btn btn-quiet" href="/roar">

@@ -60,6 +60,18 @@ prophet: nothing in the game promises a job or an outcome.
 - The Crossroads (`/crossroads`): after the four levels, the circles are laid side by side,
   Todah names what lines up and one gap, and the player sets their own main goal. Todah never
   names a career
+- Todah remembers: each level's AI prompt carries what the player said on earlier levels and
+  in Quest 1, so he can pick up a thread ("that sounds like the fixing you told me about")
+- The road (`/road`): after the goal is set, the player names what is most likely to get in
+  the way. One AI call drafts an if-then plan for it and three small real-world experiments
+  from the player's own words, which the player edits. After doing one, they tell Todah how
+  it went, he answers once, and they decide whether anything on the map has changed
+- A friend's witness (`/witness`): the player sends one question to someone who knows them,
+  "What would you come to me for?" The answer comes back in a link, with no account and no
+  server, and is kept beside the Craft circle
+- A fair share of the AI: a daily count per browser and a per-minute count per address keep
+  one visitor from using up the free AI for everyone. Past the limit the game carries on from
+  scripted lines
 - The trail map is filled in by walking the levels. Once a circle has a claim the player can
   edit its words and evidence there
 - Finishing a level earns 5 sparks, and the skill named in Craft can be added to the Claws
@@ -88,7 +100,7 @@ prophet: nothing in the game promises a job or an outcome.
 - Sound and motion toggles, reduced-motion support
 - Privacy page: AI consent, save-on-device switch, delete my data
 
-Not built yet: the roadmap, crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
+Not built yet: Todah's letter, crossroads, profile card, Talk to Todah chat, PDF export, saving account progress to
 the database.
 
 ## Technologies

@@ -68,7 +68,9 @@ function memoryOf(progress: Progress, circle: LiveLevel) {
       .map((other) => [other, { claim: progress.compass[other].claim, evidence: circleScore(progress, other) }]),
   )
   const warmup = circle === 'heart' ? progress.onboardingChat.find((message) => message.role === 'user')?.text : undefined
-  return { claims, warmup: warmup?.slice(0, 300) }
+  // What people who know the player said they would come to them for. Words only, no names.
+  const witness = circle === 'craft' ? progress.witnesses.slice(0, 2).map((entry) => entry.text) : undefined
+  return { claims, warmup: warmup?.slice(0, 300), witness }
 }
 
 async function askTodah(progress: Progress, circle: LiveLevel, history: ChatMessage[], demo: boolean): Promise<TodahReply> {

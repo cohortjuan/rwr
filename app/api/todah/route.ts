@@ -17,7 +17,7 @@ const ONBOARDING_ANSWERS = 3
 // The most a claim written by the AI may run to before the player edits it.
 const CLAIM_MAX = 160
 
-const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'help']
+const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'road', 'checkin', 'help']
 const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
@@ -98,7 +98,44 @@ function readMemory(body: Record<string, unknown>, circle: unknown): string | un
   if (typeof body.warmup === 'string' && body.warmup.trim()) {
     lines.unshift(`In the warm-up quest, about a recent good day: "${scrub(body.warmup).trim().slice(0, 300)}"`)
   }
+  // A friend's witness: what someone who knows the player said they would come to them for.
+  for (const said of (Array.isArray(body.witness) ? body.witness : []).slice(0, 2)) {
+    const text = readText(said, 200)
+    if (text) lines.push(`Someone who knows them said they would come to them for: "${text}"`)
+  }
   return lines.length > 0 ? lines.join('\n') : undefined
+}
+
+// A short piece of the player's own text sent outside a chat (a goal, an obstacle, a report):
+// scrubbed, trimmed to `max`, and empty unless it really is text.
+function readText(value: unknown, max: number): string {
+  return typeof value === 'string' ? scrub(value).trim().slice(0, max) : ''
+}
+
+// The road plan comes back as JSON. As with the summary, anything that is not exactly what was
+// asked for is dropped, so a confused reply leaves the player an empty form to fill in.
+function readRoad(text: string): { plan: string, steps: { circle: string, text: string }[], care: boolean } {
+  const empty = { plan: '', steps: [], care: false }
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start < 0 || end <= start) return empty
+  try {
+    const form: unknown = JSON.parse(text.slice(start, end + 1))
+    if (typeof form !== 'object' || form === null) return empty
+    const fields = form as Record<string, unknown>
+    const steps = (Array.isArray(fields.steps) ? fields.steps : [])
+      .map((step: unknown) => {
+        const entry = (typeof step === 'object' && step !== null ? step : {}) as Record<string, unknown>
+        return { circle: String(entry.circle ?? ''), text: readText(entry.text, 200) }
+      })
+      .filter((step) => circleOrder.includes(step.circle) && step.text)
+      .slice(0, 3)
+    // `care` means the player's words showed distress, and the game should stop and say so.
+    if (fields.care === true) return { ...empty, care: true }
+    return { plan: readText(fields.plan, 200), steps, care: false }
+  } catch {
+    return empty
+  }
 }
 
 // Only the game's own pages may call this route. It is not a full defence (headers can be
@@ -137,14 +174,56 @@ export async function POST(request: Request) {
     return Response.json({ error: 'bad_request' }, { status: 400 })
   }
   if (mode === 'summary' && answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
-  // The Crossroads needs a claim in every circle, so a half-walked trail never reaches the AI.
-  const crossroads = mode === 'crossroads' ? claimRows(body.claims) : null
+  // The Crossroads and the road need a claim in every circle, so a half-walked trail never
+  // reaches the AI.
+  const crossroads = mode === 'crossroads' || mode === 'road' ? claimRows(body.claims) : null
   if (crossroads && crossroads.size < circleOrder.length) return Response.json({ error: 'bad_request' }, { status: 400 })
+  const goal = readText(body.goal, 200)
+  const obstacle = readText(body.obstacle, 300)
+  const step = readText(body.step, 200)
+  const report = readText(body.note, MAX_TEXT_LENGTH)
+  if (mode === 'road' && (!goal || !obstacle)) return Response.json({ error: 'bad_request' }, { status: 400 })
+  if (mode === 'checkin' && (!step || !report || !circleOrder.includes(String(body.circle)))) {
+    return Response.json({ error: 'bad_request' }, { status: 400 })
+  }
 
   // Everything above is free. From here an AI reply is spent, so the visitor's share is checked.
   const limit = checkLimit(request)
   if (!limit.ok) return Response.json({ error: limit.reason }, { status: 429 })
   const sent = (data: Record<string, unknown>) => Response.json(data, { headers: { 'Set-Cookie': limit.cookie } })
+
+  // The road is a form filled in from the goal, the obstacle, and the four claims.
+  if (mode === 'road' && crossroads) {
+    try {
+      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
+        {
+          role: 'user',
+          text: `Goal: "${goal}"\nObstacle they expect: "${obstacle}"\nThe four circles:\n${[...crossroads.values()].join('\n')}`,
+        },
+      ])
+      return sent({ ...readRoad(result.text), provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
+
+  // A check-in is one reply to how an experiment went.
+  if (mode === 'checkin') {
+    const level = levels[circleOrder.indexOf(String(body.circle))]
+    try {
+      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
+        {
+          role: 'user',
+          text: `The experiment: "${step}"\nIt was testing: ${level.name} (${level.circle})\nTheir goal: "${goal || 'not said'}"\nWhat they say happened: "${report}"`,
+        },
+      ])
+      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
+    } catch (error) {
+      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      return Response.json({ error: 'unavailable' }, { status: 503 })
+    }
+  }
 
   // The Crossroads is one message about the four claims, with no chat behind it.
   if (crossroads) {

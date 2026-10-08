@@ -42,6 +42,33 @@ flowchart LR
   family ranked above occupation as a source of meaning almost everywhere), and a thin circle
   is not a dead end (O'Keefe, Dweck and Walton, 2018: people who see interests as developed,
   not found, stay interested when a subject gets hard).
+- **Todah remembers**: in `interview` mode the browser also sends the claims already on the
+  map from the other circles, the first Quest 1 answer (Heart only) and up to two friends'
+  witness answers (Craft only). `readMemory` in the route scrubs and trims them, and
+  `levelPrompt` asks Todah to pick up a thread on his first follow-up and in his closing
+  words, and never to re-ask what he already knows. It costs no extra AI calls.
+- **The road** (`/road`, `components/RoadScreen.tsx`): the player names an obstacle. One call
+  in `road` mode returns JSON (an if-then plan and three experiments, each tied to a circle),
+  checked field by field like the level summary, and the player edits it before it is saved
+  as `progress.road`. If their words show distress the model returns `care: true` and the
+  screen stops planning and responds with care. Doing an experiment opens a check-in: one
+  call in `checkin` mode, one reply from Todah, then that circle's evidence boxes for the
+  player to update. The first experiment done for a circle counts as that circle's trail
+  step (2 Pride Power). The if-then plan follows research on mental contrasting with
+  implementation intentions (Oettingen and Gollwitzer).
+- **A friend's witness** (`/witness`, `lib/witness.ts`): built like My Pride. The question
+  link carries the lion's card id, the player's first name and the lion's name. The answer
+  link carries the card id, the friend's first name and up to 200 characters. Both sit in
+  the URL fragment, every field is validated and run through the name filter, and an answer
+  is kept only if its card id matches the lion in play. It is an honour system.
+- **Sharing the free AI** (`lib/limit.ts`): the provider's free tier is one daily budget for
+  all players. Before each AI reply the route checks a daily count kept in an HttpOnly cookie
+  (a date and a number, nothing about the visitor; 60 a day) and a per-minute count per
+  network address held in memory (20 a minute). Past either, the route answers 429 and the
+  game carries on from scripted lines. Clearing cookies resets the daily count: a limit that
+  could not be reset would need a stored row per visitor, which the game chooses not to
+  keep. Token counts per call are logged (numbers only) to watch the budget. A full
+  playthrough is now about 26 AI replies, plus one per experiment reported.
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.

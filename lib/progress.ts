@@ -60,6 +60,16 @@ export type DevOverrides = {
   form: TodahForm | null
 }
 
+// The road toward the main goal: the obstacle the player expects, their if-then plan for it,
+// and a few small real-world experiments. Each experiment tests one circle. When one is done,
+// the player says how it went (`note`) and Todah answers once (`reply`).
+export type RoadStep = { circle: Circle, text: string, doneAt: string | null, note: string, reply: string }
+export type Road = { obstacle: string, plan: string, steps: RoadStep[] }
+
+// What someone who knows the player said they would come to them for. It arrives in a link
+// the friend sends back, like a cheer. `key` stops the same link being counted twice.
+export type Witness = { key: string, name: string, text: string, at: string }
+
 // A preset cheer a friend sent. `key` stops the same link from being counted twice.
 export type CheerReceived = { key: string, name: string, cheer: string, at: string }
 
@@ -102,6 +112,8 @@ export type Progress = {
   // What Todah said at the Crossroads, kept so it is asked for once. `for` is the four claims
   // it was about: if they change, it is asked for again.
   crossroads: { text: string, for: string } | null
+  road: Road | null
+  witnesses: Witness[]
   // null in every game except one a dev account has switched dev tools on for.
   dev: DevOverrides | null
 }
@@ -143,6 +155,8 @@ export const emptyProgress: Progress = {
   levelChat: {},
   levelsDone: [],
   crossroads: null,
+  road: null,
+  witnesses: [],
   dev: null,
 }
 
