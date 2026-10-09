@@ -1,4 +1,7 @@
 .frame {
+  /* The grain of moulded plastic, for the cabinet and for the plastic past its edges. */
+  --tv-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+
   position: fixed;
   inset: 0;
   z-index: 10;
@@ -58,9 +61,7 @@
   position: absolute;
   inset: 0;
   background:
-    /* the grain of moulded plastic */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2 0 0 0 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")
-      0 0 / 160px 160px,
+    var(--tv-grain) 0 0 / 160px 160px,
     /* light catching the top edge */
     linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0, rgba(255, 255, 255, 0.03) 3px, rgba(255, 255, 255, 0) 9px),
     /* the sides falling away into shadow */
@@ -85,6 +86,33 @@
     calc(100% - var(--tv-side)) var(--tv-top),
     var(--tv-side) var(--tv-top)
   );
+}
+
+/* Past its top and bottom edges the plastic carries on, out of sight. A phone's browser can
+   show more of the page than the set was sized for, when its own bars slide away: Chrome on
+   an iPhone does, and the set then stopped short of the bottom of the screen. Whatever shows
+   beyond an edge is now more of the same plastic. */
+.set::before,
+.set::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60vh;
+  background:
+    var(--tv-grain) 0 0 / 160px 160px,
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0, rgba(0, 0, 0, 0) 2.4%, rgba(0, 0, 0, 0) 97.6%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* Each is the colour the cabinet has along that edge. */
+.set::before {
+  bottom: 100%;
+  background-color: #303034;
+}
+
+.set::after {
+  top: 100%;
+  background-color: #0b0b0c;
 }
 
 /* The tube. Its glass is set back, so its edge is in shadow. The shadows outside it are the
