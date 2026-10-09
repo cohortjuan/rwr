@@ -13,7 +13,7 @@
 //
 // When either trips, the game carries on from its scripted lines.
 
-// A full playthrough is about 25 AI replies, so this allows two in a day with room to spare.
+// A full playthrough is about 28 AI replies, so this allows two in a day with a little room.
 export const DAILY_REPLIES = 60
 // Many players can share one address (a classroom, an office), so this is per minute only.
 const PER_MINUTE = 20

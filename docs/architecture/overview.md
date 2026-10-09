@@ -12,6 +12,7 @@ flowchart LR
   SupabaseAuth --- Postgres[(Supabase Postgres)]
   Browser -->|POST /api/suggest: a wardrobe idea| Suggest[Next.js server route]
   Suggest -->|SMTP, only if MAIL_USER is set| Mailbox[The maker's own mailbox]
+  Browser -.->|only if the player presses SPEAK| Speech[The browser maker's speech service]
 ```
 
 - LLM keys live only on the server (`.env.local` locally, host environment variables when deployed).
@@ -23,6 +24,9 @@ flowchart LR
   running server. With no mailbox set, `GET /api/suggest` answers `open: false` and the
   wardrobe hides the form.
 - With no key set, or when both providers fail, the quest uses scripted lines from `lib/lines.ts`.
+- The build log (`blog/`) is one static HTML file. `.github/workflows/blog.yml` publishes that
+  folder to GitHub Pages whenever it changes on `main`. It shares nothing with the game at
+  run time.
 
 ## Progression
 
@@ -50,6 +54,26 @@ flowchart LR
   family ranked above occupation as a source of meaning almost everywhere), and a thin circle
   is not a dead end (O'Keefe, Dweck and Walton, 2018: people who see interests as developed,
   not found, stay interested when a subject gets hard).
+- **Three paths to test** (same screen): only if the player asks. One call in `paths` mode
+  returns JSON, three occupations built from the four claims: `near` (one step up from where
+  the player stands), `next` (the same strengths somewhere else) and `wild` (a bigger leap).
+  `readPaths` in the route accepts exactly one of each kind and clamps every field. A pay
+  range is kept only if it is two sensible numbers ($15,000 to $400,000, the top no more than
+  three times the bottom), and is shown as rough and possibly out of date beside a link to
+  O*NET OnLine's search for that occupation. The prompt asks for real full-time occupations,
+  lists commonly low-paid work to leave out, and forbids stating what training a job needs,
+  because in testing the model got that wrong. The call asks the model for medium reasoning
+  effort: at low effort it kept offering the job the player already had. The answer is saved
+  with the claims and scores it was made from. Taking a path writes its goal to `goalText`.
+  With the AI off or down the player gets three questions to find the paths themselves.
+- **Todah's thoughts on the goal**: one call in `goal` mode whenever `goalText` changes, saved
+  with the goal it was about. It is left out without the AI.
+- **Trail Card** (`/card`, `components/TrailCardScreen.tsx`): a page drawn from the saved game,
+  with no AI call: the lion as it is dressed, the four claims, the goal and the first step.
+- **A letter to yourself** (`components/SealedLetter.tsx`): `progress.capsule` holds the text,
+  when it was sealed, `opensAt` (a date, or `null` to wait for the goal) and when it was
+  opened. `capsuleDue` in `lib/progress.ts` is the one test of whether it has arrived. It is
+  never sent to the server.
 - **Todah remembers**: in `interview` mode the browser also sends the claims already on the
   map from the other circles, the first Quest 1 answer (Heart only) and up to two friends'
   witness answers (Craft only). `readMemory` in the route scrubs and trims them, and
@@ -68,7 +92,7 @@ flowchart LR
   link carries the lion's card id, the player's first name and the lion's name. The answer
   link carries the card id, the friend's first name and up to 200 characters. Both sit in
   the URL fragment, every field is validated and run through the name filter, and an answer
-  is kept only if its card id matches the lion in play. It is an honour system.
+  is kept only if its card id matches the lion in play. It is an honor system.
 - **Todah's note** (`/letter`, `components/LetterScreen.tsx`, `lib/letterImage.ts`): opens
   only once `goalAchievedAt` is set. One call in `letter` mode sends the player's words in
   order (the first Quest 1 answer, the four claims, friends' witness answers, the goal, the
@@ -81,7 +105,7 @@ flowchart LR
   words. It is saved as `progress.letter` and can be rewritten twice.
   The note is drawn on a canvas in the browser: wood grain, paper fibres, fold creases and
   the inked paw print are made from seeded random strokes, the text is set in a handwriting
-  font, and the lion is the player's own pixel lion (coat colour worked out pixel by pixel
+  font, and the lion is the player's own pixel lion (coat color worked out pixel by pixel
   with `lib/colour.ts`) enlarged eight times with the Scale2x edge-rounding method and given
   a soft-focus copy underneath. The same picture is what the screen shows and what is saved
   or shared, as a JPEG. The words are also in the image's alt text and offered as plain text.
@@ -92,44 +116,85 @@ flowchart LR
   game carries on from scripted lines. Clearing cookies resets the daily count: a limit that
   could not be reset would need a stored row per visitor, which the game chooses not to
   keep. Token counts per call are logged (numbers only) to watch the budget. A full
-  playthrough is now about 26 AI replies, plus one per experiment reported.
+  playthrough is about 28 AI replies (3 in Quest 1, 5 in each of the four levels, and one each
+  for the Crossroads, the three paths, the goal, the road and Todah's note), plus one per
+  experiment reported.
+- **The roar** (`/roar`, `components/RoarScreen.tsx`, `lib/roarSound.ts`): the goal is
+  confirmed by pressing and holding for 1.5 seconds, with a plain press beside it for anyone
+  who cannot hold. A small store says when the roar starts and ends, and `MusicPlayer` cuts
+  the music in 0.15 seconds and brings it back quietly afterwards. The credits are the
+  player's own trail. On the whole screen they are moved by the game itself each animation
+  frame, so the scroll wheel can ease the pace, and they stop on a last screen sized to the
+  window.
 - **Lion upgrades** (`/upgrades`, `lib/upgrades.ts`): every slot has three checks, one per
   level, that look at what the entry says (a second sentence, a result with a number, proof in
   brackets) and not at its length.
 - **Den** counts career paths: lions that have a main goal and at least 3 evidence points.
 - **Pride** counts connections: friends in My Pride and outreach the player logs
-  (self-reported). Levels need 3, 10 and 25. With no accounts this is an honour system.
+  (self-reported). Levels need 3, 10 and 25. With no accounts this is an honor system.
 - **Pride Power** runs to 50: 21 from the seven slots, 12 from trail map evidence, 10 from
   real-world trail steps (2 each), and 7 from one-off milestones (finish Quest 1, set a goal,
   write all four claims, send a cheer, and the roar, worth 3). `powerParts` in
   `lib/progress.ts` holds the sum.
-- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from levels walked (5 each), cheers received (1 each,
-  once per friend per day, only from someone in the pride) and interviews logged (25 each).
-  They buy accessories, one worn per category. Guests can look but only a signed-in player
+- **Wardrobe** (`/wardrobe`, `lib/accessories.ts`): sparks come from levels walked (5 each),
+  real-world steps done (3 each), cheers received (1 each, once per friend per day, only from
+  someone in the pride) and interviews logged (25 each). They buy accessories, one worn per
+  category, except a lioness's essentials: up to three stand on the floor by her paws, the
+  third tucked behind them by drawing the paws again on top. A lion has a mane and its
+  colors, a lioness an aura, essentials and bags. Guests can look but only a signed-in player
   can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the
-  accessories on one 51 by 64 grid, so they line up at any size. Fur colours are CSS filters
+  accessories on one 51 by 64 grid, so they line up at any size. Fur colors are CSS filters
   over the sprite. The mane is its own layer (`lib/maneArt.ts`, generated to fit the sprite's
-  outline) in four sizes: its size follows the Mane upgrade's level and its colour is the one
-  thing a purchase changes. Each accessory has colour options, passed around as `id~colour`
+  outline) in four sizes: its size follows the Mane upgrade's level and its color is the one
+  thing a purchase changes. Each accessory has color options, passed around as `id~colour`
   tokens, so a friend's card shows the same outfit.
 - **Matching sets** (`lib/colour.ts`, `setMane` in `lib/accessories.ts`): every fur has a mane
-  of the same name. Its two colours are the natural mane's colours put through that fur's
+  of the same name. Its two colors are the natural mane's colors put through that fur's
   filter (the same maths the browser uses), so each set repeats the golden cub's own scheme:
-  the mane is the coat's colour a step round the wheel, deeper and stronger. It also matches
+  the mane is the coat's color a step round the wheel, deeper and stronger. It also matches
   the tail tip the filter has already tinted on the sprite. Fur and mane are bought
   separately, so a new fur alone does not match until its mane is bought too. Three manes
   (white, purple, teal) belong to no set. The mane layer is drawn only from Mane level 1 up.
 - **Picture pieces**: accessories marked `image` in `lib/accessories.ts` are PNGs in
-  `public/wardrobe`, one per colour (`<id>--<colour>.png`), the size of the lion's stage with
+  `public/wardrobe`, one per color (`<id>--<colour>.png`), the size of the lion's stage with
   only the piece on it. `LionAvatar` draws them as SVG images in `drawOrder` (a costume
-  first, then shoes and jackets, what hangs over them, and last what sits on the face and
-  head), mixed in with the older letter-drawn pieces. `scripts/wardrobe-from-sheet.py` makes
+  first, then jackets, what hangs over them, what sits on the face and head, and last what
+  stands on the floor), mixed in with the older letter-drawn pieces. `scripts/wardrobe-from-sheet.py` makes
   them: it registers each sheet cell's lion against the game's sprite by outline, keeps the
-  pixels whose colour is not found there or next to it, and repaints the piece from the
+  pixels whose color is not found there or next to it, and repaints the piece from the
   shared ramps in `scripts/wardrobe_manifest.py`, giving each pixel a ramp step by its rank
   from dark to light. One palette for every piece is what makes any combination sit together.
-  A piece with `hidesMane` (the shishi transformation) replaces the lion's own mane.
+  A piece marked `alone` (the shishi transformation) is a whole picture: while it is on,
+  it is all that is drawn. A lioness's essentials are cut by `scripts/essentials-art.py` as
+  they were drawn, at six times the grid, and are not pixelated when shown.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
+
+## Around every screen
+
+- **The way back** (`lib/lastScreen.ts`, `components/LastScreen.tsx`,
+  `components/SettingsToggles.tsx`): a back arrow and a home button sit in the corner of every
+  screen but the title. The game keeps its own trail of screens in `sessionStorage`. The
+  arrow goes to the one before, or to the screen above when there is none. Where the browser's
+  Navigation API shows that same screen one step back in the same document, the arrow steps
+  back through history, so the screen returns scrolled to where it was left. Otherwise it
+  opens the screen as a link would, so it can never lead out of the game. ABOUT, PRIVACY and
+  DEV have a BACK of their own that returns to the last screen of the game itself.
+- **Speaking an answer** (`lib/speech.ts`, `components/MicButton.tsx`): SPEAK beside an answer
+  box uses the browser's Web Speech API. RWR's server never receives sound. Most browsers send
+  it to their maker's speech service, so the player is told and asked before the first use,
+  and the answer is kept in settings. Words are added to what is in the box and corrected as
+  the sentence takes shape. Typing in the box, or sending it, ends the listening. A store
+  tells `MusicPlayer` to drop to silence while a mic is on. A browser without the API shows
+  no button.
+- **Sound needs a tap** (`lib/audioGate.ts`, `components/MusicPlayer.tsx`): browsers refuse
+  to play sound until the player interacts. The title screen then starts switched off behind
+  POWER ON. Sound counts as allowed only when a track that is meant to be heard is playing:
+  Safari and Firefox let a track at volume 0 start with no tap, which proves nothing.
+- **The old TV set** (`components/TvFrame.tsx`, `app/globals.css`): drawn in CSS on a screen
+  wider than it is tall. Custom properties say how far its plastic reaches in from each edge
+  (zero when it is off), and the page, the pinned buttons and the pop-up boxes all add them.
+  The plastic carries on past the top and bottom edges, for phone browsers that show more
+  page than they report when their own bars slide away. TV SET in SETTINGS is always there.
 
 ## Accounts
 
@@ -178,6 +243,9 @@ sequenceDiagram
 - Email addresses, links, and phone numbers are scrubbed from answers before they reach a provider
   (`lib/scrub.ts`).
 - The server route does not log or store answers.
+- The letter a player seals for themselves never leaves the device.
+- Sound from the microphone never reaches RWR. The browser turns it into words, and the game
+  says where the sound goes and asks before the mic is first used.
 - `/privacy` lets a player turn off saving on the device and delete all of their data.
 
 ## Database

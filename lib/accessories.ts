@@ -96,8 +96,8 @@ export const STEP_SPARKS = 3
 export const LEVEL_SPARKS = 5
 
 export const categories: AccessoryCategory[] = ['fur', 'mane', 'essentials', 'hat', 'shades', 'ears', 'neck', 'body', 'bag', 'outfit']
-// The order pieces are drawn in, bottom first: a costume under everything, then shoes and
-// jackets, what hangs over them, and last what sits on the face and head.
+// The order pieces are drawn in, bottom first: a costume under everything, then jackets,
+// what hangs over them, what sits on the face and head, and last what stands on the floor.
 export const drawOrder: AccessoryCategory[] = ['outfit', 'body', 'neck', 'bag', 'shades', 'ears', 'hat', 'essentials']
 // What the lion has in a category when nothing else is chosen.
 export const defaults: Partial<Record<AccessoryCategory, string>> = { fur: 'golden', mane: 'mane-natural' }
