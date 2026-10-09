@@ -41,10 +41,13 @@ prophet: nothing in the game promises a job or an outcome.
 - Quest 1 (onboarding): scripted beats, then an AI warm-up with a scripted fallback ("trail
   notes"). Todah's text types out and his mouth moves while he talks
 - Levels 1 to 4, Heart, Craft, Cause and Coin (`/level/heart` and so on): in each, Todah opens
-  with a scripted question, asks three follow-ups about real moments, and then the talk
-  becomes one claim and its evidence. The player checks and corrects that before it is marked
+  with a scripted question and asks three follow-ups about real moments. The one in the
+  middle is a quick round with nothing to type: the player taps the answer that fits, or
+  chooses to type their own. Then the talk becomes one claim and its evidence. The player checks and corrects that before it is marked
   on the trail map. Cause also asks the player to pick the needs they care about, and Coin
-  never estimates pay. Without AI consent the same levels run from scripted questions
+  never estimates pay. Without AI consent the same levels run from scripted questions. Each
+  level ends at a resting point: Todah says how many of the four are walked and that
+  everything is saved, and REST HERE sits beside going on
 - Todah remembers: each level's AI prompt carries what the player said on earlier levels and
   in Quest 1, so he can pick up a thread ("that sounds like the fixing you told me about")
 - Trail map (`/map`): the four circles scored 0 to 3 on evidence the player ticks, not on

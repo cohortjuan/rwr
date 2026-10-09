@@ -43,6 +43,13 @@ flowchart LR
   form and only then is it saved to the trail map. If the AI is off, down, or returns
   anything unexpected, the level falls back to scripted questions and an empty form. All four
   levels share this one component: a level is its brief in `lib/prompts.ts` and its lines.
+- **The quick round and the resting point**: of a level's three follow-ups, Todah asks two.
+  The one between them (`LEVEL_TAP_AFTER` in `lib/levels.ts`) is the game's own question
+  about the third kind of evidence, answered by tapping one of four sentences from
+  `lib/lines.ts`, or by typing. It costs no AI call, and the sentence tapped goes into the
+  talk as the player's answer. The prompt tells Todah the game asks about that, so he does
+  not. A finished level says how many of the four are walked and offers REST HERE beside the
+  next level.
 - **Crossroads** (`/crossroads`, `components/CrossroadsScreen.tsx`): opens once every circle
   has a claim. One call in `crossroads` mode sends the four claims and their evidence counts
   and gets back a short message: what lines up, one gap, one open question. The prompt
@@ -116,7 +123,7 @@ flowchart LR
   game carries on from scripted lines. Clearing cookies resets the daily count: a limit that
   could not be reset would need a stored row per visitor, which the game chooses not to
   keep. Token counts per call are logged (numbers only) to watch the budget. A full
-  playthrough is about 28 AI replies (3 in Quest 1, 5 in each of the four levels, and one each
+  playthrough is about 24 AI replies (3 in Quest 1, 4 in each of the four levels, and one each
   for the Crossroads, the three paths, the goal, the road and Todah's note), plus one per
   experiment reported.
 - **The roar** (`/roar`, `components/RoarScreen.tsx`, `lib/roarSound.ts`): the goal is

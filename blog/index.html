@@ -688,12 +688,14 @@ const parts = [
           'In each level Todah asks for a real moment, like the last time you lost track of time doing something. With AI switched on he follows up on what you said. With it off, the same level runs from written questions.',
           'He never grades an answer. A thin circle only means not tested yet.',
           'You can type an answer or press SPEAK and say it. 🎤 The words land in the box first, so you can fix them before Todah sees them.',
+          'A friend who tried it said the interview felt long. So one question in each level is now a quick round with nothing to type, just a tap. 👆 And every level ends at a resting point, so nobody feels they owe four levels in one sitting.',
         ],
         hood: [
           'One server route, `/api/todah`, is the only place the app talks to a language model (`openai/gpt-oss-120b` on Groq). It has a mode for each job: interview, summary, crossroads, paths, goal, road, check-in and letter.',
           'The server counts the player\'s answers and tells the model "this is follow-up 2 of 3" on every turn, so a level always ends when it should.',
           'One more call turns the talk into JSON: a one-sentence claim and three yes-or-no answers about evidence. Anything that is not exactly that shape is dropped, and the player gets an empty form to fill in.',
           'Every prompt carries the same guardrails: no promised outcomes, no diagnosis, and a pause with care if the player sounds hopeless. A made-up hopeless player was part of testing.',
+          'The quick round is the game\'s own question, so it costs no AI call. The sentence tapped goes into the talk as the player\'s answer, and the prompt tells the model the game has that topic covered.',
           'SPEAK is the browser\'s own Web Speech API: free, with no key. The game never receives sound, only the words. Most browsers send the sound to their maker\'s speech service to do it, so the game says so and asks before the first use. A browser without it shows no mic.',
           'While the mic listens, a small store tells the music player to drop to silence in 0.3 seconds, so the browser hears the player and not the tune.',
         ],
@@ -920,7 +922,7 @@ const parts = [
           'The best test I ran was the simplest. I played it from start to finish and noticed what I expected to happen next. I expected the game to suggest something at the end, and it did not. That gap became the three paths.',
         ],
         hood: [
-          'A full playthrough uses about 28 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
+          'A full playthrough uses about 24 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
           'Playing it on a phone showed that the way back sat at the foot of long pages. Now a back arrow and a home button sit in the corner of every screen. The arrow follows the game\'s own trail of screens, kept in `sessionStorage`. It steps through the browser\'s history only when the Navigation API confirms the entry one step back is that same screen, so it can never lead out of the game.',
         ],
       },
