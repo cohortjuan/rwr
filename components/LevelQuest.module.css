@@ -115,3 +115,41 @@
   font-size: 0.6rem;
   color: var(--gold-bright);
 }
+
+/* The quick round: answers to tap, one under another, each as wide as the box so a thumb
+   cannot miss. They are sentences, so they are set in the reading font, not the pixel one. */
+.taps {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.tap {
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--ink);
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  box-shadow: 0 4px 0 var(--gold-deep);
+  cursor: pointer;
+}
+
+.tap:hover {
+  background: var(--gold-bright);
+}
+
+.tap:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--gold-deep);
+}
+
+.tapOwn {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 0.6rem;
+}

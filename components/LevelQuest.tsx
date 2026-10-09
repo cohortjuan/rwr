@@ -5,7 +5,7 @@ import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import { LEVEL_SPARKS } from '@/lib/accessories'
 import { circles, circleScore, EVIDENCE_MAX, NEEDS_MAX } from '@/lib/compass'
-import { LEVEL_ANSWERS, liveLevels, type LiveLevel } from '@/lib/levels'
+import { LEVEL_ANSWERS, LEVEL_TAP_AFTER, liveLevels, type LiveLevel } from '@/lib/levels'
 import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { withLionName } from '@/lib/names'
@@ -16,9 +16,10 @@ import { NAME_TOKEN } from '@/lib/tokens'
 import quest from './OnboardingQuest.module.css'
 import styles from './LevelQuest.module.css'
 
-// One level of the interview. Todah opens with a scripted question, asks three follow-ups
-// (the AI when the player has agreed to it, the script otherwise), and then the talk becomes
-// one claim and its evidence. The player checks and corrects that before it is marked on the
+// One level of the interview. Todah opens with a scripted question and asks three follow-ups,
+// and then the talk becomes one claim and its evidence. Two of the follow-ups are his own
+// (the AI when the player has agreed to it, the script otherwise). The one in between is a
+// quick round the game asks itself, answered with a tap, to break up the typing. The player checks and corrects that before it is marked on the
 // trail map: nothing is saved there that they have not seen.
 
 type Step = 'intro' | 'consent' | 'chat' | 'summing' | 'review' | 'done'
@@ -53,9 +54,9 @@ function withName(text: string, name: string): string {
 // Scripted stand-in for the AI: used in demo mode, without consent, or when the AI is down.
 function scriptedReply(circle: LiveLevel, history: ChatMessage[]): TodahReply {
   const text = lines.level.circles[circle]
-  // The opener is already in the history, so the first follow-up is the second thing Todah says.
-  const asked = history.filter((message) => message.role === 'todah').length - 1
-  const line = text.scripted[asked]
+  // His first question follows the first answer. His second follows the tapped answer.
+  const answers = answersIn(history)
+  const line = text.scripted[answers > LEVEL_TAP_AFTER ? answers - 2 : answers - 1]
   return { reply: line ?? text.scriptedClose, complete: !line, scripted: true }
 }
 
@@ -145,6 +146,8 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
   const [claim, setClaim] = useState('')
   const [evidence, setEvidence] = useState<string[]>([])
   const [ownSummary, setOwnSummary] = useState(false)
+  // In the quick round: true once the player has chosen to type an answer of their own.
+  const [typingOwn, setTypingOwn] = useState(false)
   // Length of the chat we last asked Todah to reply to, so each turn is requested once.
   const requestedFor = useRef(-1)
   const summedUp = useRef(false)
@@ -155,6 +158,8 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
   const answers = answersIn(chat)
   const lastTodah = [...chat].reverse().find((message) => message.role === 'todah')
   const awaitingAnswer = chat.length > 0 && chat[chat.length - 1].role === 'todah' && !isFinished(chat)
+  // The quick round is on when the question waiting for an answer is the game's own.
+  const tapRound = awaitingAnswer && lastTodah?.text === text.tap.question
   const name = progress.playerName || 'traveler'
   const lion = (line: string) => withLionName(line, progress.lionName)
   // The level that follows this one, if there is one.
@@ -190,6 +195,11 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
 
   const requestReply = useCallback(
     async (history: ChatMessage[]) => {
+      // The quick round is the game's own question: no AI call, and no wait.
+      if (answersIn(history) === LEVEL_TAP_AFTER) {
+        saveChat([...history, { role: 'todah', text: text.tap.question }])
+        return
+      }
       setPending(true)
       setNotice('')
       const result = await askTodah(progress, circle, history, demo)
@@ -199,7 +209,7 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
       setPending(false)
       if (result.complete) setStep('summing')
     },
-    [progress, circle, demo, saveChat],
+    [progress, circle, demo, saveChat, text.tap.question],
   )
 
   // Todah owes a reply whenever the chat ends on the player's answer. Driving this from the
@@ -245,14 +255,27 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
     playSfx('select', sound)
     setAnswerDraft('')
     setNotice('')
+    setTypingOwn(false)
     saveChat([...chat, { role: 'user', text: answer }])
+  }
+
+  // The quick round: the choice tapped is the player's answer, word for word.
+  function tapAnswer(choice: string) {
+    playSfx('select', sound)
+    setAnswerDraft('')
+    setNotice('')
+    saveChat([...chat, { role: 'user', text: choice }])
   }
 
   // Going back to an earlier answer drops everything said after it, since the later questions
   // were about the old answer. The old words are put back in the box to edit.
   function changeAnswer(index: number) {
     playSfx('select', sound)
-    setAnswerDraft(chat[index].text)
+    // A tapped answer goes back to its choices. Words the player typed go back in the box.
+    const tapped = chat[index - 1]?.text === text.tap.question
+    const typed = !tapped || !text.tap.choices.includes(chat[index].text)
+    setAnswerDraft(typed ? chat[index].text : '')
+    setTypingOwn(tapped && typed)
     setNotice('')
     summedUp.current = false
     requestedFor.current = -1
@@ -397,7 +420,22 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
           <>
             {pending && <DialogBox text={lines.onboarding.thinking} mood="thinking" />}
 
-            {!pending && awaitingAnswer && lastTodah && (
+            {!pending && tapRound && !typingOwn && lastTodah && (
+              <DialogBox text={lion(lastTodah.text)}>
+                <div className={styles.taps} role="group" aria-label={lines.level.tapLabel}>
+                  {text.tap.choices.map((choice) => (
+                    <button key={choice} type="button" className={styles.tap} onClick={() => tapAnswer(choice)}>
+                      {choice}
+                    </button>
+                  ))}
+                  <button type="button" className={`btn btn-quiet ${styles.tapOwn}`} onClick={() => setTypingOwn(true)}>
+                    {lines.level.tapOwn}
+                  </button>
+                </div>
+              </DialogBox>
+            )}
+
+            {!pending && awaitingAnswer && (!tapRound || typingOwn) && lastTodah && (
               <DialogBox text={lion(withName(lastTodah.text, name))}>
                 <form className={quest.answerForm} onSubmit={submitAnswer}>
                   <label className="sr-only" htmlFor="level-answer">
@@ -424,6 +462,11 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                       {lines.onboarding.send}
                     </button>
                     <MicButton value={answerDraft} onChange={setAnswerDraft} maxLength={1000} />
+                    {tapRound && (
+                      <button type="button" className="btn btn-quiet" onClick={() => setTypingOwn(false)}>
+                        {lines.level.tapBack}
+                      </button>
+                    )}
                   </div>
                 </form>
               </DialogBox>
@@ -547,7 +590,10 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
             <p className={quest.banner}>{text.banner}</p>
             <p className={styles.sparks}>{lines.level.sparks(LEVEL_SPARKS)}</p>
             <DialogBox
-              text={[lines.level.done(name, circleScore(progress, circle), EVIDENCE_MAX), nextLevel ? '' : lines.level.allDone]
+              text={[
+                lines.level.done(name, circleScore(progress, circle), EVIDENCE_MAX),
+                nextLevel ? lines.level.rest(liveLevels.indexOf(circle) + 1, liveLevels.length) : lines.level.allDone,
+              ]
                 .filter(Boolean)
                 .join(' ')}
               mood="happy"
@@ -567,11 +613,12 @@ function Level({ circle, demo, progress, startAt }: { circle: LiveLevel, demo: b
                   {inClaws ? lines.level.inClaws : lines.level.toClaws}
                 </button>
               )}
+              {/* A level is a place to stop for the day: resting is offered beside going on. */}
+              <Link className="btn btn-quiet" href="/upgrades">
+                {nextLevel ? lines.level.restHere : lines.level.toUpgrades}
+              </Link>
               <Link className="btn btn-quiet" href="/map">
                 {lines.level.toMap}
-              </Link>
-              <Link className="btn btn-quiet" href="/upgrades">
-                {lines.level.toUpgrades}
               </Link>
               <button type="button" className="btn btn-quiet" onClick={again}>
                 {lines.level.replay}

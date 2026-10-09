@@ -564,6 +564,15 @@ export const lines = {
     save: 'MARK MY MAP',
     again: 'ANSWER AGAIN',
     replay: 'WALK THIS LEVEL AGAIN',
+    // The quick round: the way to answer in your own words when no choice fits.
+    tapOwn: 'NONE OF THESE: I WILL TYPE IT',
+    tapBack: 'SHOW THE CHOICES',
+    tapLabel: 'Tap the answer that fits',
+    // The end of a level is a place to stop for the day. Say so, so nobody feels they owe
+    // four levels in one sitting.
+    rest: (walked: number, total: number) =>
+      `That is level ${walked} of ${total} walked. This is a good place to rest: everything is saved, and the next level will be here when you come back.`,
+    restHere: 'REST HERE',
     replaceNote: 'This replaces what your trail map says for this circle now.',
     done: (name: string, score: number, max: number) =>
       `Marked, ${name}. This circle has ${score} of ${max} evidence. Whatever the number, it is a place to start from, not a grade.`,
@@ -584,13 +593,24 @@ export const lines = {
         banner: 'LEVEL 1 COMPLETE',
         start: 'START LEVEL 1',
         intro:
-          'Level 1: Heart. This one is about what you love. Four questions, no wrong answers, no timer. I will ask for real moments, because one moment tells me more than a wish does.',
+          'Level 1: Heart. This one is about what you love. Four questions, one of them just a tap, no wrong answers, no timer. I will ask for real moments, because one moment tells me more than a wish does.',
         opener: 'Think of the last time you lost track of time doing something. What were you doing?',
         scripted: [
           'When did you last do that? A rough date is fine.',
           'Do you ever do it when nobody is paying you or watching? Tell me about one time.',
-          'Everything we love has dull parts. What is the dull part of this, and how do you feel about it on those days?',
         ],
+        // The quick round: asked by the game after the second answer, with nothing to type.
+        // Each choice is the player's answer in their own voice, and it is what goes into
+        // the talk, so write it as a whole sentence that is true of someone.
+        tap: {
+          question: 'Quick one, nothing to type. Everything we love has dull parts. On the dull days, which is closest?',
+          choices: [
+            'I still like it, even on the dull days.',
+            'I get through the dull parts, but I do not enjoy them.',
+            'The dull parts make me want to stop.',
+            'I have not done it enough to know.',
+          ],
+        },
         scriptedClose: 'Thank you. That is plenty to mark the map with.',
       },
       craft: {
@@ -603,8 +623,16 @@ export const lines = {
         scripted: [
           'Does anyone come to you for help with that? Who, and what do they ask for?',
           'What is one thing you made, fixed, or improved with that skill that you could point to?',
-          'How long have you been doing it? A rough guess is fine.',
         ],
+        tap: {
+          question: 'Quick one, nothing to type. How long have you been doing this?',
+          choices: [
+            'I have been doing it for less than a year.',
+            'I have been doing it for one to three years.',
+            'I have been doing it for more than three years.',
+            'Off and on for a long time. I could not put a number on it.',
+          ],
+        },
         scriptedClose: 'Thank you. Skill leaves tracks, and you just showed me some.',
       },
       cause: {
@@ -617,8 +645,16 @@ export const lines = {
         scripted: [
           'Who would you most want your work to help? A person or a group, as plainly as you can name them.',
           'Has anyone asked you for that kind of help, or thanked you for it? Tell me about one time.',
-          'Have you checked anywhere outside your own head that the need is real? A report, some numbers, or asking the people themselves all count.',
         ],
+        tap: {
+          question: 'Quick one, nothing to type. Have you checked anywhere outside your own head that the need is real?',
+          choices: [
+            'Yes. I have seen a report or some numbers on it.',
+            'Yes. I have asked the people themselves.',
+            'Not yet. It is my own sense of it so far.',
+            'I would not know where to look.',
+          ],
+        },
         scriptedClose: 'Thank you. A need with a face on it is easier to walk toward.',
       },
       coin: {
@@ -631,8 +667,16 @@ export const lines = {
         scripted: [
           'Do you know of real people, job titles, or businesses that are paid for that work today? Name one if you can.',
           'Have you ever been paid for it yourself, even once, even a little?',
-          'Have you looked up what it pays? If you have, would it cover what you need?',
         ],
+        tap: {
+          question: 'Quick one, nothing to type. Have you looked up what this work pays?',
+          choices: [
+            'Yes, and it would cover what I need.',
+            'Yes, and it would not cover what I need yet.',
+            'I have not looked it up.',
+            'I am not sure what I need it to pay.',
+          ],
+        },
         scriptedClose: 'Thank you. Coin is the circle most worth checking outside your own head, and now you know what to check.',
       },
     },

@@ -22,6 +22,12 @@ export const phases: Phase[] = [...levels.map((level) => level.name), 'Crossroad
 // AI (or from the script), so this many answers plus one end it.
 export const LEVEL_FOLLOW_UPS = 3
 export const LEVEL_ANSWERS = LEVEL_FOLLOW_UPS + 1
+// One of the follow-ups is a quick round with nothing to type: the game asks it itself, once
+// this many answers are in, and the player taps the answer that fits. It breaks up the
+// typing, and it asks about the third kind of evidence the level looks for. The other
+// follow-ups are Todah's own.
+export const LEVEL_TAP_AFTER = 2
+export const LEVEL_TYPED_FOLLOW_UPS = LEVEL_FOLLOW_UPS - 1
 
 // The circles whose level interview is built, in the order the levels are walked.
 export const liveLevels = ['heart', 'craft', 'cause', 'coin'] as const

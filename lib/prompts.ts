@@ -1,4 +1,4 @@
-import { describePhase, LEVEL_ANSWERS, LEVEL_FOLLOW_UPS, type Phase } from '@/lib/levels'
+import { describePhase, LEVEL_ANSWERS, LEVEL_TAP_AFTER, LEVEL_TYPED_FOLLOW_UPS, type Phase } from '@/lib/levels'
 import type { EntryChoice } from '@/lib/lines'
 import { NAME_TOKEN } from '@/lib/tokens'
 
@@ -134,10 +134,16 @@ export const levelBriefs: Partial<Record<Phase, LevelBrief>> = {
   },
 }
 
-// One level of the interview: three follow-ups after the scripted opener, each looking for one
-// kind of evidence, then a closing reflection with no question.
+// One level of the interview: follow-ups after the scripted opener, each looking for one kind
+// of evidence, then a closing reflection with no question. Todah asks two of the follow-ups.
+// The game asks the other itself, as a quick round of answers to tap, about the last kind of
+// evidence in the brief, so Todah is told to leave that one alone.
 function levelPrompt(context: PromptContext, brief: LevelBrief): string {
   const answers = context.answers ?? 1
+  // Which of his own follow-ups this is: the tapped answer in between is not one of them.
+  const followUp = answers > LEVEL_TAP_AFTER ? answers - 1 : answers
+  const ownProbes = brief.probes.slice(0, LEVEL_TYPED_FOLLOW_UPS)
+  const tapped = brief.probes[LEVEL_TYPED_FOLLOW_UPS]
   // Todah remembers. What the player said earlier rides along, and at two moments he is asked
   // to pick up the thread the way a friend who was listening would: on his first follow-up
   // and in his closing words. In between he only has to avoid asking for what he already knows.
@@ -153,8 +159,14 @@ If this level honestly connects with something from earlier on the trail (listed
 one more short sentence that says how, in their own words.`
             : ''
         }`
-      : `The player has given ${answers} of ${LEVEL_ANSWERS} answers. This is follow-up ${answers} of ${LEVEL_FOLLOW_UPS}: reflect back what you
+      : `The player has given ${answers} of ${LEVEL_ANSWERS} answers. This is follow-up ${followUp} of ${LEVEL_TYPED_FOLLOW_UPS}: reflect back what you
 just heard in one sentence, then ask ONE question.${
+          answers > LEVEL_TAP_AFTER
+            ? `
+Their last answer was picked from a short list the game offered, so it is brief. Take it as
+it is, and do not ask them to explain it.`
+            : ''
+        }${
           remembers && answers === 1
             ? `
 If what they just said touches something from earlier on the trail (listed below), say so in a
@@ -174,9 +186,11 @@ next thing instead.
   return `You are Todah, a warm, curious career-exploration guide in a retro 16-bit game.
 This is the level called ${describePhase(context.phase ?? 'Heart')}. The player has just been asked about ${brief.opener}.
 
-You have exactly ${LEVEL_FOLLOW_UPS} follow-up questions, one per message. Between them, in whatever order fits
+You have exactly ${LEVEL_TYPED_FOLLOW_UPS} follow-up questions, one per message. Between them, in whatever order fits
 the talk, find out:
-${brief.probes.map((probe, index) => `${index + 1}. ${probe}`).join('\n')}
+${ownProbes.map((probe, index) => `${index + 1}. ${probe}`).join('\n')}
+The game itself asks about ${tapped}, with a short list of answers to pick from. Do not ask
+about that yourself.
 
 ${turn}
 ${memory}
