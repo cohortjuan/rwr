@@ -125,8 +125,14 @@ export default function MicButton({ value, onChange, maxLength }: Props) {
 
   if (!hydrated || !speechSupported()) return null
 
+  const message = on ? lines.mic.listening : problem
+
+  // The button and its line are separate pieces, so each takes its place in whatever row or
+  // column the answer box has: the button lines up with SEND or sits under the box, and the
+  // line takes a row of its own below. The button must not move when the line appears, or
+  // STOP would not be where SPEAK was pressed.
   return (
-    <div className={styles.mic}>
+    <>
       <button
         type="button"
         className={on ? `btn ${styles.button}` : `btn btn-quiet ${styles.button}`}
@@ -134,12 +140,20 @@ export default function MicButton({ value, onChange, maxLength }: Props) {
         aria-label={on ? lines.mic.stopLabel : lines.mic.startLabel}
         onClick={press}
       >
-        <PixelArt rows={mic} className={on ? styles.iconOn : undefined} />
+        <PixelArt rows={mic} className={on ? `${styles.icon} ${styles.iconOn}` : styles.icon} />
         {on ? lines.mic.stop : lines.mic.start}
       </button>
-      <span className={styles.note} role="status">
-        {on ? lines.mic.listening : problem}
+      {/* Said aloud by a screen reader whenever it changes. It takes up no room, so an empty
+          line never pushes anything out of place. The line that is seen is drawn only when
+          there is something to say. */}
+      <span className="sr-only" role="status">
+        {message}
       </span>
+      {message && (
+        <span className={styles.note} aria-hidden="true">
+          {message}
+        </span>
+      )}
 
       <ConfirmBox
         open={asking}
@@ -153,6 +167,6 @@ export default function MicButton({ value, onChange, maxLength }: Props) {
         }}
         onNo={() => setAsking(false)}
       />
-    </div>
+    </>
   )
 }

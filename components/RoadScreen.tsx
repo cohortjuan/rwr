@@ -388,15 +388,15 @@ export default function RoadScreen() {
                             <button type="button" className="btn btn-quiet" disabled={listening} onClick={() => setReporting(null)}>
                               {lines.road.howCancel}
                             </button>
+                            <MicButton
+                              value={report}
+                              onChange={(text) => {
+                                setReport(text)
+                                setNotice('')
+                              }}
+                              maxLength={1000}
+                            />
                           </div>
-                          <MicButton
-                            value={report}
-                            onChange={(text) => {
-                              setReport(text)
-                              setNotice('')
-                            }}
-                            maxLength={1000}
-                          />
                         </form>
                       )}
 

@@ -1,20 +1,20 @@
-/* SPEAK and the line beside it. They sit in a row and wrap on a narrow screen. */
-.mic {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 12px;
-}
-
+/* SPEAK is a button like any other in the game, the same height as SEND beside it, with a
+   mic drawn in front of the word. In a column it keeps to the left and is not stretched. */
 .button {
   /* One pixel of the mic icon. */
   --px: 2px;
 
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
   gap: 8px;
-  padding: 9px 12px;
-  font-size: 0.6rem;
+}
+
+/* The mic is a little taller than a line of the button's text. It reaches into the padding
+   above and below, so the button is no taller for having it. */
+.icon {
+  flex: none;
+  margin: -3px 0;
 }
 
 /* While it is listening the mic blinks. With motion off it simply stays lit. */
@@ -31,9 +31,12 @@
   }
 }
 
+/* The line about the mic: that it is listening, or what went wrong. It takes a row of its
+   own under the buttons, so they stay where they are when it appears. */
 .note {
-  flex: 1 1 180px;
-  min-width: 0;
+  display: block;
+  flex: none;
+  width: 100%;
   font-size: 0.85rem;
   opacity: 0.9;
 }
