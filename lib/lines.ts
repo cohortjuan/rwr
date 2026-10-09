@@ -64,6 +64,8 @@ export const lines = {
     soundLow: 'LOW',
     soundNone: 'OFF',
     tvNote: 'The old TV set is drawn round the game on a wide screen.',
+    // Beside the same switch when the window is too narrow or too short for the set.
+    tvNoteNarrow: 'The old TV set shows when the screen is wider than it is tall. Turn a phone sideways, or widen the window, to see it.',
     privacy: 'PRIVACY AND YOUR DATA',
     close: 'CLOSE',
     // On ABOUT, PRIVACY and DEV, which are reached from every screen. It returns to the

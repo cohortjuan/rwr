@@ -247,14 +247,19 @@
   border-color: var(--ink);
 }
 
-/* The switch for the old TV set. It is shown only where the set can be: a screen wider than
-   it is tall (the same test as in app/globals.css). */
-.tv {
+/* The switch for the old TV set is always there, whatever the shape of the window. Only the
+   line beside it changes: one for a screen the set can be drawn on (wider than it is tall,
+   the same test as in app/globals.css), and one for a screen it cannot. */
+.tvWide {
   display: none;
 }
 
 @media (orientation: landscape) and (min-width: 560px) and (min-height: 300px) {
-  .tv {
-    display: flex;
+  .tvWide {
+    display: inline;
+  }
+
+  .tvNarrow {
+    display: none;
   }
 }

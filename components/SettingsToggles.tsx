@@ -176,12 +176,16 @@ export default function SettingsToggles() {
           </button>
         </div>
 
-        {/* Only on a wide screen, where there is a TV set to switch off. */}
-        <div className={`${styles.row} ${styles.tv}`}>
+        {/* Always here, so the set can be switched off (or back on) from any window. The set
+            itself is only drawn on a wide screen, and the line beside the switch says so. */}
+        <div className={styles.row}>
           <button type="button" className={styles.choice} aria-pressed={settings.tv} onClick={() => saveSettings({ tv: !settings.tv })}>
             {settings.tv ? lines.settings.tvOn : lines.settings.tvOff}
           </button>
-          <span className={styles.note}>{lines.settings.tvNote}</span>
+          <span className={styles.note}>
+            <span className={styles.tvWide}>{lines.settings.tvNote}</span>
+            <span className={styles.tvNarrow}>{lines.settings.tvNoteNarrow}</span>
+          </span>
         </div>
 
         <div className={styles.row}>
