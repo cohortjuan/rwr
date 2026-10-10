@@ -61,25 +61,36 @@ flowchart LR
   family ranked above occupation as a source of meaning almost everywhere), and a thin circle
   is not a dead end (O'Keefe, Dweck and Walton, 2018: people who see interests as developed,
   not found, stay interested when a subject gets hard).
-- **Three paths to test** (same screen): only if the player asks. One call in `paths` mode
-  returns JSON, three occupations built from the four claims: `near` (one step up from where
-  the player stands), `next` (the same strengths somewhere else) and `wild` (a bigger leap).
-  `readPaths` in the route accepts exactly one of each kind and clamps every field. A pay
-  range is kept only if it is two sensible numbers ($15,000 to $400,000, the top no more than
-  three times the bottom), and is shown as rough and possibly out of date beside a link to
-  O*NET OnLine's search for that occupation. The prompt asks for real full-time occupations,
-  lists commonly low-paid work to leave out, and forbids stating what training a job needs,
-  because in testing the model got that wrong. The call asks the model for medium reasoning
-  effort: at low effort it kept offering the job the player already had. The answer is saved
-  with the claims and scores it was made from. Taking a path writes its goal to `goalText`.
-  With the AI off or down the player gets three questions to find the paths themselves.
-  Before asking, the player can say what they make in a year now (`progress.payNow`,
-  `lib/pay.ts`). It is optional and goes with the claims. The prompt forbids a step down in
-  pay, and the route checks the answer: a path is short when the middle of its range is under
-  90% of that amount. A set with a short path is asked for once more, naming the work to
-  replace, and the set with fewer short paths is kept. Any still short are marked `less`, and
-  the card warns the player. A path with no pay range cannot be checked. The pay ranges are
-  the model's memory of public figures, so this check is only as good as they are.
+- **Three paths to test** (same screen): only if the player asks. `near` is one step up from
+  where the player stands, `next` the same strengths somewhere else, and `wild` a bigger leap.
+  The model does not name occupations or figures of its own. It chooses from the game's list:
+  - `data/occupations.json` holds 756 occupations from the U.S. Bureau of Labor Statistics
+    (Employment Projections 2025 to 2035, Table 1.2, joined to the May 2025 Occupational
+    Employment and Wage Statistics by occupation code). `scripts/jobs-data.py` builds it with
+    Python's standard library. BLS publishes both once a year, so that is how often it needs
+    running. Lines with no yearly wage and the "all other" leftovers are dropped.
+  - `poolFor` in `lib/occupations.ts` cuts the list to occupations whose median pay is at
+    least $40,000 and, if the player said what they make now (`progress.payNow`,
+    `lib/pay.ts`, optional), at least 90% of that. The amount is used on the server for this
+    cut and is never sent to the model. If almost nothing pays that much, the 30 best-paid
+    occupations are offered and each is marked `less`, so the card can say so.
+  - A pool of more than 150 is too long to send whole on the free AI tier, so the model first
+    picks up to five of the 22 occupation groups (`pathGroupsPrompt`, low reasoning effort),
+    and then chooses among the occupations in them (`pathsPrompt`, medium effort: on low it
+    reached for the nearest job title, not the step up).
+  - The model returns three codes, each with one sentence of why and a goal. `readPaths` in
+    the route accepts exactly one of each kind, each a different code that was on the list it
+    was shown, and asks once more if the reply is anything else. The title, the pay (lower and
+    upper quarter, and median), the education, experience and training, the projected growth
+    and the yearly openings are all filled in from the data by `factsFor`.
+  - The card says the figures are national, whose they are and what year, and that the
+    outlook is a projection. It links to O*NET OnLine's search for the occupation, for pay in
+    the player's area.
+  Earlier the model named occupations and pay from memory. It invented jobs, got training
+  wrong, and raised its pay figures when told the player earned more, which is why none of
+  that is left to it. The answer is saved with the claims, scores and amount it was made
+  from. Taking a path writes its goal to `goalText`. With the AI off or down the player gets
+  three questions to find the paths themselves.
 - **Todah's thoughts on the goal**: one call in `goal` mode whenever `goalText` changes, saved
   with the goal it was about. It is left out without the AI.
 - **Trail Card** (`/card`, `components/TrailCardScreen.tsx`): a page drawn from the saved game,
@@ -130,8 +141,8 @@ flowchart LR
   game carries on from scripted lines. Clearing cookies resets the daily count: a limit that
   could not be reset would need a stored row per visitor, which the game chooses not to
   keep. Token counts per call are logged (numbers only) to watch the budget. A full
-  playthrough is about 24 AI replies (3 in Quest 1, 4 in each of the four levels, and one each
-  for the Crossroads, the three paths, the goal, the road and Todah's note), plus one per
+  playthrough is about 25 AI replies (3 in Quest 1, 4 in each of the four levels, two for the
+  three paths, and one each for the Crossroads, the goal, the road and Todah's note), plus one per
   experiment reported.
 - **The roar** (`/roar`, `components/RoarScreen.tsx`, `lib/roarSound.ts`): the goal is
   confirmed by pressing and holding for 1.5 seconds, with a plain press beside it for anyone

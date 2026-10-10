@@ -708,15 +708,17 @@ const parts = [
         alt: 'Three cards side by side: the path you are on, the path next door and the bigger leap, each naming a job, a goal and a rough pay range.',
         cap: 'Three paths to test, built from one made-up player\'s own words.',
         text: [
-          'After the four levels comes the Crossroads. If you ask, Todah lays out three paths to test, each one a real full-time occupation built from your own words: the one closest to where you stand, one next door, and a bigger leap.',
-          'Before he looks, you can tell him roughly what you make in a year now. You can leave it empty. If you fill it in, he leaves out work that would pay you less.',
+          'After the four levels comes the Crossroads. If you ask, Todah lays out three paths to test, each one a real full-time occupation chosen from your own words: the one closest to where you stand, one next door, and a bigger leap.',
+          'Each card shows what that work really pays, what it typically takes to get in, and whether it is growing. Those figures come from the U.S. Bureau of Labor Statistics, not from the AI.',
+          'Before he looks, you can tell him roughly what you make in a year now. You can leave it empty. If you fill it in, work that would pay you less is left out.',
           'Taking a path sets the goal the roar waits for. Writing your own goal is always there too, and Todah gives his thoughts either way.',
         ],
         hood: [
-          'The paths come back as JSON and are checked on the server: exactly three, one of each kind, every field clamped to a length. A pay range is kept only if it is two sensible numbers: between $15,000 and $400,000, with the top no more than three times the bottom.',
-          'What the player makes now goes with the claims, and the server checks the answer against it. A path is short when the middle of its pay range is under 90% of that amount. A set with a short path is asked for once more, naming the work to replace, and whichever set has fewer short paths is kept. Any still short get a warning on the card. The ranges are the model\'s memory of public figures, so the check is only as good as they are.',
-          'The answer is saved under a key made from the four claims, their scores and that amount, so it is asked for once, and asked again only if one of them changes.',
-          'Each card links to O*NET OnLine\'s search for that job title, so pay and training come from a public source and not from the model.',
+          'The model no longer names jobs. It picks from `data/occupations.json`: 756 occupations from the Bureau of Labor Statistics, built by a Python script from two public spreadsheets (the 2025 to 2035 Employment Projections and the May 2025 wage survey), using only the standard library.',
+          'Before the model sees the list, the server cuts it to occupations with a median of at least $40,000 and, if the player said what they make, at least 90% of that. The model is never told the amount. It cannot offer a step down, because a step down is not on its list.',
+          'About 660 titles is too much to send in one request on the free AI tier. So there are two small calls: first the model picks up to five of the 22 occupation groups, then it chooses among the occupations in them.',
+          'It returns three codes with a sentence of why and a goal for each. The server accepts only codes that were on the list it showed, one of each kind, and fills in the title, pay, training and outlook from the data.',
+          'The answer is saved under a key made from the four claims, their scores and that amount, so it is asked for once, and asked again only if one of them changes. Each card links to O*NET OnLine for pay where the player lives.',
         ],
       },
       {
@@ -817,12 +819,15 @@ const parts = [
         says: 'I will not guess your paycheck. I will point at the people who count them.',
         text: [
           'The first version of the three paths offered a free weekend workshop to a player who needs to pay rent. That is not career advice, and I said so.',
-          'Now every path is real full-time work, a step up from where the player stands. The game shows a rough pay range, says plainly that it may be out of date, and links to a free government site for current figures. The AI is not allowed to state what training a job needs, because in testing it got that wrong.',
+          'The next version named real full-time work and showed a rough pay range from the AI\'s memory. That was better, and still not good enough to plan a life on.',
+          'Now the AI only chooses. The jobs, the pay, the training and the outlook all come from the Bureau of Labor Statistics, with the year printed beside them. If you say what you make now, nothing that pays less is offered.',
         ],
         hood: [
           'Rewording the prompt was not enough at first. Asked for the occupation "closest to what they do", the model kept offering the low-paid job the player already had. Three changes fixed it: redefining that slot as one step up, listing commonly low-paid work to leave out, and giving the model more room to think with `reasoning_effort: \'medium\'`.',
           'In one test the model said a job needs a master\'s degree where a bachelor\'s is the usual route. So training was taken out of the model\'s hands and left to the public source.',
-          'A spot check against the Bureau of Labor Statistics (May 2025 figures). Dietitians: the game said $55,000 to $85,000, the real median is $76,400. Food service managers: the game said $45,000 to $65,000, the real median is $69,390. Close, but it can run low, which is exactly what the note on screen warns about.',
+          'A spot check against the Bureau of Labor Statistics (May 2025 figures). Dietitians: the game said $55,000 to $85,000, the real median is $76,400. Food service managers: the game said $45,000 to $65,000, the real median is $69,390. Close, but it can run low.',
+          'Then a worse problem showed up. Told that a player made $150,000, the model offered the same kind of job as before and simply raised its pay figure to match: one occupation went from $85,000 to $150,000 between two runs. A rule in the prompt did not stop it. It also offered "Bike Safety Instructor" at up to $70,000, which is not a real line in anyone\'s wage data.',
+          'So the numbers were taken away from the model altogether. For the same cook, the game now shows Chefs and head cooks at $48,440 to $78,750 with a median of $62,470, which is what the survey says.',
         ],
       },
       {
@@ -924,7 +929,7 @@ const parts = [
           'The best test I ran was the simplest. I played it from start to finish and noticed what I expected to happen next. I expected the game to suggest something at the end, and it did not. That gap became the three paths.',
         ],
         hood: [
-          'A full playthrough uses about 24 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
+          'A full playthrough uses about 25 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
           'Playing it on a phone showed that the way back sat at the foot of long pages. Now a back arrow and a home button sit in the corner of every screen. The arrow follows the game\'s own trail of screens, kept in `sessionStorage`. It steps through the browser\'s history only when the Navigation API confirms the entry one step back is that same screen, so it can never lead out of the game.',
         ],
       },
@@ -936,6 +941,7 @@ const parts = [
         alt: 'The reward picture: a grown lion roaring over a city skyline at sunset, with the words RWR Pride Leader.',
         cap: 'The picture a player earns with the roar.',
         text: [
+          'This is version 1 of RWR: the whole trail, from the title screen to the roar, with paths built on real job data.',
           'Before the deadline on November 27: testing on real phones, a short demo video, and saving the trail card as a picture.',
           'You can play RWR right now. It is free and it needs no account.',
         ],

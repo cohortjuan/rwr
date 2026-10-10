@@ -12,8 +12,9 @@ the change RWR helps people navigate.
 **How it was built:** the RWR Trail Log, a short build log with a look under the hood at each
 stop: https://cohortjuan.github.io/rwr/
 
-Status: playable from the title screen to the roar, and still being built for the jam (deadline
-November 27, 2026). See "What works today" and "Not built yet" below.
+Status: **version 1**. Playable from the title screen to the roar, with the three paths picked
+from real occupations and shown with public pay, training and outlook figures. Built for the
+jam (deadline November 27, 2026). See "What works today" and "Not built yet" below.
 
 ## Problem
 
@@ -62,11 +63,16 @@ prophet: nothing in the game promises a job or an outcome.
 - The Crossroads (`/crossroads`): after the four levels, the circles are laid side by side and
   Todah names what lines up and one gap. If the player asks, he lays out three paths to test,
   each a real full-time occupation built from the player's own words: the path they are on,
-  the path next door, and the bigger leap. He never calls one right, likely or well paid.
-  Each path shows a rough pay range, says plainly that it may be out of date, and links to
-  O*NET OnLine for current figures. Before asking, the player can say roughly what they make
-  in a year now (optional): the paths are then asked to pay about that much or more, and any
-  whose rough range still falls short is marked. Taking a path sets the main goal. The player can always
+  the path next door, and the bigger leap. He never calls one right or likely.
+  The AI does not name jobs or pay of its own. It picks each path from a list of 756 real
+  occupations from the U.S. Bureau of Labor Statistics, and the card shows that occupation's
+  figures: what the lower-paid and higher-paid quarters of workers earn, the median, the
+  education, experience and training it typically takes, and its ten-year outlook with
+  yearly openings. The figures are national and dated, and each card links to O*NET OnLine
+  for pay in the player's area. Occupations with a median under $40,000 are never offered.
+  Before asking, the player can say roughly what they make in a year now (optional):
+  occupations that pay less than about that are then left out before the AI sees the list.
+  Taking a path sets the main goal. The player can always
   write their own goal instead, and Todah gives his thoughts either way. Without AI replies
   the player gets three questions to find the paths themselves
 - Trail Card (`/card`): a keepsake once the goal is set, with the player's lion, their four
@@ -176,6 +182,9 @@ prophet: nothing in the game promises a job or an outcome.
 - Nodemailer (MIT No Attribution) to email wardrobe ideas to the maker from the maker's own
   mailbox. Optional: with no mailbox set, the form is hidden
 - Python with Pillow for the scripts that cut and recolor the pixel art
+- U.S. Bureau of Labor Statistics data (public domain): Employment Projections 2025 to 2035
+  and the May 2025 Occupational Employment and Wage Statistics, built into
+  `data/occupations.json` by `scripts/jobs-data.py`, which uses only Python's standard library
 - Hosting: Vercel for the game, and GitHub Pages (published by a GitHub Actions workflow) for
   the build log
 
@@ -228,6 +237,9 @@ Some answers in RWR are personal, so the game is built to collect as little as p
   their maker's speech service (Google for Chrome, Apple for Safari) to turn it into words.
   RWR never receives the sound, and the game says so and asks before the mic is first used.
 - The letter you seal for yourself stays on your device and is never sent to the AI.
+- What you make in a year, if you choose to say, is saved on your device and sent to RWR's
+  server only to leave out work that would pay you less. The server does not store it and
+  does not pass it to the AI service.
 - A wardrobe idea is emailed to the maker with whether your lion is a lion or a lioness, and
   nothing else about you or your game.
 - Your game is saved in your browser (localStorage). The in-game Privacy page lets you turn
@@ -243,13 +255,15 @@ To be completed before submission. Running notes:
 - The code was written with Claude Code, directed, play-tested and reviewed by Juan. Juan made
   the product decisions: name, character, guest mode, hosting, slot names, the roar rule, music
   and sound, the lion and lioness wardrobes, the old TV set, that a path taken at the
-  Crossroads becomes the goal, how pay is shown, the endings (the Trail Card, the sealed
+  Crossroads becomes the goal, how pay is shown, asking what the player makes now and using
+  real job data so the paths never pay less, the endings (the Trail Card, the sealed
   letter, the held roar and its credits), speaking answers, and the back arrow and home button.
 - Art (sprites, title mockups, reward still, wardrobe sheets) is AI-generated (Gemini and
   others), then cut, cleaned and recolored by the scripts in `scripts/`.
 - In the game itself an LLM writes what Todah says in the interviews, turns each level's talk
   into a claim and its evidence for the player to correct, says what lines up at the
-  Crossroads, lays out three paths to test when asked, gives his thoughts on the goal, drafts
+  Crossroads, picks three paths to test from a list of real occupations when asked (the pay,
+  training and outlook on each come from public data, not from the model), gives his thoughts on the goal, drafts
   the road plan, answers each check-in, and writes his note at the end. Every one of these
   has a scripted fallback except his thoughts on the goal, which are simply left out. The
   player decides what any of it means.
