@@ -512,10 +512,25 @@ export function floorSpots(items: Accessory[]): Map<string, { shift: number, tuc
   return spots
 }
 
-// Tokens for what the lion is wearing, limited to pieces it owns, in its chosen colours.
-export function wornIds(progress: Progress, others: Progress[] = []): string[] {
+// Tokens for every piece the lion has on, limited to pieces it owns, in its chosen colours.
+// This includes pieces that wait under a transformation. The wardrobe needs them, to say
+// which pieces are on. Everything that draws the lion wants `wornIds`.
+export function putOnIds(progress: Progress, others: Progress[] = []): string[] {
   return categories
     .flatMap((category) => wornInGroup(progress.wearing, category).map((id) => byId.get(id)))
     .filter((item): item is Accessory => item !== undefined && fits(item, progress.lionSex) && owns(progress, item, others))
     .map((item) => wornToken(item, progress.tones[item.id]))
+}
+
+// A transformation is a whole picture of its own: while one is among the tokens, it is the
+// only one that counts.
+export function shownTokens(tokens: string[]): string[] {
+  const alone = tokens.filter((token) => parseToken(token)?.item.alone)
+  return alone.length > 0 ? alone : tokens
+}
+
+// Tokens for what the lion is seen wearing: everything it has on, or only the transformation
+// while one is on. The other pieces stay put on and come back when it is taken off.
+export function wornIds(progress: Progress, others: Progress[] = []): string[] {
+  return shownTokens(putOnIds(progress, others))
 }

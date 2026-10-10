@@ -198,7 +198,11 @@ flowchart LR
   shared ramps in `scripts/wardrobe_manifest.py`, giving each pixel a ramp step by its rank
   from dark to light. One palette for every piece is what makes any combination sit together.
   A piece marked `alone` (the shishi transformation) is a whole picture: while it is on,
-  it is all that is drawn. A lioness's essentials are cut by `scripts/essentials-art.py` as
+  it is all that is drawn. `wornIds` is where that is decided, so every screen that draws the
+  lion, and the pride card a player shares, shows the transformation and nothing else, with
+  no aura round it. The other pieces stay put on in the saved game. The wardrobe reads them
+  with `putOnIds`, marks them ON, WAITING, and leaves the transformation off the other
+  pieces' cards so each still shows its own piece. A lioness's essentials are cut by `scripts/essentials-art.py` as
   they were drawn, at six times the grid, and are not pixelated when shown.
 - **Several lions**: NEW GAME sets the game in play aside (`rwr.lions.v1`) and starts another.
 

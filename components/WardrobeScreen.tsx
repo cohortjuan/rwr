@@ -24,7 +24,8 @@ import {
   putOn,
   sparks,
   takenOff,
-  wornIds,
+  putOnIds,
+  shownTokens,
   wornToken,
   type Accessory,
 } from '@/lib/accessories'
@@ -66,7 +67,8 @@ export default function WardrobeScreen() {
 
   const others = keptLions.map((kept) => kept.progress)
   const purse = sparks(progress)
-  const owned = wornIds(progress, others)
+  // Every piece that is on, counting those waiting under a transformation.
+  const owned = putOnIds(progress, others)
   // A guest owns nothing, so what they see on the lion is whatever they are trying on.
   const wearing = signedIn
     ? owned
@@ -80,6 +82,8 @@ export default function WardrobeScreen() {
       : category in lines.wardrobe.notes
         ? lines.wardrobe.notes[category as NoteId]
         : ''
+  // While a transformation is on, the other pieces that are on are not seen.
+  const transformed = shownTokens(wearing).length < wearing.length
   const wornIn = (category: string) => wearing.filter((token) => accessory(token)?.category === category)
 
   // A group's default (golden fur, the natural mane) is what the lion has when nothing else is chosen.
@@ -227,8 +231,10 @@ export default function WardrobeScreen() {
                   const worn = isWorn(item)
                   const block = mine ? null : buyBlock(progress, item, others)
                   const colour = item.variants?.find((option) => option.id === progress.tones[item.id]) ?? item.variants?.[0]
-                  // Each card shows the lion as it is now, with this piece swapped in.
-                  const rest = wearing.filter((token) => accessory(token)?.category !== category)
+                  // Each card shows the lion as it is now, with this piece swapped in. A
+                  // transformation that is on is left off the other cards: it would be all
+                  // that any of them showed.
+                  const rest = wearing.filter((token) => accessory(token)?.category !== category && !accessory(token)?.alone)
                   // A mane colour is shown on the first mane there is to colour, even before
                   // the lion has grown one.
                   const shownMane = Math.max(mane, item.needsMane ?? 0)
@@ -253,7 +259,9 @@ export default function WardrobeScreen() {
                       )}
                       <p className={!worn && !mine && !item.gift ? styles.price : styles.itemState}>
                         {worn
-                          ? lines.wardrobe.wearing
+                          ? transformed && !item.alone
+                            ? lines.wardrobe.waiting
+                            : lines.wardrobe.wearing
                           : mine
                             ? lines.wardrobe.owned
                             : item.gift

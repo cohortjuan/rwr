@@ -456,6 +456,8 @@ export const lines = {
     wear: 'WEAR',
     takeOff: 'TAKE OFF',
     wearing: 'WEARING',
+    // A piece that is on but not seen, because a transformation is on.
+    waiting: 'ON, WAITING',
     short: (n: number) => `${n} more sparks needed`,
     needsPower: (n: number) => `Unlocks at Pride Power ${n}`,
     needsMane: (n: number) => `Unlocks when the MANE upgrade reaches level ${n}`,
