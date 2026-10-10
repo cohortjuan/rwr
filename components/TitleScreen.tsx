@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ConfirmBox from '@/components/ConfirmBox'
 import LionAvatar from '@/components/LionAvatar'
@@ -23,6 +23,9 @@ const WALK_MS = 3360
 
 // How long to wait to learn whether the browser allows sound before starting anyway.
 const AUDIO_CHECK_MS = 1000
+
+// A tap this soon after the screen comes on belongs to switching it on, not to skipping the walk.
+const POWER_ON_TAP_MS = 600
 
 // Keys that should never count as "any key": they belong to the browser and to keyboard users.
 const ignoredKeys = new Set(['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'CapsLock'])
@@ -58,6 +61,14 @@ export default function TitleScreen() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  // When the scene came on. The tap on POWER ON starts the music from its first event
+  // (pointer up), and a browser can report the music playing before the click that follows.
+  // The screen is then already on when that click lands, and it must not skip the walk.
+  const startedAt = useRef(0)
+  useEffect(() => {
+    if (started) startedAt.current = performance.now()
+  }, [started])
+
   // The walk ends when its animation does. If that signal never comes (a browser that drops
   // it, a tab that was hidden), he is seated anyway a moment later.
   useEffect(() => {
@@ -83,7 +94,7 @@ export default function TitleScreen() {
       return
     }
     if (!seated) {
-      setWalkDone(true)
+      if (performance.now() - startedAt.current > POWER_ON_TAP_MS) setWalkDone(true)
       return
     }
     if (!returning) setBoxOpen(true)
