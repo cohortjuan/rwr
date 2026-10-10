@@ -177,6 +177,12 @@ export const lines = {
     'I hear you. If you could have one more hour of that day, which part would you pick?',
   ],
 
+  // Shown over the page by a browser too old to draw the game (see app/layout.tsx).
+  oldBrowser: {
+    title: 'RWR needs a newer browser',
+    body: 'This browser is missing things the game is built on, so its screens will look broken. Update it (on a Mac: Apple menu, then Software Update), or open RWR in a current version of Chrome, Firefox, Edge, or Safari.',
+    dismiss: 'TRY ANYWAY',
+  },
   errors: {
     aiUnavailable: 'My voice is a little faint right now, so I will stick to my trail notes.',
     aiCap: 'We have talked a lot this session. Let us rest here and pick the trail back up later.',
