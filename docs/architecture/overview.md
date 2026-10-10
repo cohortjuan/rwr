@@ -219,6 +219,10 @@ flowchart LR
   the sentence takes shape. Typing in the box, or sending it, ends the listening. A store
   tells `MusicPlayer` to drop to silence while a mic is on. A browser without the API shows
   no button.
+- **A browser too old for the game** (`app/layout.tsx`): the pop-up boxes are `<dialog>`
+  elements and the screens are sized in `dvh`, both of which Safari gained in 15.4. A check in
+  the page head, in plain ES5 with inline styles so it runs where the game's own code may
+  not, covers the page with a notice and a button to carry on anyway.
 - **Sound needs a tap** (`lib/audioGate.ts`, `components/MusicPlayer.tsx`): browsers refuse
   to play sound until the player interacts. The title screen then starts switched off behind
   POWER ON. Sound counts as allowed only when a track that is meant to be heard is playing:

@@ -192,6 +192,12 @@ prophet: nothing in the game promises a job or an outcome.
 
 Everything used is free or open source.
 
+## Browsers
+
+RWR needs a browser from 2022 or later: Safari 15.4 or newer, or a current Chrome, Firefox or
+Edge. It is built on the `<dialog>` element and on `dvh` screen-height units. An older browser
+gets a notice saying so, with a button to try anyway, in place of a broken page.
+
 ## How to run
 
 You need Node.js 22 or newer and npm.
