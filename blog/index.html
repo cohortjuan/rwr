@@ -709,11 +709,13 @@ const parts = [
         cap: 'Three paths to test, built from one made-up player\'s own words.',
         text: [
           'After the four levels comes the Crossroads. If you ask, Todah lays out three paths to test, each one a real full-time occupation built from your own words: the one closest to where you stand, one next door, and a bigger leap.',
+          'Before he looks, you can tell him roughly what you make in a year now. You can leave it empty. If you fill it in, he leaves out work that would pay you less.',
           'Taking a path sets the goal the roar waits for. Writing your own goal is always there too, and Todah gives his thoughts either way.',
         ],
         hood: [
           'The paths come back as JSON and are checked on the server: exactly three, one of each kind, every field clamped to a length. A pay range is kept only if it is two sensible numbers: between $15,000 and $400,000, with the top no more than three times the bottom.',
-          'The answer is saved under a key made from the four claims and their scores, so it is asked for once, and asked again only if one of them changes.',
+          'What the player makes now goes with the claims, and the server checks the answer against it. A path is short when the middle of its pay range is under 90% of that amount. A set with a short path is asked for once more, naming the work to replace, and whichever set has fewer short paths is kept. Any still short get a warning on the card. The ranges are the model\'s memory of public figures, so the check is only as good as they are.',
+          'The answer is saved under a key made from the four claims, their scores and that amount, so it is asked for once, and asked again only if one of them changes.',
           'Each card links to O*NET OnLine\'s search for that job title, so pay and training come from a public source and not from the model.',
         ],
       },

@@ -73,6 +73,13 @@ flowchart LR
   effort: at low effort it kept offering the job the player already had. The answer is saved
   with the claims and scores it was made from. Taking a path writes its goal to `goalText`.
   With the AI off or down the player gets three questions to find the paths themselves.
+  Before asking, the player can say what they make in a year now (`progress.payNow`,
+  `lib/pay.ts`). It is optional and goes with the claims. The prompt forbids a step down in
+  pay, and the route checks the answer: a path is short when the middle of its range is under
+  90% of that amount. A set with a short path is asked for once more, naming the work to
+  replace, and the set with fewer short paths is kept. Any still short are marked `less`, and
+  the card warns the player. A path with no pay range cannot be checked. The pay ranges are
+  the model's memory of public figures, so this check is only as good as they are.
 - **Todah's thoughts on the goal**: one call in `goal` mode whenever `goalText` changes, saved
   with the goal it was about. It is left out without the AI.
 - **Trail Card** (`/card`, `components/TrailCardScreen.tsx`): a page drawn from the saved game,

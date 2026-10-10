@@ -64,7 +64,9 @@ prophet: nothing in the game promises a job or an outcome.
   each a real full-time occupation built from the player's own words: the path they are on,
   the path next door, and the bigger leap. He never calls one right, likely or well paid.
   Each path shows a rough pay range, says plainly that it may be out of date, and links to
-  O*NET OnLine for current figures. Taking a path sets the main goal. The player can always
+  O*NET OnLine for current figures. Before asking, the player can say roughly what they make
+  in a year now (optional): the paths are then asked to pay about that much or more, and any
+  whose rough range still falls short is marked. Taking a path sets the main goal. The player can always
   write their own goal instead, and Todah gives his thoughts either way. Without AI replies
   the player gets three questions to find the paths themselves
 - Trail Card (`/card`): a keepsake once the goal is set, with the player's lion, their four
