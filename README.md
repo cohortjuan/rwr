@@ -118,8 +118,8 @@ prophet: nothing in the game promises a job or an outcome.
   and glasses, ears, neck, jackets, bags and transformations, and each piece comes in a few
   colors. One piece per group is worn, except essentials: up to three stand on the floor by a
   lioness's paws. A transformation (a green shishi, the guardian lion) is a whole picture that
-  replaces the lion while it is on: every other piece, and a lioness's aura, is put away on
-  every screen and comes back when it is taken off. A few pieces are gifts for progress, and the jeweled crown
+  replaces the lion while it is on: every other piece is put away on every screen and comes
+  back when it is taken off. A lioness keeps her aura round it. A few pieces are gifts for progress, and the jeweled crown
   comes only with the roar. Guests can try any piece on. Owning one needs an account
 - The mane grows in three sizes with the Mane upgrade, starting with a crest on top at level 1.
   Mane colors unlock at that point, and buying one changes only the color (the lock on his

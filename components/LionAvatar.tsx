@@ -101,8 +101,7 @@ export default function LionAvatar({
     <div className={`${styles.stage} ${className ?? ''}`} aria-hidden="true">
       {/* Everything drawn of the lion sits in one layer, so a lioness's aura glows round her
           outline and not round whatever frame the stage has been given. */}
-      {/* A transformation is drawn alone: no glow round it either. */}
-      <div className={`${styles.body} ${alone ? '' : auras[Math.min(aura, 3)]}`}>
+      <div className={`${styles.body} ${auras[Math.min(aura, 3)]}`}>
         {!alone && (
           <div className={styles.lion} style={{ filter: fur?.filter }}>
             {/* His tail is its own layer, so it can wag. A lion that blinks is a live one, and
