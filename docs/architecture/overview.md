@@ -78,6 +78,14 @@ flowchart LR
     picks up to five of the 22 occupation groups (`pathGroupsPrompt`, low reasoning effort),
     and then chooses among the occupations in them (`pathsPrompt`, medium effort: on low it
     reached for the nearest job title, not the step up).
+  - The player can also say the most schooling they have finished and in what
+    (`progress.schooling`, `progress.schoolingField`, `lib/schooling.ts`, both optional). The
+    levels line up with BLS's "typical education needed for entry". Occupations that typically
+    take more are marked `+` in the list, and the prompt says `near` may not be marked. The
+    model sees the marks and the field of study, never the level. A set whose `near` is
+    marked is asked for once more and kept if the second try is no better. Any path past the
+    player's schooling is marked `more` and the card says so: typical is not required, so
+    schooling never hides a path.
   - The model returns three codes, each with one sentence of why and a goal. `readPaths` in
     the route accepts exactly one of each kind, each a different code that was on the list it
     was shown, and asks once more if the reply is anything else. The title, the pay (lower and
@@ -88,8 +96,8 @@ flowchart LR
     the player's area.
   Earlier the model named occupations and pay from memory. It invented jobs, got training
   wrong, and raised its pay figures when told the player earned more, which is why none of
-  that is left to it. The answer is saved with the claims, scores and amount it was made
-  from. Taking a path writes its goal to `goalText`. With the AI off or down the player gets
+  that is left to it. The answer is saved with the claims, scores, amount and schooling it
+  was made from. Taking a path writes its goal to `goalText`. With the AI off or down the player gets
   three questions to find the paths themselves.
 - **Todah's thoughts on the goal**: one call in `goal` mode whenever `goalText` changes, saved
   with the goal it was about. It is left out without the AI.

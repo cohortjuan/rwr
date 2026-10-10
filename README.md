@@ -72,6 +72,8 @@ prophet: nothing in the game promises a job or an outcome.
   for pay in the player's area. Occupations with a median under $40,000 are never offered.
   Before asking, the player can say roughly what they make in a year now (optional):
   occupations that pay less than about that are then left out before the AI sees the list.
+  They can also say the most schooling they have finished, and in what (optional): the
+  nearest path then stays within it, and a path that typically takes more says so on its card.
   Taking a path sets the main goal. The player can always
   write their own goal instead, and Todah gives his thoughts either way. Without AI replies
   the player gets three questions to find the paths themselves
@@ -240,6 +242,8 @@ Some answers in RWR are personal, so the game is built to collect as little as p
 - What you make in a year, if you choose to say, is saved on your device and sent to RWR's
   server only to leave out work that would pay you less. The server does not store it and
   does not pass it to the AI service.
+- The most schooling you have finished, if you choose to say, is handled the same way. What
+  you studied (for example "welding") is sent to the AI service with your four claims.
 - A wardrobe idea is emailed to the maker with whether your lion is a lion or a lioness, and
   nothing else about you or your game.
 - Your game is saved in your browser (localStorage). The in-game Privacy page lets you turn
@@ -255,8 +259,8 @@ To be completed before submission. Running notes:
 - The code was written with Claude Code, directed, play-tested and reviewed by Juan. Juan made
   the product decisions: name, character, guest mode, hosting, slot names, the roar rule, music
   and sound, the lion and lioness wardrobes, the old TV set, that a path taken at the
-  Crossroads becomes the goal, how pay is shown, asking what the player makes now and using
-  real job data so the paths never pay less, the endings (the Trail Card, the sealed
+  Crossroads becomes the goal, how pay is shown, asking what the player makes now and what schooling they have, and
+  using real job data so the paths never pay less, the endings (the Trail Card, the sealed
   letter, the held roar and its credits), speaking answers, and the back arrow and home button.
 - Art (sprites, title mockups, reward still, wardrobe sheets) is AI-generated (Gemini and
   others), then cut, cleaned and recolored by the scripts in `scripts/`.
