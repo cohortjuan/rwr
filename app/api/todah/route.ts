@@ -2,8 +2,10 @@ import { checkLimit } from '@/lib/limit'
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
-import { paysLess, readPayNow } from '@/lib/pay'
-import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, type TodahMode } from '@/lib/prompts'
+import { factsFor, groupLines, groupOf, GROUPS_MOST, occupationLines, poolFor, POOL_WHOLE, type Occupation } from '@/lib/occupations'
+import { readPayNow } from '@/lib/pay'
+import type { PathIdea } from '@/lib/progress'
+import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, pathGroupsPrompt, pathsPrompt, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
 
 // The only place the app talks to an LLM. Keys stay on the server.
@@ -113,52 +115,54 @@ function readText(value: unknown, max: number): string {
   return typeof value === 'string' ? scrub(value).trim().slice(0, max) : ''
 }
 
-// The three paths come back as JSON. Anything that is not exactly three whole paths of the
-// three kinds is dropped, so a confused reply shows the player no paths at all rather than a
-// broken or half-filled set.
-const pathKinds = ['near', 'next', 'wild']
+// The model's answers about the three paths come back as JSON. `readForm` finds the object in
+// a reply, whatever was written around it.
+const pathKinds: PathIdea['kind'][] = ['near', 'next', 'wild']
 
-// A rough yearly pay range from the AI, kept only if it is two sensible whole numbers. Anything
-// odd is dropped, and the card then shows the link to current figures with no range.
-function readPay(value: unknown): { low: number, high: number } | null {
-  const pay = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>
-  const low = Math.round(Number(pay.low))
-  const high = Math.round(Number(pay.high))
-  if (!Number.isFinite(low) || !Number.isFinite(high)) return null
-  if (low < 15000 || high > 400000 || high <= low || high > low * 3) return null
-  return { low, high }
-}
-
-function readPaths(text: string): {
-  paths: { kind: string, name: string, why: string, goal: string, pay: { low: number, high: number } | null }[]
-  care: boolean
-} {
-  const empty = { paths: [], care: false }
+function readForm(text: string): Record<string, unknown> | null {
   const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
-  if (start < 0 || end <= start) return empty
+  if (start < 0 || end <= start) return null
   try {
     const form: unknown = JSON.parse(text.slice(start, end + 1))
-    if (typeof form !== 'object' || form === null) return empty
-    const fields = form as Record<string, unknown>
-    if (fields.care === true) return { paths: [], care: true }
-    const paths = (Array.isArray(fields.paths) ? fields.paths : [])
-      .map((path: unknown) => {
-        const entry = (typeof path === 'object' && path !== null ? path : {}) as Record<string, unknown>
-        return {
-          kind: String(entry.kind ?? ''),
-          name: readText(entry.name, 60),
-          why: readText(entry.why, 220),
-          goal: readText(entry.goal, 160),
-          pay: readPay(entry.pay),
-        }
-      })
-      .filter((path) => path.name && path.why && path.goal)
-    const whole = pathKinds.map((kind) => paths.find((path) => path.kind === kind))
-    return whole.every((path) => path !== undefined) ? { paths: whole as typeof paths, care: false } : empty
+    return typeof form === 'object' && form !== null ? (form as Record<string, unknown>) : null
   } catch {
-    return empty
+    return null
   }
+}
+
+// Which groups of occupations to look in: only codes that were offered, and no more than asked
+// for. Anything else is dropped.
+function readGroups(text: string, pool: Occupation[]): { groups: string[], care: boolean } {
+  const form = readForm(text)
+  if (!form) return { groups: [], care: false }
+  if (form.care === true) return { groups: [], care: true }
+  const offered = new Set(pool.map(groupOf))
+  const groups = (Array.isArray(form.groups) ? form.groups : []).map((code) => String(code).trim()).filter((code) => offered.has(code))
+  return { groups: [...new Set(groups)].slice(0, GROUPS_MOST), care: false }
+}
+
+// The three paths: exactly one of each kind, each a different occupation that was on the list
+// the model was given. The model supplies the code and two sentences. The name, the pay and
+// everything else on the card come from the list. Anything short of three whole paths is
+// dropped, so a confused reply shows the player no paths at all rather than a broken set.
+function readPaths(text: string, offered: Occupation[], payNow: number | null): { paths: PathIdea[], care: boolean } {
+  const empty = { paths: [], care: false }
+  const form = readForm(text)
+  if (!form) return empty
+  if (form.care === true) return { paths: [], care: true }
+  const paths: PathIdea[] = []
+  for (const kind of pathKinds) {
+    const entry = (Array.isArray(form.paths) ? form.paths : []).find(
+      (path: unknown) => typeof path === 'object' && path !== null && (path as Record<string, unknown>).kind === kind,
+    ) as Record<string, unknown> | undefined
+    const occupation = offered.find((one) => one.code === String(entry?.code ?? '').trim())
+    const why = readText(entry?.why, 220)
+    const goal = readText(entry?.goal, 160)
+    if (!occupation || !why || !goal || paths.some((path) => path.code === occupation.code)) return empty
+    paths.push({ kind, why, goal, ...factsFor(occupation, payNow) })
+  }
+  return { paths, care: false }
 }
 
 // The road plan comes back as JSON. As with the summary, anything that is not exactly what was
@@ -323,50 +327,38 @@ export async function POST(request: Request) {
     }
   }
 
-  // The three paths are a form filled in from the four claims, and from what the player makes
-  // now if they said. The model is told to name nothing that pays less, and its answer is
-  // checked: a set with a path whose range falls short is asked for once more, naming the
-  // paths to replace, and the set with fewer short paths is kept. Any still short are marked,
-  // so the card can say so.
+  // The three paths. The game's own list of occupations is cut to those that pay a living and,
+  // if the player said what they make now, about that much or more. The model chooses from
+  // what is left, so it cannot name work that does not exist or that would pay them less, and
+  // it is never told the amount. A long list is narrowed first: the model picks a few groups,
+  // then chooses among the occupations in them. A reply that is not three whole paths is
+  // asked for once more.
   if (mode === 'paths' && crossroads) {
     const payNow = readPayNow(body.payNow)
     const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}`
-    const asked = payNow ? `${circlesText}\nThey make about $${payNow.toLocaleString('en-US')} a year now, from all their work.` : circlesText
-    const shortIn = (answer: ReturnType<typeof readPaths>) => answer.paths.filter((path) => paysLess(path.pay, payNow))
+    const pool = poolFor(payNow)
     try {
-      // Medium thinking: on low it kept offering the low-paid job the player already has.
-      const options = { maxTokens: 3000, effort: 'medium' as const }
-      const system = buildSystemPrompt({ mode, entryChoice: null })
-      const first = await generateReply(system, [{ role: 'user', text: asked }], options)
-      let answer = readPaths(first.text)
-      let provider = first.provider
-      const short = shortIn(answer)
-      if (short.length > 0) {
-        try {
-          const again = await generateReply(
-            system,
-            [
-              {
-                role: 'user',
-                text: `${asked}\nAn earlier answer named ${short.map((path) => `"${path.name}"`).join(' and ')}, which pays less than they make now. Do not name that work. Name better-paid occupations in its place.`,
-              },
-            ],
-            options,
-          )
-          const second = readPaths(again.text)
-          if (second.care || (second.paths.length > 0 && shortIn(second).length < short.length)) {
-            answer = second
-            provider = again.provider
-          }
-        } catch {
-          // The first set stands, with its short paths marked.
-        }
+      let offered = pool
+      if (pool.length > POOL_WHOLE) {
+        const picked = await generateReply(pathGroupsPrompt(groupLines(pool), GROUPS_MOST), [{ role: 'user', text: circlesText }], {
+          maxTokens: 1500,
+          effort: 'low',
+        })
+        const chosen = readGroups(picked.text, pool)
+        if (chosen.care) return sent({ paths: [], care: true, provider: picked.provider })
+        if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
+        offered = pool.filter((occupation) => chosen.groups.includes(groupOf(occupation)))
       }
-      return sent({
-        paths: answer.paths.map((path) => (paysLess(path.pay, payNow) ? { ...path, less: true } : path)),
-        care: answer.care,
-        provider,
-      })
+      const system = pathsPrompt(occupationLines(offered))
+      let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
+      let provider = ''
+      for (let attempt = 0; attempt < 2 && answer.paths.length === 0 && !answer.care; attempt += 1) {
+        // Medium thinking: on low it reached for the nearest job title, not the step up.
+        const result = await generateReply(system, [{ role: 'user', text: circlesText }], { maxTokens: 3000, effort: 'medium' })
+        answer = readPaths(result.text, offered, payNow)
+        provider = result.provider
+      }
+      return sent({ ...answer, provider })
     } catch (error) {
       if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
       return Response.json({ error: 'unavailable' }, { status: 503 })

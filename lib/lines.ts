@@ -212,7 +212,7 @@ export const lines = {
     intro: 'Some answers in RWR are personal. Here is exactly where they go, and how to remove them.',
     points: [
       { title: 'On this device', body: 'Your name, answers, trail map, upgrades, and goal are saved in this browser so you can come back, for the lion you are playing and any you have kept. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
-      { title: 'What you make now', body: 'Before the three paths, you can say roughly what you make in a year. You can leave it empty. It is saved on this device, and it is sent to the AI service with your four claims for one purpose: so the paths it names pay about that much or more.' },
+      { title: 'What you make now', body: 'Before the three paths, you can say roughly what you make in a year. You can leave it empty. It is saved on this device and sent to RWR\'s server for one purpose: to leave out work that would pay you less. The server does not store it, and it is not sent to the AI service.' },
       { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
       { title: 'A fair share of the AI', body: 'The AI is free and shared by every player, so each browser gets a set number of AI replies a day. To count them, RWR keeps one small cookie in your browser. It holds a date and a number and nothing about you. After the limit, Todah carries on from written questions.' },
       { title: 'My Pride', body: 'Your pride card holds your first name, your lion, Pride Power, and your main goal if you leave that switched on. It travels inside the link or QR code you share. RWR does not store it and its server never sees it, but anyone who has the link can read it, so share it only with people you trust.' },
@@ -711,16 +711,39 @@ export const lines = {
     // What the player makes now. Optional, and never a reason to hold the paths back.
     payLabel: 'About how much do you make in a year now, from all your work? (You can leave this empty.)',
     payPlaceholder: '45000',
-    payNote: 'In dollars, before taxes. Paid by the hour? Full time, $20 an hour is about $40,000 a year. I use this for one thing: to leave out paths that would pay you less.',
-    pathsLess: 'From these rough figures, this may pay less than you make now. Check the current pay before you choose.',
+    payNote: 'In dollars, before taxes. Paid by the hour? Full time, $20 an hour is about $40,000 a year. The game uses this for one thing: to leave out work that would pay you less. It stays on this device.',
+    pathsLess: 'Most people in this work earn less than you make now. Check the pay where you live before you choose.',
     pathsThinking: 'Todah is reading the trail ahead...',
     pathsKinds: { near: 'THE PATH YOU ARE ON', next: 'THE PATH NEXT DOOR', wild: 'THE BIGGER LEAP' },
     pathsGoal: 'A goal to walk toward:',
-    // Pay is a rough range and is always called that. Rules that must survive edits: it is
-    // never shown as current or exact, and the link to current figures sits right under it.
-    pathsPay: 'Rough pay:',
+    // The figures on a path are the Bureau of Labor Statistics' own, for the whole country.
+    // Rules that must survive edits: say whose they are and what year, say that pay differs
+    // by place, call the outlook a projection, and keep the link to local figures under them.
+    // Paths saved by an older version have only a rough range from the AI: `pathsPayRough`.
+    pathsPay: 'Typical pay:',
+    pathsPayRough: 'Rough pay:',
     pathsPayRange: (low: number, high: number) => `$${low.toLocaleString('en-US')} to $${high.toLocaleString('en-US')} a year`,
-    pathsCheck: 'SEE CURRENT PAY AND WHAT IT TAKES',
+    pathsPayMiddle: (median: number) => `Half of the people in this work earn more than $${median.toLocaleString('en-US')}, and half earn less.`,
+    pathsEntry: 'To get in, typically:',
+    // The three things BLS says an occupation typically takes, joined into one sentence.
+    pathsEntryText: (education: string, experience: string, training: string) =>
+      [
+        education === 'No formal educational credential'
+          ? 'no formal credential'
+          : education === 'Postsecondary nondegree award'
+            ? 'a certificate or similar award after high school'
+            : education.charAt(0).toLowerCase() + education.slice(1),
+        experience ? `${experience.charAt(0).toLowerCase()}${experience.slice(1)} of experience in related work` : '',
+        training ? training.charAt(0).toLowerCase() + training.slice(1) : '',
+      ]
+        .filter(Boolean)
+        .join(', plus '),
+    pathsOutlook: 'Outlook:',
+    pathsOutlookText: (growth: number, openings: number, to: number, allJobs: number) =>
+      `${growth > 0 ? 'jobs projected to grow' : growth < 0 ? 'jobs projected to shrink' : 'jobs projected to hold steady'}${growth !== 0 ? ` ${Math.abs(growth)}%` : ''} by ${to} (all jobs: ${allJobs > 0 ? '+' : ''}${allJobs}%), with about ${openings.toLocaleString('en-US')} openings a year across the country.`,
+    pathsCheck: 'SEE PAY WHERE YOU LIVE AND WHAT IT TAKES',
+    pathsSource: (wageYear: number) =>
+      `The figures are for the whole United States, from the Bureau of Labor Statistics: pay from ${wageYear}, and a ten-year outlook that is a projection, not a promise. Pay differs a lot by place. Each link opens O*NET OnLine, a free government site, with pay for your area and more about the work. Look there before you choose.`,
     pathsCheckNote: 'The pay shown is a rough national range from older figures. It may be out of date, and it differs a lot by place. Each link opens O*NET OnLine, a free United States government site, with current pay for your area, the training the work takes, and its outlook. Look there before you choose.',
     pathsChoose: 'TAKE THIS PATH',
     pathsChosen: 'YOUR PATH',
@@ -772,7 +795,7 @@ export const lines = {
         title: 'WHAT THE AI DOES',
         body: [
           'If you allow it, an AI service writes what Todah says. It asks and reflects back. You bring the evidence and decide what it means, and you can change every word before it is marked on your map.',
-          'It is told never to tell you what to be, never to guess at your chances, and to respond with care if you are having a hard time. The one place it mentions pay is the three paths, where it gives a rough range that may be out of date, next to a link to current figures. Without it, the whole game runs from written questions and nothing you type leaves your device.',
+          'It is told never to tell you what to be, never to guess at your chances, and to respond with care if you are having a hard time. It does not state pay, training or demand. The AI picks the three paths from a list of real occupations, and the pay, the training and the outlook shown on each come from United States Bureau of Labor Statistics figures. Without it, the whole game runs from written questions and nothing you type leaves your device.',
         ],
       },
       {

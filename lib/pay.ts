@@ -4,9 +4,10 @@
 export const PAY_NOW_MAX = 1000000
 export const PAY_NOW_DIGITS = 9
 
-// A path is close enough when the middle of its rough range is at least this share of what
-// the player makes now. The ranges are rough, so an exact match is not asked for.
-const PAY_CLOSE = 0.9
+// An occupation is close enough when its median pay is at least this share of what the player
+// makes now. Half of the people in it earn more than the median, so an exact match is not
+// asked for.
+export const PAY_CLOSE = 0.9
 
 // What was typed in the box, as a whole number of dollars: "$45,000" and "45000" are the same.
 // Empty, zero, or anything that is not a sensible yearly amount is null, which means not said.
@@ -17,9 +18,7 @@ export function readPayNow(value: unknown): number | null {
   return dollars > 0 && dollars <= PAY_NOW_MAX ? dollars : null
 }
 
-// Whether a path's rough range falls short of what the player makes now. A path with no range
-// cannot be judged, so it is not called short.
-export function paysLess(pay: { low: number, high: number } | null | undefined, payNow: number | null): boolean {
-  if (!pay || !payNow) return false
-  return (pay.low + pay.high) / 2 < payNow * PAY_CLOSE
+// Whether an occupation's median pay falls short of what the player makes now.
+export function paysLess(median: number, payNow: number | null): boolean {
+  return payNow !== null && median < payNow * PAY_CLOSE
 }

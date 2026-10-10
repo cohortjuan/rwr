@@ -251,15 +251,30 @@ export default function CrossroadsScreen() {
                           <span>
                             <span className={styles.pathLabel}>{lines.crossroads.pathsGoal}</span> {path.goal}
                           </span>
-                          {/* A rough range only, and only when the AI gave a sensible one. Current
-                              figures and what the work takes are for the player to look up. */}
+                          {/* Pay, what it takes and the outlook, all from public figures. A path
+                              saved by an older version has only a rough range. */}
                           {path.pay && (
                             <span>
-                              <span className={styles.pathLabel}>{lines.crossroads.pathsPay}</span>{' '}
+                              <span className={styles.pathLabel}>
+                                {path.median ? lines.crossroads.pathsPay : lines.crossroads.pathsPayRough}
+                              </span>{' '}
                               {lines.crossroads.pathsPayRange(path.pay.low, path.pay.high)}
+                              {path.median ? `. ${lines.crossroads.pathsPayMiddle(path.median)}` : ''}
                             </span>
                           )}
                           {path.less && <span className={styles.pathLess}>{lines.crossroads.pathsLess}</span>}
+                          {path.education && (
+                            <span>
+                              <span className={styles.pathLabel}>{lines.crossroads.pathsEntry}</span>{' '}
+                              {lines.crossroads.pathsEntryText(path.education, path.experience ?? '', path.training ?? '')}
+                            </span>
+                          )}
+                          {path.figures && path.growth !== undefined && path.openings !== undefined && (
+                            <span>
+                              <span className={styles.pathLabel}>{lines.crossroads.pathsOutlook}</span>{' '}
+                              {lines.crossroads.pathsOutlookText(path.growth, path.openings, path.figures.to, path.figures.allJobsGrowth)}
+                            </span>
+                          )}
                           <a
                             className={styles.pathCheck}
                             href={`https://www.onetonline.org/find/quick?s=${encodeURIComponent(path.name)}`}
@@ -274,7 +289,9 @@ export default function CrossroadsScreen() {
                         </li>
                       ))}
                     </ul>
-                    <p className={styles.fine}>{lines.crossroads.pathsCheckNote}</p>
+                    <p className={styles.fine}>
+                      {paths.list[0]?.figures ? lines.crossroads.pathsSource(paths.list[0].figures.wageYear) : lines.crossroads.pathsCheckNote}
+                    </p>
                     <p className={styles.fine}>{lines.crossroads.pathsAfter}</p>
                   </>
                 ) : aiOn && pathsState !== 'failed' ? (

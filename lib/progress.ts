@@ -20,14 +20,26 @@ export type TodahForm = 'cub' | 'nomad' | 'leader'
 // One of three kinds of work the four circles could point to: the one closest to where the
 // player stands, one next door, and a bigger leap. `goal` is a goal on that path they can take
 // as their main goal. `pay` is a rough yearly range in dollars from the AI's memory of public
-// figures, or null when it gave none: it is always shown as possibly out of date. `less` marks
-// a path whose range falls short of what the player said they make now.
+// figures. The occupation and every figure about it come from the game's own list of Bureau
+// of Labor Statistics data (see lib/occupations.ts), never from the AI: `pay` is what the
+// lower-paid and the higher-paid quarter of workers earn in a year, `median` the middle,
+// `growth` the projected change in jobs in percent, and `openings` a yearly count. `less`
+// marks a path whose median falls short of what the player said they make now. Paths saved
+// by an older version of the game have a name and perhaps a rough `pay`, and nothing else.
 export type PathIdea = {
   kind: 'near' | 'next' | 'wild'
   name: string
   why: string
   goal: string
   pay?: { low: number, high: number } | null
+  code?: string
+  median?: number
+  education?: string
+  experience?: string
+  training?: string
+  growth?: number
+  openings?: number
+  figures?: { wageYear: number, to: number, allJobsGrowth: number }
   less?: boolean
 }
 
