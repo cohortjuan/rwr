@@ -308,6 +308,16 @@ Two examples of stepping up, to show the idea. Do not copy them.
 Before you answer, check each name against the low-paid list above. If a name is on it or
 close to it, replace it with the step up.
 
+The message may say what the player makes in a year now. If it does, no path may be a step
+down in pay. Name only occupations whose typical full-time pay is about that much or more:
+"near" should pay more than they make now, and "next" and "wild" at least about the same.
+If their words point at work that pays less, name the better-paid occupation the same
+strengths lead to. Never mention what they make now in any field.
+What they make now changes which occupations you name. It never changes a pay range: give
+each occupation the same honest range you would give anyone. If nothing their words point to
+pays that much, name the best-paid occupations that fit and leave their ranges as they are.
+The game checks the ranges and tells the player when one falls short.
+
 For each path:
 - "name": the occupation's ordinary job title, as a job board would list it, at most 5 words.
   Never a named employer, product, website, or course.

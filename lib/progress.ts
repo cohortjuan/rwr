@@ -20,13 +20,15 @@ export type TodahForm = 'cub' | 'nomad' | 'leader'
 // One of three kinds of work the four circles could point to: the one closest to where the
 // player stands, one next door, and a bigger leap. `goal` is a goal on that path they can take
 // as their main goal. `pay` is a rough yearly range in dollars from the AI's memory of public
-// figures, or null when it gave none: it is always shown as possibly out of date.
+// figures, or null when it gave none: it is always shown as possibly out of date. `less` marks
+// a path whose range falls short of what the player said they make now.
 export type PathIdea = {
   kind: 'near' | 'next' | 'wild'
   name: string
   why: string
   goal: string
   pay?: { low: number, high: number } | null
+  less?: boolean
 }
 
 // The player chooses whether their lion is a lion or a lioness. It decides part of the
@@ -137,6 +139,8 @@ export type Progress = {
   // The three paths Todah laid out at the Crossroads, kept so they are asked for once. `for`
   // is the four claims they were built from, and `chosen` the one the player took as a goal.
   paths: { for: string, list: PathIdea[], chosen: PathIdea['kind'] | null } | null
+  // What the player makes in a year now, in dollars, if they chose to say (see lib/pay.ts).
+  payNow: number | null
   // What Todah said about the main goal once it was set, kept so it is asked for once. `for`
   // is the goal it was about: a new goal gets new thoughts.
   goalThoughts: { text: string, for: string } | null
@@ -190,6 +194,7 @@ export const emptyProgress: Progress = {
   levelsDone: [],
   crossroads: null,
   paths: null,
+  payNow: null,
   goalThoughts: null,
   capsule: null,
   road: null,

@@ -2,6 +2,7 @@ import { checkLimit } from '@/lib/limit'
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
+import { paysLess, readPayNow } from '@/lib/pay'
 import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
 
@@ -322,16 +323,50 @@ export async function POST(request: Request) {
     }
   }
 
-  // The three paths are a form filled in from the four claims.
+  // The three paths are a form filled in from the four claims, and from what the player makes
+  // now if they said. The model is told to name nothing that pays less, and its answer is
+  // checked: a set with a path whose range falls short is asked for once more, naming the
+  // paths to replace, and the set with fewer short paths is kept. Any still short are marked,
+  // so the card can say so.
   if (mode === 'paths' && crossroads) {
+    const payNow = readPayNow(body.payNow)
+    const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}`
+    const asked = payNow ? `${circlesText}\nThey make about $${payNow.toLocaleString('en-US')} a year now, from all their work.` : circlesText
+    const shortIn = (answer: ReturnType<typeof readPaths>) => answer.paths.filter((path) => paysLess(path.pay, payNow))
     try {
-      const result = await generateReply(
-        buildSystemPrompt({ mode, entryChoice: null }),
-        [{ role: 'user', text: `The four circles:\n${[...crossroads.values()].join('\n')}` }],
-        // Medium thinking: on low it kept offering the low-paid job the player already has.
-        { maxTokens: 3000, effort: 'medium' },
-      )
-      return sent({ ...readPaths(result.text), provider: result.provider })
+      // Medium thinking: on low it kept offering the low-paid job the player already has.
+      const options = { maxTokens: 3000, effort: 'medium' as const }
+      const system = buildSystemPrompt({ mode, entryChoice: null })
+      const first = await generateReply(system, [{ role: 'user', text: asked }], options)
+      let answer = readPaths(first.text)
+      let provider = first.provider
+      const short = shortIn(answer)
+      if (short.length > 0) {
+        try {
+          const again = await generateReply(
+            system,
+            [
+              {
+                role: 'user',
+                text: `${asked}\nAn earlier answer named ${short.map((path) => `"${path.name}"`).join(' and ')}, which pays less than they make now. Do not name that work. Name better-paid occupations in its place.`,
+              },
+            ],
+            options,
+          )
+          const second = readPaths(again.text)
+          if (second.care || (second.paths.length > 0 && shortIn(second).length < short.length)) {
+            answer = second
+            provider = again.provider
+          }
+        } catch {
+          // The first set stands, with its short paths marked.
+        }
+      }
+      return sent({
+        paths: answer.paths.map((path) => (paysLess(path.pay, payNow) ? { ...path, less: true } : path)),
+        care: answer.care,
+        provider,
+      })
     } catch (error) {
       if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
       return Response.json({ error: 'unavailable' }, { status: 503 })

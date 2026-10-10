@@ -139,3 +139,19 @@
 .fine + .fine {
   margin-top: 6px;
 }
+
+/* What the player makes now: a short box for a number, with its note and the button under it. */
+.pay {
+  max-width: 14ch;
+}
+
+.payAsk {
+  margin-top: 12px;
+}
+
+/* The warning on a path whose rough pay falls short of what the player makes now. */
+.pathLess {
+  font-size: 0.85rem;
+  border-left: 3px solid currentColor;
+  padding-left: 8px;
+}

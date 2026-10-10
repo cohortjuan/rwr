@@ -9,6 +9,7 @@ import { levels } from '@/lib/levels'
 import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { isNameAllowed } from '@/lib/names'
+import { PAY_NOW_DIGITS, readPayNow } from '@/lib/pay'
 import { saveProgress, useLionText, useProgress, type Circle, type PathIdea, type Progress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
@@ -57,12 +58,12 @@ const claimsOf = (progress: Progress) =>
 
 // Three paths from the AI: the list, `care` when the player's words showed distress, or
 // nothing when it could not be reached or its answer was not three whole paths.
-async function askPaths(progress: Progress): Promise<{ list: PathIdea[], care: boolean }> {
+async function askPaths(progress: Progress, payNow: number | null): Promise<{ list: PathIdea[], care: boolean }> {
   try {
     const response = await fetch('/api/todah', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'paths', claims: claimsOf(progress) }),
+      body: JSON.stringify({ mode: 'paths', claims: claimsOf(progress), ...(payNow ? { payNow } : {}) }),
     })
     if (!response.ok) return { list: [], care: false }
     const data = await response.json()
@@ -101,6 +102,8 @@ export default function CrossroadsScreen() {
   const requestedFor = useRef('')
   // The three paths: asked for only when the player taps for them.
   const [pathsState, setPathsState] = useState<'idle' | 'asking' | 'failed' | 'care'>('idle')
+  // What the player makes now, as typed. Until they type, the box shows what was saved.
+  const [payDraft, setPayDraft] = useState<string | null>(null)
   const thoughtsFor = useRef('')
   const [thinking, setThinking] = useState(false)
 
@@ -111,7 +114,10 @@ export default function CrossroadsScreen() {
   const about = circles.map((circle) => `${progress.compass[circle].claim.trim()}|${circleScore(progress, circle)}`).join('~')
   const noticed = progress.crossroads?.for === about ? progress.crossroads.text : ''
   const hasGoal = progress.goalText.trim().length > 0
-  const paths = progress.paths?.for === about ? progress.paths : null
+  // The paths were built from the claims and from what the player makes now, if they said.
+  const pathsKey = (payNow: number | null) => `${about}~${payNow ?? ''}`
+  const paths = progress.paths?.for === pathsKey(progress.payNow) ? progress.paths : null
+  const payText = payDraft ?? (progress.payNow ? String(progress.payNow) : '')
   const aiOn = progress.aiConsent === 'yes'
   const thoughts = progress.goalThoughts?.for === progress.goalText ? progress.goalThoughts.text : ''
 
@@ -137,7 +143,9 @@ export default function CrossroadsScreen() {
   async function showPaths() {
     playSfx('select', sound)
     setPathsState('asking')
-    const answer = await askPaths(progress)
+    const payNow = readPayNow(payText)
+    saveProgress({ payNow })
+    const answer = await askPaths(progress, payNow)
     if (answer.care) {
       setPathsState('care')
       return
@@ -146,7 +154,7 @@ export default function CrossroadsScreen() {
       setPathsState('failed')
       return
     }
-    saveProgress({ paths: { for: about, list: answer.list, chosen: null } })
+    saveProgress({ paths: { for: pathsKey(payNow), list: answer.list, chosen: null } })
     setPathsState('idle')
   }
 
@@ -251,6 +259,7 @@ export default function CrossroadsScreen() {
                               {lines.crossroads.pathsPayRange(path.pay.low, path.pay.high)}
                             </span>
                           )}
+                          {path.less && <span className={styles.pathLess}>{lines.crossroads.pathsLess}</span>}
                           <a
                             className={styles.pathCheck}
                             href={`https://www.onetonline.org/find/quick?s=${encodeURIComponent(path.name)}`}
@@ -274,9 +283,28 @@ export default function CrossroadsScreen() {
                     {pathsState === 'asking' ? (
                       <p role="status">{lion(lines.crossroads.pathsThinking)}</p>
                     ) : (
-                      <button type="button" className="btn" onClick={showPaths}>
-                        {lines.crossroads.pathsAsk}
-                      </button>
+                      <>
+                        <div className="field">
+                          <label htmlFor="crossroads-pay">{lines.crossroads.payLabel}</label>
+                          <input
+                            id="crossroads-pay"
+                            className={styles.pay}
+                            inputMode="numeric"
+                            autoComplete="off"
+                            maxLength={PAY_NOW_DIGITS + 4}
+                            placeholder={lines.crossroads.payPlaceholder}
+                            aria-describedby="crossroads-pay-note"
+                            value={payText}
+                            onChange={(event) => setPayDraft(event.target.value)}
+                          />
+                        </div>
+                        <p id="crossroads-pay-note" className={styles.fine}>
+                          {lines.crossroads.payNote}
+                        </p>
+                        <button type="button" className={`btn ${styles.payAsk}`} onClick={showPaths}>
+                          {lines.crossroads.pathsAsk}
+                        </button>
+                      </>
                     )}
                   </>
                 ) : (

@@ -212,6 +212,7 @@ export const lines = {
     intro: 'Some answers in RWR are personal. Here is exactly where they go, and how to remove them.',
     points: [
       { title: 'On this device', body: 'Your name, answers, trail map, upgrades, and goal are saved in this browser so you can come back, for the lion you are playing and any you have kept. Anyone who uses this browser profile could open them. Turn saving off below on a shared computer.' },
+      { title: 'What you make now', body: 'Before the three paths, you can say roughly what you make in a year. You can leave it empty. It is saved on this device, and it is sent to the AI service with your four claims for one purpose: so the paths it names pay about that much or more.' },
       { title: 'AI replies', body: 'If you choose AI replies, the answers you type are sent to an AI service to write what Todah says. Your name is not sent, and email addresses, links, and phone numbers are removed first. RWR does not log or store your answers on its server.' },
       { title: 'A fair share of the AI', body: 'The AI is free and shared by every player, so each browser gets a set number of AI replies a day. To count them, RWR keeps one small cookie in your browser. It holds a date and a number and nothing about you. After the limit, Todah carries on from written questions.' },
       { title: 'My Pride', body: 'Your pride card holds your first name, your lion, Pride Power, and your main goal if you leave that switched on. It travels inside the link or QR code you share. RWR does not store it and its server never sees it, but anyone who has the link can read it, so share it only with people you trust.' },
@@ -707,6 +708,11 @@ export const lines = {
     pathsIntro:
       'Want to see where these four circles could point? I can lay out three kinds of work: the one closest to where you stand, one next door, and a bigger leap. Each is real work people make a living at. They are ideas to test, not answers, and I cannot promise where any of them leads.',
     pathsAsk: 'SHOW ME THREE PATHS',
+    // What the player makes now. Optional, and never a reason to hold the paths back.
+    payLabel: 'About how much do you make in a year now, from all your work? (You can leave this empty.)',
+    payPlaceholder: '45000',
+    payNote: 'In dollars, before taxes. Paid by the hour? Full time, $20 an hour is about $40,000 a year. I use this for one thing: to leave out paths that would pay you less.',
+    pathsLess: 'From these rough figures, this may pay less than you make now. Check the current pay before you choose.',
     pathsThinking: 'Todah is reading the trail ahead...',
     pathsKinds: { near: 'THE PATH YOU ARE ON', next: 'THE PATH NEXT DOOR', wild: 'THE BIGGER LEAP' },
     pathsGoal: 'A goal to walk toward:',
