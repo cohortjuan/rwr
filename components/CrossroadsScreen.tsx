@@ -10,6 +10,7 @@ import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
 import { isNameAllowed } from '@/lib/names'
 import { PAY_NOW_DIGITS, readPayNow } from '@/lib/pay'
+import { FIELD_MAX, readSchooling, schoolingLevels, type Schooling } from '@/lib/schooling'
 import { saveProgress, useLionText, useProgress, type Circle, type PathIdea, type Progress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
@@ -58,12 +59,23 @@ const claimsOf = (progress: Progress) =>
 
 // Three paths from the AI: the list, `care` when the player's words showed distress, or
 // nothing when it could not be reached or its answer was not three whole paths.
-async function askPaths(progress: Progress, payNow: number | null): Promise<{ list: PathIdea[], care: boolean }> {
+async function askPaths(
+  progress: Progress,
+  payNow: number | null,
+  schooling: Schooling | null,
+  field: string,
+): Promise<{ list: PathIdea[], care: boolean }> {
   try {
     const response = await fetch('/api/todah', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'paths', claims: claimsOf(progress), ...(payNow ? { payNow } : {}) }),
+      body: JSON.stringify({
+        mode: 'paths',
+        claims: claimsOf(progress),
+        ...(payNow ? { payNow } : {}),
+        ...(schooling ? { schooling } : {}),
+        ...(field ? { field } : {}),
+      }),
     })
     if (!response.ok) return { list: [], care: false }
     const data = await response.json()
@@ -114,9 +126,11 @@ export default function CrossroadsScreen() {
   const about = circles.map((circle) => `${progress.compass[circle].claim.trim()}|${circleScore(progress, circle)}`).join('~')
   const noticed = progress.crossroads?.for === about ? progress.crossroads.text : ''
   const hasGoal = progress.goalText.trim().length > 0
-  // The paths were built from the claims and from what the player makes now, if they said.
-  const pathsKey = (payNow: number | null) => `${about}~${payNow ?? ''}`
-  const paths = progress.paths?.for === pathsKey(progress.payNow) ? progress.paths : null
+  // The paths were built from the claims and from what the player said about their pay and
+  // schooling, if anything.
+  const pathsKey = (payNow: number | null, schooling: Schooling | null, field: string) =>
+    `${about}~${payNow ?? ''}~${schooling ?? ''}~${field}`
+  const paths = progress.paths?.for === pathsKey(progress.payNow, progress.schooling, progress.schoolingField) ? progress.paths : null
   const payText = payDraft ?? (progress.payNow ? String(progress.payNow) : '')
   const aiOn = progress.aiConsent === 'yes'
   const thoughts = progress.goalThoughts?.for === progress.goalText ? progress.goalThoughts.text : ''
@@ -144,8 +158,10 @@ export default function CrossroadsScreen() {
     playSfx('select', sound)
     setPathsState('asking')
     const payNow = readPayNow(payText)
-    saveProgress({ payNow })
-    const answer = await askPaths(progress, payNow)
+    const schooling = progress.schooling
+    const field = schooling ? progress.schoolingField.trim() : ''
+    saveProgress({ payNow, schoolingField: field })
+    const answer = await askPaths(progress, payNow, schooling, field)
     if (answer.care) {
       setPathsState('care')
       return
@@ -154,7 +170,7 @@ export default function CrossroadsScreen() {
       setPathsState('failed')
       return
     }
-    saveProgress({ paths: { for: pathsKey(payNow), list: answer.list, chosen: null } })
+    saveProgress({ paths: { for: pathsKey(payNow, schooling, field), list: answer.list, chosen: null } })
     setPathsState('idle')
   }
 
@@ -269,6 +285,7 @@ export default function CrossroadsScreen() {
                               {lines.crossroads.pathsEntryText(path.education, path.experience ?? '', path.training ?? '')}
                             </span>
                           )}
+                          {path.more && <span className={styles.pathLess}>{lines.crossroads.pathsMore}</span>}
                           {path.figures && path.growth !== undefined && path.openings !== undefined && (
                             <span>
                               <span className={styles.pathLabel}>{lines.crossroads.pathsOutlook}</span>{' '}
@@ -301,6 +318,7 @@ export default function CrossroadsScreen() {
                       <p role="status">{lion(lines.crossroads.pathsThinking)}</p>
                     ) : (
                       <>
+                        <p className={styles.quick}>{lines.crossroads.quickHeading}</p>
                         <div className="field">
                           <label htmlFor="crossroads-pay">{lines.crossroads.payLabel}</label>
                           <input
@@ -317,6 +335,39 @@ export default function CrossroadsScreen() {
                         </div>
                         <p id="crossroads-pay-note" className={styles.fine}>
                           {lines.crossroads.payNote}
+                        </p>
+                        <div className={`field ${styles.schooling}`}>
+                          <label htmlFor="crossroads-schooling">{lines.crossroads.schoolingLabel}</label>
+                          <select
+                            id="crossroads-schooling"
+                            className={styles.select}
+                            aria-describedby="crossroads-schooling-note"
+                            value={progress.schooling ?? ''}
+                            onChange={(event) => saveProgress({ schooling: readSchooling(event.target.value) })}
+                          >
+                            <option value="">{lines.crossroads.schoolingSkip}</option>
+                            {schoolingLevels.map((level) => (
+                              <option key={level} value={level}>
+                                {lines.crossroads.schoolingOptions[level]}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {progress.schooling && progress.schooling !== 'none' && progress.schooling !== 'hs' && (
+                          <div className="field">
+                            <label htmlFor="crossroads-field">{lines.crossroads.schoolingFieldLabel}</label>
+                            <input
+                              id="crossroads-field"
+                              className={styles.fieldBox}
+                              maxLength={FIELD_MAX}
+                              autoComplete="off"
+                              value={progress.schoolingField}
+                              onChange={(event) => saveProgress({ schoolingField: event.target.value })}
+                            />
+                          </div>
+                        )}
+                        <p id="crossroads-schooling-note" className={styles.fine}>
+                          {lines.crossroads.schoolingNote}
                         </p>
                         <button type="button" className={`btn ${styles.payAsk}`} onClick={showPaths}>
                           {lines.crossroads.pathsAsk}

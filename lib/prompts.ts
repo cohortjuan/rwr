@@ -267,6 +267,9 @@ ${guardrails}`
 //   suit a player who earned more. The game fills those in from public data.
 // - The list is already cut to work that pays a living and, if the player said what they
 //   make, about that much or more. The model is never told the amount.
+// - If the player said what schooling they have finished, the nearest path stays within it.
+//   The other two may go past it, and the card then says so. Typical is not required, so
+//   schooling never hides the bigger leap.
 // - Nothing here may read as a promise or as the answer.
 
 // First, when the list is long: which few groups of occupations to look in.
@@ -276,7 +279,8 @@ could point to. You are not talking to the player. This is the first of two step
 which groups of occupations to look in.
 
 You are given their four circles (what they love, what they are good at, who they want to help,
-what they could be paid for) with how much evidence each has, from 0 to 3.
+what they could be paid for) with how much evidence each has, from 0 to 3. The message may
+also say what they have studied or trained in.
 
 The groups, each with its code:
 ${groups}
@@ -297,19 +301,28 @@ Rules:
 }
 
 // Then the three paths themselves, each one an occupation from the list.
-export function pathsPrompt(occupations: string): string {
+export function pathsPrompt(occupations: string, mark: string | null): string {
   return `You help a player of a retro career-exploration game see what kinds of work their four circles
 could point to. You are not talking to the player. You fill in a small form, which they will
 read. They then choose one path as their goal, change its words, or write their own.
 
 You are given their four circles (what they love, what they are good at, who they want to help,
 what they could be paid for) with how much evidence each has, from 0 to 3. The player is an
-adult in the United States who needs work that pays the bills.
+adult in the United States who needs work that pays the bills. The message may also say what
+they have studied or trained in: let it weigh on which occupations fit, as their own words do.
 
 Every path must be one of these occupations, named by its code. They are real occupations
 from United States government data, and every one pays a living:
 ${occupations}
-
+${
+  mark
+    ? `
+An occupation whose line ends with ${mark} typically takes more schooling than the player has
+finished. "near" must be an occupation without the mark: it is the step they could take with
+what they have. Prefer one without the mark for "next" too. "wild" may have it.
+`
+    : ''
+}
 Reply with one JSON object and nothing else, in exactly this shape:
 {"paths": [{"kind": "near", "code": "00-0000", "why": "...", "goal": "..."}, {"kind": "next", "code": "00-0000", "why": "...", "goal": "..."}, {"kind": "wild", "code": "00-0000", "why": "...", "goal": "..."}]}
 

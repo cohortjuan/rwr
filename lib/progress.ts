@@ -1,5 +1,6 @@
 'use client'
 
+import type { Schooling } from '@/lib/schooling'
 import { useSyncExternalStore } from 'react'
 import { circles, compassTotal, stepsDone, trailSteps } from '@/lib/compass'
 import type { EntryChoice } from '@/lib/lines'
@@ -24,7 +25,8 @@ export type TodahForm = 'cub' | 'nomad' | 'leader'
 // of Labor Statistics data (see lib/occupations.ts), never from the AI: `pay` is what the
 // lower-paid and the higher-paid quarter of workers earn in a year, `median` the middle,
 // `growth` the projected change in jobs in percent, and `openings` a yearly count. `less`
-// marks a path whose median falls short of what the player said they make now. Paths saved
+// marks a path whose median falls short of what the player said they make now, and `more`
+// one that typically takes more schooling than they said they have finished. Paths saved
 // by an older version of the game have a name and perhaps a rough `pay`, and nothing else.
 export type PathIdea = {
   kind: 'near' | 'next' | 'wild'
@@ -41,6 +43,7 @@ export type PathIdea = {
   openings?: number
   figures?: { wageYear: number, to: number, allJobsGrowth: number }
   less?: boolean
+  more?: boolean
 }
 
 // The player chooses whether their lion is a lion or a lioness. It decides part of the
@@ -153,6 +156,10 @@ export type Progress = {
   paths: { for: string, list: PathIdea[], chosen: PathIdea['kind'] | null } | null
   // What the player makes in a year now, in dollars, if they chose to say (see lib/pay.ts).
   payNow: number | null
+  // The most schooling they have finished, and in what, if they chose to say (see
+  // lib/schooling.ts).
+  schooling: Schooling | null
+  schoolingField: string
   // What Todah said about the main goal once it was set, kept so it is asked for once. `for`
   // is the goal it was about: a new goal gets new thoughts.
   goalThoughts: { text: string, for: string } | null
@@ -207,6 +214,8 @@ export const emptyProgress: Progress = {
   crossroads: null,
   paths: null,
   payNow: null,
+  schooling: null,
+  schoolingField: '',
   goalThoughts: null,
   capsule: null,
   road: null,

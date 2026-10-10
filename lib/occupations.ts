@@ -5,6 +5,7 @@
 import data from '@/data/occupations.json'
 import { PAY_CLOSE, paysLess } from '@/lib/pay'
 import type { PathIdea } from '@/lib/progress'
+import { takesMore, type Schooling } from '@/lib/schooling'
 
 export type Occupation = (typeof data.occupations)[number]
 
@@ -40,14 +41,21 @@ export function groupLines(pool: Occupation[]): string {
     .join('\n')
 }
 
-// Occupations as lines for the model: "35-1011 Chefs and head cooks".
-export function occupationLines(pool: Occupation[]): string {
-  return pool.map((occupation) => `${occupation.code} ${occupation.title}`).join('\n')
+// The mark on an occupation that typically takes more schooling than the player has finished.
+export const MORE_MARK = '+'
+
+// Occupations as lines for the model: "35-1011 Chefs and head cooks". When the player said
+// what schooling they have, the ones that typically take more end with the mark. The model
+// sees the mark and never the level itself.
+export function occupationLines(pool: Occupation[], schooling: Schooling | null): string {
+  return pool
+    .map((occupation) => `${occupation.code} ${occupation.title}${takesMore(occupation.education, schooling) ? ` ${MORE_MARK}` : ''}`)
+    .join('\n')
 }
 
 // What a path card shows about an occupation, all of it from the data. `pay` is what the
 // lower-paid quarter and the higher-paid quarter earn, so half of all workers fall inside it.
-export function factsFor(occupation: Occupation, payNow: number | null): Omit<PathIdea, 'kind' | 'why' | 'goal'> {
+export function factsFor(occupation: Occupation, payNow: number | null, schooling: Schooling | null): Omit<PathIdea, 'kind' | 'why' | 'goal'> {
   return {
     name: occupation.title,
     code: occupation.code,
@@ -60,5 +68,6 @@ export function factsFor(occupation: Occupation, payNow: number | null): Omit<Pa
     openings: occupation.openings,
     figures: { wageYear: data.source.wageYear, to: data.source.projected.to, allJobsGrowth: data.source.allJobsGrowth },
     ...(paysLess(occupation.median, payNow) ? { less: true } : {}),
+    ...(takesMore(occupation.education, schooling) ? { more: true } : {}),
   }
 }

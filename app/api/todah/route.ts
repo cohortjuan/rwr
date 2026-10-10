@@ -2,9 +2,10 @@ import { checkLimit } from '@/lib/limit'
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
-import { factsFor, groupLines, groupOf, GROUPS_MOST, occupationLines, poolFor, POOL_WHOLE, type Occupation } from '@/lib/occupations'
+import { factsFor, groupLines, groupOf, GROUPS_MOST, MORE_MARK, occupationLines, poolFor, POOL_WHOLE, type Occupation } from '@/lib/occupations'
 import { readPayNow } from '@/lib/pay'
 import type { PathIdea } from '@/lib/progress'
+import { FIELD_MAX, readSchooling, type Schooling } from '@/lib/schooling'
 import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, pathGroupsPrompt, pathsPrompt, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
 
@@ -146,7 +147,12 @@ function readGroups(text: string, pool: Occupation[]): { groups: string[], care:
 // the model was given. The model supplies the code and two sentences. The name, the pay and
 // everything else on the card come from the list. Anything short of three whole paths is
 // dropped, so a confused reply shows the player no paths at all rather than a broken set.
-function readPaths(text: string, offered: Occupation[], payNow: number | null): { paths: PathIdea[], care: boolean } {
+function readPaths(
+  text: string,
+  offered: Occupation[],
+  payNow: number | null,
+  schooling: Schooling | null,
+): { paths: PathIdea[], care: boolean } {
   const empty = { paths: [], care: false }
   const form = readForm(text)
   if (!form) return empty
@@ -160,7 +166,7 @@ function readPaths(text: string, offered: Occupation[], payNow: number | null): 
     const why = readText(entry?.why, 220)
     const goal = readText(entry?.goal, 160)
     if (!occupation || !why || !goal || paths.some((path) => path.code === occupation.code)) return empty
-    paths.push({ kind, why, goal, ...factsFor(occupation, payNow) })
+    paths.push({ kind, why, goal, ...factsFor(occupation, payNow, schooling) })
   }
   return { paths, care: false }
 }
@@ -333,9 +339,16 @@ export async function POST(request: Request) {
   // it is never told the amount. A long list is narrowed first: the model picks a few groups,
   // then chooses among the occupations in them. A reply that is not three whole paths is
   // asked for once more.
+  //
+  // If the player said what schooling they have finished, occupations that typically take
+  // more are marked in the list and the nearest path may not be one of them. The model sees
+  // the marks and what they studied, never the level. A set whose nearest path is marked is
+  // asked for once more, and kept if the second try is no better: the card then says so.
   if (mode === 'paths' && crossroads) {
     const payNow = readPayNow(body.payNow)
-    const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}`
+    const schooling = readSchooling(body.schooling)
+    const field = readText(body.field, FIELD_MAX)
+    const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}${field ? `\nThey have studied or trained in: "${field}"` : ''}`
     const pool = poolFor(payNow)
     try {
       let offered = pool
@@ -349,14 +362,18 @@ export async function POST(request: Request) {
         if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
         offered = pool.filter((occupation) => chosen.groups.includes(groupOf(occupation)))
       }
-      const system = pathsPrompt(occupationLines(offered))
+      const system = pathsPrompt(occupationLines(offered, schooling), schooling ? MORE_MARK : null)
       let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
       let provider = ''
-      for (let attempt = 0; attempt < 2 && answer.paths.length === 0 && !answer.care; attempt += 1) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
         // Medium thinking: on low it reached for the nearest job title, not the step up.
         const result = await generateReply(system, [{ role: 'user', text: circlesText }], { maxTokens: 3000, effort: 'medium' })
-        answer = readPaths(result.text, offered, payNow)
+        const read = readPaths(result.text, offered, payNow, schooling)
         provider = result.provider
+        if (read.paths.length === 0 && !read.care) continue
+        answer = read
+        // The nearest path comes first. Done unless it reaches past their schooling.
+        if (read.care || !read.paths[0].more) break
       }
       return sent({ ...answer, provider })
     } catch (error) {
