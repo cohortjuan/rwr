@@ -1,4 +1,4 @@
--- The four levels are named after the four Ikigai circles (Heart, Craft, Cause, Coin).
+-- The four levels are named after the four circles (Heart, Craft, Cause, Coin).
 -- Passion, Mission, Vocation, and Profession are the overlaps between circles, so they no
 -- longer name levels. Both tables were empty when this ran.
 alter table public.interview_sessions

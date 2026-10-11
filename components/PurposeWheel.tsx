@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { levels } from '@/lib/levels'
 import { useReducedMotion } from '@/lib/settings'
-import styles from './IkigaiWheel.module.css'
+import styles from './PurposeWheel.module.css'
 
-// The four Ikigai circles as 16-bit pixel art, painted onto a tiny canvas and scaled up.
+// The four circles of the purpose diagram as 16-bit pixel art, painted onto a tiny canvas and scaled up.
 //   circles: the four circles pop in one at a time
 //   all:     everything lit
 //   overlaps: the four two-circle overlaps lit and named
@@ -94,7 +94,7 @@ function paint(canvas: HTMLCanvasElement, focus: WheelFocus, revealed: number) {
   context.putImageData(image, 0, 0)
 }
 
-export default function IkigaiWheel({ focus }: { focus: WheelFocus }) {
+export default function PurposeWheel({ focus }: { focus: WheelFocus }) {
   const reducedMotion = useReducedMotion()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [count, setCount] = useState(1)
@@ -113,9 +113,9 @@ export default function IkigaiWheel({ focus }: { focus: WheelFocus }) {
     if (canvasRef.current) paint(canvasRef.current, focus, revealed)
   }, [focus, revealed])
 
-  const description = `Ikigai diagram: four overlapping circles, ${levels
+  const description = `Diagram of purpose: four overlapping circles, ${levels
     .map((level) => `${level.name} for ${level.circle}`)
-    .join(', ')}. Ikigai is in the middle where all four meet.`
+    .join(', ')}. Purpose is in the middle where all four meet.`
 
   return (
     <figure className={focus === 'center' ? styles.wheelGlow : styles.wheel} role="img" aria-label={description}>

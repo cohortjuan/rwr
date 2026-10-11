@@ -111,21 +111,21 @@ export const lines = {
     completeBanner: 'QUEST COMPLETE',
     hello: "Hey, traveler! I'm Todah. I'm still a cub, but I know every trail out here.",
     // Shown to every player before the first quest.
-    ikigaiBrief:
+    wheelBrief:
       'Four circles mark this trail: Heart (what you love), Craft (what you are good at), Cause (what the world needs), and Coin (what can pay). Two ideas shaped it. The circles come from a Western picture of purpose. The spirit comes from Ikigai, a Japanese idea about the small things that make a day worth waking for. So that is what we look for: small, true moments.',
-    ikigaiGotIt: 'GOT IT',
-    ikigaiMore: 'TELL ME MORE',
+    wheelGotIt: 'GOT IT',
+    wheelMore: 'TELL ME MORE',
     // The optional deeper explanation, one page per entry.
-    ikigaiDeep: [
+    wheelDeep: [
       'First influence: the four circles. They are a picture of purpose that Andres Zuzunaga drew in Spain in 2011. In 2014 a blogger, Marc Winn, wrote the Japanese word Ikigai in the middle, and off it went around the world. From it we took our shape: four circles, one level each.',
       'Where two circles meet, the picture gives a name: Passion, Mission, Vocation, Profession. Miss a circle and work can feel off. Paid but not in love: comfy, yet empty. In love but unpaid: joyful, yet broke. From this we took our map, which shows where your evidence is strong and where it is thin.',
       'Second influence: Ikigai itself (say ee-kee-guy). Iki is life, gai is worth. A garden. A grandchild. The first tea of the morning. Mieko Kamiya, a Japanese doctor, wrote the book on it in 1966. It lives in small things, never asks about pay, and does not have to be a job.',
       'From Ikigai we took our way of asking. Kamiya wrote that it has to be lived to be understood, so I ask about moments you have lived, not things you wish. Where we part ways: this game is about work and counts Coin. Ikigai is about a whole life. More on the ABOUT page.',
       `We walk one circle at a time: ${levels.map((level) => level.name).join(', ')}. I ask, you bring the evidence, and you decide what it means. I will never tell you what to be, and nothing here is a promise about any job.`,
     ],
-    ikigaiNextPage: 'NEXT',
-    ikigaiDone: 'READY',
-    ikigaiSkip: 'SKIP',
+    wheelNextPage: 'NEXT',
+    wheelDone: 'READY',
+    wheelSkip: 'SKIP',
     questIntro: 'Quest 1: The Lay of the Land. No wrong answers, no timer.',
     startQuest: 'START QUEST',
     whatIsThis: 'WHAT IS THIS?',

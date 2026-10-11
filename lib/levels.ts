@@ -1,8 +1,8 @@
-// The four levels of the Ikigai trail, one per circle. Change a name here and it changes
+// The four levels of the trail, one per circle of the purpose diagram. Change a name here and it changes
 // everywhere (prompts, the server route, and Todah's lines).
 //
 // Passion, Mission, Vocation, and Profession are deliberately not level names: in the
-// Ikigai diagram they are the overlaps between two circles.
+// purpose diagram they are the overlaps between two circles.
 
 export const levels = [
   { number: 1, name: 'Heart', circle: 'what you love' },

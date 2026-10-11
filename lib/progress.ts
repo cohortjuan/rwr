@@ -68,7 +68,7 @@ export type PrideCard = {
   mane?: number
 }
 
-// The four Ikigai circles, in the order of the levels: Heart, Craft, Cause, Coin.
+// The four circles, in the order of the levels: Heart, Craft, Cause, Coin.
 export type Circle = 'heart' | 'craft' | 'cause' | 'coin'
 
 // One circle on the trail map: what the player claims, and which evidence they ticked.

@@ -1,6 +1,6 @@
 import type { Circle, Progress } from '@/lib/progress'
 
-// The trail map: how much evidence the player has in each of the four Ikigai circles.
+// The trail map: how much evidence the player has in each of the four circles.
 //
 // A circle is scored 0 to 3. The player writes a claim ("I love fixing things") and ticks the
 // evidence that is true of it. A claim with no evidence scores 0, so the map rewards proof,

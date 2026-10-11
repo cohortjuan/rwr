@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
-import IkigaiWheel, { type WheelFocus } from '@/components/IkigaiWheel'
+import PurposeWheel, { type WheelFocus } from '@/components/PurposeWheel'
 import MicButton from '@/components/MicButton'
 import { lines, type EntryChoice } from '@/lib/lines'
 import { isNameAllowed, PLAYER_NAME_MAX, withLionName } from '@/lib/names'
@@ -13,9 +13,9 @@ import { useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './OnboardingQuest.module.css'
 
-type Step = 'hello' | 'ikigai' | 'ikigaiDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
+type Step = 'hello' | 'wheel' | 'wheelDeep' | 'intro' | 'explain' | 'name' | 'entry' | 'reaction' | 'consent' | 'chat' | 'done'
 
-// Which part of the Ikigai diagram lights up on each page of the deeper explanation:
+// Which part of the purpose diagram lights up on each page of the deeper explanation:
 // where the picture comes from, its overlaps and a missing circle, the middle, then the trail.
 const deepFocus: WheelFocus[] = ['all', 'overlaps', 'center', 'all', 'circles']
 
@@ -141,7 +141,7 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
   useEffect(() => {
     const anchor = bottomRef.current
     const content = anchor?.parentElement
-    const follows = step === 'chat' || step === 'done' || step === 'ikigai' || step === 'ikigaiDeep'
+    const follows = step === 'chat' || step === 'done' || step === 'wheel' || step === 'wheelDeep'
     if (!anchor || !content || !follows) return
     const follow = () => anchor.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'end' })
     const observer = new ResizeObserver(follow)
@@ -211,37 +211,37 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
 
         {step === 'hello' && (
           <DialogBox text={lines.onboarding.hello}>
-            <button type="button" className="btn" autoFocus onClick={() => go('ikigai')}>
+            <button type="button" className="btn" autoFocus onClick={() => go('wheel')}>
               {lines.onboarding.next}
             </button>
           </DialogBox>
         )}
 
-        {step === 'ikigai' && <IkigaiWheel focus="circles" />}
+        {step === 'wheel' && <PurposeWheel focus="circles" />}
 
-        {step === 'ikigaiDeep' && <IkigaiWheel focus={deepFocus[deepPage] ?? 'all'} />}
+        {step === 'wheelDeep' && <PurposeWheel focus={deepFocus[deepPage] ?? 'all'} />}
 
-        {step === 'ikigai' && (
-          <DialogBox text={lines.onboarding.ikigaiBrief}>
+        {step === 'wheel' && (
+          <DialogBox text={lines.onboarding.wheelBrief}>
             <button type="button" className="btn" autoFocus onClick={() => go('intro')}>
-              {lines.onboarding.ikigaiGotIt}
+              {lines.onboarding.wheelGotIt}
             </button>
             <button
               type="button"
               className="btn btn-quiet"
               onClick={() => {
                 setDeepPage(0)
-                go('ikigaiDeep')
+                go('wheelDeep')
               }}
             >
-              {lines.onboarding.ikigaiMore}
+              {lines.onboarding.wheelMore}
             </button>
           </DialogBox>
         )}
 
-        {step === 'ikigaiDeep' && (
-          <DialogBox text={lines.onboarding.ikigaiDeep[deepPage]}>
-            {deepPage < lines.onboarding.ikigaiDeep.length - 1 ? (
+        {step === 'wheelDeep' && (
+          <DialogBox text={lines.onboarding.wheelDeep[deepPage]}>
+            {deepPage < lines.onboarding.wheelDeep.length - 1 ? (
               <button
                 type="button"
                 className="btn"
@@ -251,15 +251,15 @@ function Quest({ demo, progress, startAt }: { demo: boolean, progress: Progress,
                   setDeepPage(deepPage + 1)
                 }}
               >
-                {lines.onboarding.ikigaiNextPage} ({deepPage + 1}/{lines.onboarding.ikigaiDeep.length})
+                {lines.onboarding.wheelNextPage} ({deepPage + 1}/{lines.onboarding.wheelDeep.length})
               </button>
             ) : (
               <button type="button" className="btn" autoFocus onClick={() => go('intro')}>
-                {lines.onboarding.ikigaiDone}
+                {lines.onboarding.wheelDone}
               </button>
             )}
             <button type="button" className="btn btn-quiet" onClick={() => go('intro')}>
-              {lines.onboarding.ikigaiSkip}
+              {lines.onboarding.wheelSkip}
             </button>
             <Link className="btn btn-quiet" href="/about">
               {lines.about.chip}

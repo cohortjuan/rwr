@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import IkigaiWheel from '@/components/IkigaiWheel'
+import PurposeWheel from '@/components/PurposeWheel'
 import {
   circles,
   circleScore,
@@ -50,7 +50,7 @@ function Tick({ on, label, onToggle, disabled }: { on: boolean, label: string, o
   )
 }
 
-// Evidence for each Ikigai circle, and one small real-world step for the thinnest one.
+// Evidence for each of the four circles, and one small real-world step for the thinnest one.
 export default function TrailMapScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
@@ -99,7 +99,7 @@ export default function TrailMapScreen() {
 
         <section className={`panel ${styles.summary}`}>
           <div className={styles.wheel}>
-            <IkigaiWheel focus="all" />
+            <PurposeWheel focus="all" />
           </div>
           <div>
             <p className={styles.total}>{lines.map.score(total.score, total.max)}</p>

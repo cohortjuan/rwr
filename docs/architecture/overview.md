@@ -30,7 +30,7 @@ flowchart LR
 
 ## Progression
 
-- **Trail map** (`/map`, `lib/compass.ts`): each Ikigai circle is scored 0 to 3. The player
+- **Trail map** (`/map`, `lib/compass.ts`): each of the four circles is scored 0 to 3. The player
   writes a claim and ticks the evidence that is true of it; a claim with no evidence scores 0.
   The map shows the strongest and thinnest circle and one real-world step for the thinnest. It
   never ranks careers.
