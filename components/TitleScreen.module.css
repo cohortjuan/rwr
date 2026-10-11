@@ -3,14 +3,24 @@
   position: relative;
   width: 100%;
   /* The whole screen, or the glass of the old TV set when that is drawn round it. */
-  height: calc(100dvh - var(--tv-top) - var(--tv-bottom));
-  min-height: min(300px, calc(100dvh - var(--tv-top) - var(--tv-bottom)));
+  --stage-tall: calc(100dvh - var(--tv-top) - var(--tv-bottom));
+  height: var(--stage-tall);
+  min-height: min(300px, var(--stage-tall));
   overflow: hidden;
   background: var(--sky-1);
   cursor: pointer;
   user-select: none;
   /* Cub size follows the width, but never outgrows a short screen (phone held sideways). */
-  --cub: min(clamp(150px, 21vw, 300px), calc((100dvh - var(--tv-top) - var(--tv-bottom)) * 0.44));
+  --cub: min(clamp(150px, 21vw, 300px), calc(var(--stage-tall) * 0.44));
+  /* How far down the title starts and how far up the cub's feet are, as parts of the height. */
+  --logo-top: 0.12;
+  --cub-feet: 0.29;
+  /* The words under the name: the space above them, and their size. */
+  --subtitle-gap: min(clamp(14px, 3vw, 34px), 4vh);
+  --subtitle-size: min(clamp(0.55rem, 1.9vw, 1.25rem), 4.4vh);
+  /* What is left for the title between its top and the top of the cub's head, less a
+     hundredth of the height kept clear between them. The cub is 198/291 of --cub tall. */
+  --logo-room: calc(var(--stage-tall) * (0.99 - var(--logo-top) - var(--cub-feet)) - var(--cub) * 198 / 291);
 
   /* Day colours: a golden savannah at sunset. */
   --sky-1: #dba238;
@@ -181,7 +191,7 @@
 
 .logo {
   position: absolute;
-  top: 12%;
+  top: calc(var(--logo-top) * 100%);
   left: 0;
   right: 0;
   text-align: center;
@@ -189,7 +199,13 @@
 
 .name {
   animation: dropIn 0.7s steps(7) both;
-  font-size: min(clamp(3.2rem, 13vw, 9.5rem), 24vh);
+  /* On a short, wide screen the name gives way, so the words under it stay above the cub:
+     it takes the room left once their gap and their one line are counted. */
+  font-size: min(
+    clamp(3.2rem, 13vw, 9.5rem),
+    24vh,
+    calc(var(--logo-room) - var(--subtitle-gap) - var(--subtitle-size) * 1.5)
+  );
   line-height: 1;
   letter-spacing: 0.04em;
   color: var(--gold);
@@ -204,9 +220,10 @@
 
 .subtitle {
   animation: fadeIn 0.5s steps(4) 0.7s both;
-  margin: min(clamp(14px, 3vw, 34px), 4vh) 0 0;
+  margin: var(--subtitle-gap) 0 0;
   font-family: var(--font-pixel), monospace;
-  font-size: min(clamp(0.55rem, 1.9vw, 1.25rem), 4.4vh);
+  font-size: var(--subtitle-size);
+  line-height: 1.5;
   letter-spacing: 0.08em;
   color: var(--subtitle);
 }
@@ -227,7 +244,7 @@
   filter: var(--cub-filter);
   position: absolute;
   left: 50%;
-  bottom: 29%;
+  bottom: calc(var(--cub-feet) * 100%);
   /* Both sides are given outright. The sprite inside fills this box by percentage, so it
      must not depend on how a browser takes a percentage of a height that aspect-ratio set. */
   width: calc(var(--cub-tall) * 132 / 101);
@@ -302,7 +319,7 @@
   filter: var(--cub-filter);
   position: absolute;
   left: 50%;
-  bottom: 29%;
+  bottom: calc(var(--cub-feet) * 100%);
   /* As tall as the walking sprite, at the seated sprite's own proportions. */
   width: calc(var(--cub) * 198 / 291 * 89 / 101);
   transform: translateX(-50%);
@@ -385,14 +402,10 @@
 
 /* Short screens (phone held sideways): tuck the title up and the prompt down. */
 @media (max-height: 480px) {
-  .logo {
-    top: 7%;
-  }
-
-  .cubWalking,
-  .cubWalkingOut,
-  .cubFacing {
-    bottom: 24%;
+  .stage,
+  .stagePoweringOn {
+    --logo-top: 0.07;
+    --cub-feet: 0.24;
   }
 
   .prompt {
