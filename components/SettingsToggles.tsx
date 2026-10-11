@@ -23,6 +23,18 @@ const moon = [
   '...####..',
 ]
 
+const gear = [
+  '...###...',
+  '.#.###.#.',
+  '.#######.',
+  '###...###',
+  '###...###',
+  '###...###',
+  '.#######.',
+  '.#.###.#.',
+  '...###...',
+]
+
 const backArrow = [
   '...#.....',
   '..##.....',
@@ -46,10 +58,13 @@ const house = [
 ]
 
 // The controls that sit over every screen: the back arrow and the way home, the day and
-// night button, the signed-in badge with LOG OUT, and one small bar holding ABOUT, DEV (for
-// a dev account) and SETTINGS. SETTINGS opens a box with sound, motion, the TV set and the
-// way to PRIVACY, so the corner holds a few buttons and none of them can sit on top of
-// another.
+// night button, the signed-in badge with LOG OUT, and the way into SETTINGS. SETTINGS opens a
+// box with sound, motion, the TV set and the ways to ABOUT and PRIVACY.
+//
+// On the title screen, ABOUT, DEV (for a dev account) and SETTINGS are a small bar of words
+// in the bottom corner, where there is nothing under them. On every other screen that bar
+// would lie over what the player is reading, so SETTINGS is a gear beside the moon, in the
+// row the screen already keeps clear, and ABOUT and DEV are inside the box.
 export default function SettingsToggles() {
   const settings = useSettings()
   const { email, dev } = useAccount()
@@ -128,22 +143,32 @@ export default function SettingsToggles() {
         </div>
       )}
 
-      {/* A link to the page you are already on is left out. */}
-      <div className={styles.bar}>
-        {dev && pathname !== '/dev' && (
-          <Link className={styles.toggle} href="/dev">
-            {lines.dev.chip}
-          </Link>
-        )}
-        {pathname !== '/about' && (
+      {onTitle ? (
+        <div className={styles.bar}>
+          {dev && (
+            <Link className={styles.toggle} href="/dev">
+              {lines.dev.chip}
+            </Link>
+          )}
           <Link className={styles.toggle} href="/about">
             {lines.about.chip}
           </Link>
-        )}
-        <button type="button" className={styles.toggle} aria-haspopup="dialog" onClick={() => menuRef.current?.showModal()}>
-          {lines.settings.open}
+          <button type="button" className={styles.toggle} aria-haspopup="dialog" onClick={() => menuRef.current?.showModal()}>
+            {lines.settings.open}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={styles.gear}
+          aria-haspopup="dialog"
+          aria-label={lines.settings.open}
+          title={lines.settings.open}
+          onClick={() => menuRef.current?.showModal()}
+        >
+          <PixelArt rows={gear} />
         </button>
-      </div>
+      )}
 
       <dialog ref={menuRef} className={styles.menu} aria-labelledby="settings-heading">
         <h2 id="settings-heading" className={styles.heading}>
@@ -188,7 +213,18 @@ export default function SettingsToggles() {
           </span>
         </div>
 
+        {/* A link to the page you are already on is left out. */}
         <div className={styles.row}>
+          {pathname !== '/about' && (
+            <Link className={styles.choice} href="/about" onClick={() => menuRef.current?.close()}>
+              {lines.about.chip}
+            </Link>
+          )}
+          {dev && pathname !== '/dev' && (
+            <Link className={styles.choice} href="/dev" onClick={() => menuRef.current?.close()}>
+              {lines.dev.chip}
+            </Link>
+          )}
           {pathname !== '/privacy' && (
             <Link className={styles.choice} href="/privacy" onClick={() => menuRef.current?.close()}>
               {lines.settings.privacy}

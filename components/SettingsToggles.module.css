@@ -34,6 +34,40 @@
   background: var(--gold);
 }
 
+/* SETTINGS on every screen but the title: a gear beside the moon, the same size and in the
+   same row, so it never lies over what the player is reading. */
+.gear {
+  /* One pixel of the gear icon. */
+  --px: 2.5px;
+
+  position: fixed;
+  top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + var(--tv-top));
+  right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px) + var(--tv-side) + 50px);
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: var(--cream);
+  background: rgba(15, 12, 41, 0.85);
+  border: 2px solid var(--cream);
+  cursor: pointer;
+}
+
+.gear:hover {
+  background: var(--indigo);
+}
+
+/* Short, wide screens (phone held sideways): the back arrow and the way home sit beside the
+   moon, so the gear goes under it, in the column the screen already keeps clear. */
+@media (max-height: 480px) and (min-width: 641px) {
+  .gear {
+    top: calc(clamp(18px, 2.6vw, 34px) + env(safe-area-inset-top, 0px) + var(--tv-top) + 50px);
+    right: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-right, 0px) + var(--tv-side));
+  }
+}
+
 .bar {
   position: fixed;
   right: calc(clamp(20px, 3vw, 40px) + var(--tv-side));
@@ -161,7 +195,7 @@
 /* Beside the back arrow and the way home, when they are in that corner too. */
 .accountAfterNav {
   left: calc(clamp(20px, 3vw, 40px) + env(safe-area-inset-left, 0px) + var(--tv-side) + 102px);
-  max-width: calc(100vw - 252px - 2 * var(--tv-side));
+  max-width: calc(100vw - 302px - 2 * var(--tv-side));
 }
 
 @media (max-height: 480px) and (min-width: 641px) {
