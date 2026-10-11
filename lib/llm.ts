@@ -54,6 +54,17 @@ const TEMPERATURE = 0.7
 // AI Studio and Groq consoles list as free-tier models today.
 const DEFAULT_GEMINI_MODEL = 'gemini-flash-latest'
 const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-120b'
+// Groq counts each model's allowance on its own, per minute and per day. When the main model
+// is full, the same account's next model has its own allowance and the same data terms, so
+// the game keeps going instead of falling back to written lines. GROQ_BACKUP_MODELS is a
+// comma-separated list in .env.local; set it empty for none.
+const DEFAULT_GROQ_BACKUPS = 'openai/gpt-oss-20b'
+
+function groqModels(): string[] {
+  const main = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL
+  const backups = (process.env.GROQ_BACKUP_MODELS ?? DEFAULT_GROQ_BACKUPS).split(',').map((name) => name.trim())
+  return [main, ...backups.filter((name) => name && name !== main)]
+}
 
 async function callGemini(system: string, messages: LlmMessage[], apiKey: string, options: LlmOptions): Promise<string> {
   const model = process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL
@@ -79,8 +90,7 @@ async function callGemini(system: string, messages: LlmMessage[], apiKey: string
   return text
 }
 
-async function callGroq(system: string, messages: LlmMessage[], apiKey: string, options: LlmOptions): Promise<string> {
-  const model = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL
+async function callGroq(system: string, messages: LlmMessage[], apiKey: string, options: LlmOptions, model: string): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -135,27 +145,33 @@ export async function generateReply(system: string, messages: LlmMessage[], opti
   if (!groqKey && !geminiKey) throw new LlmUnavailableError('No LLM API key is set')
 
   if (groqKey) {
-    try {
+    let last: unknown
+    for (const model of groqModels()) {
       try {
-        return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
+        try {
+          return { text: await callGroq(system, messages, groqKey, options, model), provider: 'groq' }
+        } catch (error) {
+          // A server error or an empty reply is usually a blip, so it gets one more try. So
+          // does a rate limit, but only after the short wait the provider asked for: asking
+          // again at once only makes it worse.
+          if (!(error instanceof ProviderError)) throw error
+          const wait = error.status === 429 ? error.retryAfter : undefined
+          if (error.status < 500 && !(wait && wait <= (options.patience ?? RATE_WAIT_MAX_SECONDS))) throw error
+          if (wait) await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250))
+          console.warn('[llm] Groq failed once, trying again:', error.message)
+          return { text: await callGroq(system, messages, groqKey, options, model), provider: 'groq' }
+        }
       } catch (error) {
-        // A server error or an empty reply is usually a blip, so it gets one more try. So
-        // does a rate limit, but only after the short wait the provider asked for: asking
-        // again at once only makes it worse.
-        if (!(error instanceof ProviderError)) throw error
-        const wait = error.status === 429 ? error.retryAfter : undefined
-        if (error.status < 500 && !(wait && wait <= (options.patience ?? RATE_WAIT_MAX_SECONDS))) throw error
-        if (wait) await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250))
-        console.warn('[llm] Groq failed once, trying again:', error.message)
-        return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
+        // Log the status only. Never log keys, prompts, or player answers.
+        console.warn(`[llm] Groq model ${model} failed:`, error instanceof Error ? error.message : 'unknown error')
+        last = error
+        // Only a full allowance or a server fault is worth trying the next model for.
+        if (!shouldFallBack(error)) break
       }
-    } catch (error) {
-      // Log the status only. Never log keys, prompts, or player answers.
-      console.warn('[llm] Groq failed:', error instanceof Error ? error.message : 'unknown error')
-      if (!geminiKey || !shouldFallBack(error)) {
-        const wait = error instanceof ProviderError && error.status === 429 ? (error.retryAfter ?? 20) : undefined
-        throw new LlmUnavailableError('Groq failed and no fallback applied', wait && wait <= BUSY_MAX_SECONDS ? wait : undefined)
-      }
+    }
+    if (!geminiKey || !shouldFallBack(last)) {
+      const wait = last instanceof ProviderError && last.status === 429 ? (last.retryAfter ?? 20) : undefined
+      throw new LlmUnavailableError('Groq failed and no fallback applied', wait && wait <= BUSY_MAX_SECONDS ? wait : undefined)
     }
   }
 

@@ -97,8 +97,13 @@ flowchart LR
     `busy` with the seconds to wait and the groups already chosen, and the Crossroads waits
     and asks again, up to five times, sending the groups back so the first step is not
     redone. If only the second try at the paths is turned away, the first answer is kept.
-    A wait of more than 90 seconds means the day's allowance is spent, and is treated as the
-    service being down: the written questions take over. Which allowance ran out is logged
+    A wait of more than 90 seconds means the day's allowance is spent. Groq counts each
+    model's allowance on its own, so `generateReply` then tries the account's next model
+    (`GROQ_BACKUP_MODELS`, default `openai/gpt-oss-20b`) before giving up: same provider, same
+    data terms, its own minute and day. Only when every model is full does the service count
+    as down and the written questions take over. The free tier's figures for
+    `openai/gpt-oss-120b` are 8,000 tokens a minute and 200,000 a day, and a full playthrough
+    uses roughly 30,000, so one model serves about six a day and two about twelve. Which allowance ran out is logged
     as words such as "tokens per minute", never the provider's full message. The Gemini
     fallback would also cover a spent day, and stays off: Google's free tier asks that
     personal information not be sent and allows people to review prompts. The title, the pay (lower and

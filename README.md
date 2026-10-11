@@ -184,7 +184,8 @@ prophet: nothing in the game promises a job or an outcome.
 
 - Next.js 16 (App Router) and React 19, TypeScript
 - Supabase Auth and Postgres (free tier)
-- Groq API (free tier, Zero Data Retention on) for Todah's replies, with Google Gemini as an
+- Groq API (free tier, Zero Data Retention on) for Todah's replies, with a second Groq model
+  taking over when the first has used up its allowance, and Google Gemini as an
   optional fallback that is off by default for privacy
 - Web Audio API for sound effects, CSS sprite animation
 - Web Speech API (built into the browser, no key and no cost) for speaking an answer
