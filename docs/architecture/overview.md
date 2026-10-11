@@ -88,7 +88,13 @@ flowchart LR
     schooling never hides a path.
   - The model returns three codes, each with one sentence of why and a goal. `readPaths` in
     the route accepts exactly one of each kind, each a different code that was on the list it
-    was shown, and asks once more if the reply is anything else. The title, the pay (lower and
+    was shown, and asks once more if the reply is anything else. The second request tells the
+    model what was wrong with the first. If the paths still fail, the Crossroads offers TRY
+    AGAIN beside the written questions.
+  - The free AI tier counts tokens by the minute, and one paths request uses most of a
+    minute's share. `lib/llm.ts` sits out a rate limit of 12 seconds or less and calls once
+    more. Two players asking for paths in the same minute can still leave the second with
+    the written questions. The title, the pay (lower and
     upper quarter, and median), the education, experience and training, the projected growth
     and the yearly openings are all filled in from the data by `factsFor`.
   - The card says the figures are national, whose they are and what year, and that the
