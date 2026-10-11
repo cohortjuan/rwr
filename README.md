@@ -1,5 +1,7 @@
 # RWR: 16-bit Career Adventure
 
+[![The RWR title screen: a lion cub sits under the RWR logo on a savannah at sunrise, inside an old TV set, with PRESS START below](docs/img/rwr-preview.png)](https://rwr-sigma.vercel.app)
+
 A retro 16-bit game that helps people explore the four circles of the purpose diagram (what they
 love, what they are good at, what the world needs, and what they can be paid for) and turn them
 into one goal of their own and a plan to walk toward it.
