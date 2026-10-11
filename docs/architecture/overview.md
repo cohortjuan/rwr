@@ -91,10 +91,17 @@ flowchart LR
     was shown, and asks once more if the reply is anything else. The second request tells the
     model what was wrong with the first. If the paths still fail, the Crossroads offers TRY
     AGAIN beside the written questions.
-  - The free AI tier counts tokens by the minute, and one paths request uses most of a
-    minute's share. `lib/llm.ts` sits out a rate limit of 12 seconds or less and calls once
-    more. Two players asking for paths in the same minute can still leave the second with
-    the written questions. The title, the pay (lower and
+  - The free AI tier counts tokens by the minute, and the paths are its largest calls.
+    `lib/llm.ts` sits out a short rate limit and calls once more (12 seconds for a reply in
+    a talk, 20 for the paths). If the service still says to wait, the route answers 429
+    `busy` with the seconds to wait and the groups already chosen, and the Crossroads waits
+    and asks again, up to five times, sending the groups back so the first step is not
+    redone. If only the second try at the paths is turned away, the first answer is kept.
+    A wait of more than 90 seconds means the day's allowance is spent, and is treated as the
+    service being down: the written questions take over. Which allowance ran out is logged
+    as words such as "tokens per minute", never the provider's full message. The Gemini
+    fallback would also cover a spent day, and stays off: Google's free tier asks that
+    personal information not be sent and allows people to review prompts. The title, the pay (lower and
     upper quarter, and median), the education, experience and training, the projected growth
     and the yearly openings are all filled in from the data by `factsFor`.
   - The card says the figures are national, whose they are and what year, and that the
@@ -158,6 +165,10 @@ flowchart LR
   playthrough is about 25 AI replies (3 in Quest 1, 4 in each of the four levels, two for the
   three paths, and one each for the Crossroads, the goal, the road and Todah's note), plus one per
   experiment reported.
+- **Grown after the roar** (`lib/accessories.ts`): once `goalAchievedAt` is set, `maneSize`
+  and `auraSize` return the largest size whatever the Mane upgrade's level, so every screen
+  and the shared pride card show the full mane or aura. Nothing is bought and nothing can be
+  taken off: it is read, not stored.
 - **The roar** (`/roar`, `components/RoarScreen.tsx`, `lib/roarSound.ts`): the goal is
   confirmed by pressing and holding for 1.5 seconds, with a plain press beside it for anyone
   who cannot hold. A small store says when the roar starts and ends, and `MusicPlayer` cuts
@@ -214,6 +225,10 @@ flowchart LR
 
 ## Around every screen
 
+- **SETTINGS** (`components/SettingsToggles.tsx`): a gear beside the moon on every screen but
+  the title, and under the moon on a phone held sideways. ABOUT, DEV (for a dev account) and
+  PRIVACY are links inside the box. The earlier bar of words floated over the bottom corner
+  and covered what was being read there. The title screen keeps it, with nothing under it.
 - **The way back** (`lib/lastScreen.ts`, `components/LastScreen.tsx`,
   `components/SettingsToggles.tsx`): a back arrow and a home button sit in the corner of every
   screen but the title. The game keeps its own trail of screens in `sessionStorage`. The

@@ -76,6 +76,8 @@ prophet: nothing in the game promises a job or an outcome.
   occupations that pay less than about that are then left out before the AI sees the list.
   They can also say the most schooling they have finished, and in what (optional): the
   nearest path then stays within it, and a path that typically takes more says so on its card.
+  The free AI service counts its use by the minute. When it is full, the Crossroads says the
+  trail is busy, waits as long as it is told to, and asks again by itself.
   Taking a path sets the main goal. The player can always
   write their own goal instead, and Todah gives his thoughts either way. Without AI replies
   the player gets three questions to find the paths themselves
@@ -90,7 +92,8 @@ prophet: nothing in the game promises a job or an outcome.
   it went, he answers once, and they decide whether anything on the map has changed
 - The roar (`/roar`): when the player says the goal is reached, they press and hold to let
   Todah roar (a plain press works too). The music cuts so the roar is the only sound, the sun
-  comes up, and Todah becomes Pride Leader. Then come credits made of the player's own trail,
+  comes up, and Todah becomes Pride Leader: grown, with his full mane (or her full aura) from
+  then on, whatever the Mane upgrade's level. Then come credits made of the player's own trail,
   which ROLL THE CREDITS plays on the whole screen
 - Todah's note (`/letter`): the final gift, once the player says their goal is reached. A
   handwritten note left on a wooden desk, signed with an inked paw print, with a snapshot of
@@ -144,8 +147,10 @@ prophet: nothing in the game promises a job or an outcome.
 - SPEAK beside the answer boxes: the player can say an answer in place of typing it, in
   browsers that can turn speech into text (not Firefox). The words land in the box to be
   checked and changed before they are sent, and the music goes quiet while the mic is on
-- SETTINGS, one box on every screen: sound (full, low or off), motion, the TV set, and the way
-  to the Privacy page. Reduced motion is respected from the system setting too
+- SETTINGS, one box on every screen: sound (full, low or off), motion, the TV set, and the ways
+  to the About and Privacy pages. It opens from a gear beside the moon, in the top row every
+  screen keeps clear, so nothing floats over what the player is reading. The title screen
+  keeps ABOUT and SETTINGS as words in its corner. Reduced motion is respected from the system setting too
 - Looping music, sound effects, and old-school TV scanlines over every screen. On a wide screen
   (a computer, or a tablet or phone held sideways) the game is framed by an old TV set drawn
   in CSS, which TV SET under SETTINGS switches off
