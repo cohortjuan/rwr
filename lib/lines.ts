@@ -10,6 +10,9 @@ export const lines = {
   title: {
     name: 'RWR',
     subtitle: '16-BIT CAREER ADVENTURE',
+    // What a screen reader says the seated lion is, before and after the roar.
+    cubAlt: 'Todah, a lion cub, sitting and facing you',
+    grownAlt: 'Todah, grown, sitting and facing you',
     powerOn: 'POWER ON',
     powerOnHint: 'Tap, click, or press any key',
     pressStart: 'PRESS START',
@@ -272,6 +275,9 @@ export const lines = {
     suggestionsHeading: 'Starting points you can edit:',
     levelUp: 'LEVEL UP!',
     todahLabel: (form: string) => `TODAH: ${form}`,
+    // Under his name once he has roared: his mane (or her aura) is full for good.
+    grown: 'Grown. The full mane came with the roar.',
+    grownLioness: 'Grown. The full aura came with the roar.',
     power: (n: number, max: number) => `PRIDE POWER ${n}/${max}`,
     toWardrobe: 'WARDROBE',
     sparks: (n: number) => `SPARKS ${n}`,

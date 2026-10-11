@@ -447,3 +447,10 @@
 .pathHint {
   margin: 10px 0 0;
 }
+
+/* The line under Todah's name once he has roared. */
+.grown {
+  margin: 4px 0 8px;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}

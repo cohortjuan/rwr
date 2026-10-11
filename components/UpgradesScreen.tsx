@@ -200,6 +200,9 @@ export default function UpgradesScreen() {
             </div>
             <div>
               <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[form]))}</p>
+              {progress.goalAchievedAt && (
+                <p className={styles.grown}>{progress.lionSex === 'female' ? lines.upgrades.grownLioness : lines.upgrades.grown}</p>
+              )}
               <p className={styles.power}>{lines.upgrades.power(totalLevel, totalMax)}</p>
               <div
                 className={styles.powerBar}

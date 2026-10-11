@@ -387,8 +387,14 @@ export function partnerMane(fur: Accessory): Accessory | undefined {
 // A lioness has no mane: on her the same upgrade is called AURA, and it shows as a glow.
 const maneSlot = slots.find((slot) => slot.id === 'mane')
 
+// The roar grows him up. Once the player has said their goal is reached, a lion has his full
+// mane and a lioness her full aura, whatever the upgrade's own level. It is a gift, not a
+// piece: nothing was bought and there is nothing to take off.
+export const MANE_FULL = maneSlot?.checks.length ?? 3
+
 function firstUpgradeLevel(progress: Progress): number {
   if (typeof progress.dev?.mane === 'number') return progress.dev.mane
+  if (progress.goalAchievedAt) return MANE_FULL
   return maneSlot ? slotLevel(maneSlot, progress.upgrades.mane ?? '') : 0
 }
 

@@ -156,7 +156,7 @@ export default function TitleScreen() {
           <div
             className={seated ? `${styles.cubFacing} ${styles.cubShown}` : styles.cubFacing}
             role="img"
-            aria-label="Todah, a lion cub, sitting and facing you"
+            aria-label={progress.goalAchievedAt ? lines.title.grownAlt : lines.title.cubAlt}
             aria-hidden={!seated}
           >
             <LionAvatar
