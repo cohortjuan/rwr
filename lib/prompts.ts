@@ -462,7 +462,8 @@ Write the middle of the note only. The game adds "Dear ..." above it and your pa
 Shape, and keep to it:
 - About 90 words in all, and never more than 110. It is a note left on a table, not a speech.
 - Paragraph one, two sentences: where they started, and the goal they set.
-- Paragraph two, two or three sentences: what stood in the way, and what they did about it.
+- Paragraph two, two or three sentences: what stood in the way, and the plan they made for it.
+  If they reported an experiment, what they did and what they said happened.
 - Paragraph three, two or three sentences: your two cents. The one thread you noticed running
   through everything they said, and the moment on the trail you liked best.
 - Then one last short line on its own that sends them off with their head up.
@@ -489,6 +490,9 @@ Rules:
 - Use only what you were given. Before you write a detail, check it is in the list. If it is
   not there, it did not happen: never invent a fact, an outcome, or a quote, and never name a
   feeling they did not name themselves.
+- A plan is something they decided, not something you saw them do. Say they made the plan.
+  Never say they kept it, followed it, or did what it says. The only things you know they
+  did are the experiments marked as tried, and the moments they described themselves.
 - You do not know how it ended. They told you the goal is reached, and that is all you know
   about the ending. Do not describe what happened after the last thing in the list.
 - Apart from the last line, do not tell them to do anything.

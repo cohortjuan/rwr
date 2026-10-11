@@ -212,13 +212,19 @@ function readTrail(body: Record<string, unknown>): string {
   }
   add('The goal they set', body.goal, 200)
   add('What they said would get in the way', body.obstacle)
-  add('Their plan for that', body.plan, 200)
-  for (const tried of (Array.isArray(body.experiments) ? body.experiments : []).slice(0, 3)) {
-    const entry = (typeof tried === 'object' && tried !== null ? tried : {}) as Record<string, unknown>
+  add('The plan they made for that (a plan only: you do not know whether they followed it)', body.plan, 200)
+  let tried = 0
+  for (const experiment of (Array.isArray(body.experiments) ? body.experiments : []).slice(0, 3)) {
+    const entry = (typeof experiment === 'object' && experiment !== null ? experiment : {}) as Record<string, unknown>
     const step = readText(entry.step, 200)
     const note = readText(entry.note, 400)
-    if (step && note) rows.push(`An experiment they tried: "${step}". What they said happened: "${note}"`)
+    if (step && note) {
+      rows.push(`An experiment they tried: "${step}". What they said happened: "${note}"`)
+      tried += 1
+    }
   }
+  // Said outright, so the note does not make one up.
+  if (tried === 0) rows.push('They did not tell you about any experiment they tried.')
   rows.push('They have now told you the goal is reached.')
   return rows.join('\n')
 }
