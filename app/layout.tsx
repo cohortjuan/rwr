@@ -21,7 +21,7 @@ const talk = Pixelify_Sans({
   variable: '--font-talk',
 })
 
-// Built to stay clear at small sizes. Only the four overlap names on the purpose diagram use it.
+// Built to stay clear at small sizes. Every label on the purpose diagram uses it.
 const clear = Atkinson_Hyperlegible({
   weight: '700',
   subsets: ['latin'],
