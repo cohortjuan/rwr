@@ -365,15 +365,21 @@ export async function POST(request: Request) {
       const system = pathsPrompt(occupationLines(offered, schooling), schooling ? MORE_MARK : null)
       let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
       let provider = ''
+      // What was wrong with the first answer, said to the model when it is asked again.
+      let again = ''
       for (let attempt = 0; attempt < 2; attempt += 1) {
         // Medium thinking: on low it reached for the nearest job title, not the step up.
-        const result = await generateReply(system, [{ role: 'user', text: circlesText }], { maxTokens: 3000, effort: 'medium' })
+        const result = await generateReply(system, [{ role: 'user', text: circlesText + again }], { maxTokens: 3000, effort: 'medium' })
         const read = readPaths(result.text, offered, payNow, schooling)
         provider = result.provider
-        if (read.paths.length === 0 && !read.care) continue
+        if (read.paths.length === 0 && !read.care) {
+          again = '\nAn earlier answer was not three different occupations from the list, one of each kind. Copy each code exactly.'
+          continue
+        }
         answer = read
         // The nearest path comes first. Done unless it reaches past their schooling.
         if (read.care || !read.paths[0].more) break
+        again = `\nAn earlier answer chose ${read.paths[0].code} ${read.paths[0].name} for "near". Its line ends with ${MORE_MARK}, so it is not allowed there. Choose a "near" whose line has no ${MORE_MARK}.`
       }
       return sent({ ...answer, provider })
     } catch (error) {

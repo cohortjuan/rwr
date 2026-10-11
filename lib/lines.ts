@@ -775,7 +775,8 @@ export const lines = {
     pathsChoose: 'TAKE THIS PATH',
     pathsChosen: 'YOUR PATH',
     pathsAfter: 'Take one and its goal becomes your main goal. You can change the words after, or skip these and write your own below.',
-    pathsFailed: 'I could not see the paths clearly just now. Here are three questions to find them yourself.',
+    pathsFailed: 'I could not see the paths clearly just now. Give it a minute and try again, or use these three questions to find them yourself.',
+    pathsRetry: 'TRY AGAIN',
     pathsCare: 'Before we look at paths: what you wrote sounds heavy, and that matters more than any goal. Please talk to someone you trust, or a professional, today. The trail will wait for you.',
     // Shown in place of the three paths when the AI is off or down.
     pathsOwn: [

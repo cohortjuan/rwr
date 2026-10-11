@@ -379,6 +379,11 @@ export default function CrossroadsScreen() {
                   <>
                     {/* The AI is off or down: three questions to find the paths by hand. */}
                     {pathsState === 'failed' && <p>{lion(lines.crossroads.pathsFailed)}</p>}
+                    {pathsState === 'failed' && aiOn && (
+                      <button type="button" className="btn" onClick={showPaths}>
+                        {lines.crossroads.pathsRetry}
+                      </button>
+                    )}
                     <ul className={styles.own}>
                       {lines.crossroads.pathsOwn.map((question) => (
                         <li key={question}>{question}</li>

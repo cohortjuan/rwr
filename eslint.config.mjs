@@ -12,7 +12,8 @@ const eslintConfig = defineConfig([
       quotes: ['error', 'single', { avoidEscape: true }],
     },
   },
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
+  // .claude holds other checkouts of this repo, each with its own build output.
+  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.claude/**']),
 ])
 
 export default eslintConfig

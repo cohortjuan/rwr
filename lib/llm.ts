@@ -22,13 +22,21 @@ export class LlmUnavailableError extends Error {
 
 class ProviderError extends Error {
   status: number
+  // On a rate limit: how many seconds the provider said to wait, when it said.
+  retryAfter?: number
 
-  constructor(provider: string, status: number) {
+  constructor(provider: string, status: number, retryAfter?: number) {
     super(`${provider} responded with HTTP ${status}`)
     this.name = 'ProviderError'
     this.status = status
+    this.retryAfter = retryAfter
   }
 }
+
+// The free tier counts tokens by the minute, so two players at once can be told to wait. A
+// short wait is sat out and the call made once more. A longer one is not worth holding the
+// player for: the game carries on from its written lines.
+const RATE_WAIT_MAX_SECONDS = 12
 
 const TIMEOUT_MS = 20000
 const MAX_OUTPUT_TOKENS = 1024
@@ -80,7 +88,10 @@ async function callGroq(system: string, messages: LlmMessage[], apiKey: string, 
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   })
-  if (!response.ok) throw new ProviderError('Groq', response.status)
+  if (!response.ok) {
+    const wait = Number(response.headers.get('retry-after'))
+    throw new ProviderError('Groq', response.status, Number.isFinite(wait) && wait > 0 ? wait : undefined)
+  }
   const data = await response.json()
   // Token counts only, to watch the daily budget. Never prompts or answers.
   if (data?.usage) console.info(`[llm] Groq tokens: ${data.usage.prompt_tokens} in, ${data.usage.completion_tokens} out`)
@@ -113,9 +124,13 @@ export async function generateReply(system: string, messages: LlmMessage[], opti
       try {
         return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
       } catch (error) {
-        // A server error or an empty reply is usually a blip, so it gets one more try.
-        // A rate limit does not: asking again at once only makes it worse.
-        if (!(error instanceof ProviderError) || error.status < 500) throw error
+        // A server error or an empty reply is usually a blip, so it gets one more try. So
+        // does a rate limit, but only after the short wait the provider asked for: asking
+        // again at once only makes it worse.
+        if (!(error instanceof ProviderError)) throw error
+        const wait = error.status === 429 ? error.retryAfter : undefined
+        if (error.status < 500 && !(wait && wait <= RATE_WAIT_MAX_SECONDS)) throw error
+        if (wait) await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250))
         console.warn('[llm] Groq failed once, trying again:', error.message)
         return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
       }
