@@ -318,10 +318,10 @@ export default function RoarScreen() {
           <section className={styles.reward}>
             <Image
               className={styles.still}
-              src="/images/reward-roar.jpg"
+              src="/images/pride-leader.jpg"
               alt={lion(lines.roar.rewardAlt)}
-              width={1408}
-              height={768}
+              width={1260}
+              height={618}
               priority
             />
             <h2 className={styles.rewardTitle}>{lines.roar.rewardTitle}</h2>
