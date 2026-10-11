@@ -289,6 +289,9 @@ Choose up to ${most} groups, the ones most likely to hold: the skilled or lead o
 present work leads to, a neighboring occupation that uses the same strengths in a different
 setting, and a bigger leap their words still point toward. Supervisors are listed in the group
 of the work they supervise. Managers and directors are in group 11.
+Always include the group of the hands-on work they describe doing now: for someone who repairs
+things that is 49, for a cook 35, for a carer 31 or 29. The step up from that work is usually
+in the same group.
 
 Reply with one JSON object and nothing else, in exactly this shape:
 {"groups": ["35", "11"]}
@@ -348,6 +351,11 @@ Rules:
 - Do not mention pay, demand, or what training or degree the work needs in any field. You can
   get those wrong. The game shows them from public data.
 - The three must be three different occupations.
+- Choose by what the work is, not by a word the title shares with the player's claims.
+  "Administrative services managers" run office support, and are not the manager of a repair
+  shop's service desk. The person who leads the hands-on workers in a trade is listed as a
+  "First-line supervisor" of those workers.
+- The goal must be a goal in the occupation you chose for that path, not in a different job.
 - Choose the occupations that fit this player's own words best. If nothing in the list is
   close, choose the nearest and let "why" say honestly what the link is.
 - Build "why" from what they said. It should fit this player and nobody else. Invent nothing

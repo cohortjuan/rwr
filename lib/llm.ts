@@ -11,12 +11,18 @@ export type LlmResult = { text: string, provider: 'gemini' | 'groq' }
 // Per-call settings. `maxTokens` is the room for the reply. The Groq model thinks before it
 // writes and that thinking comes out of the same room, so a long piece of writing needs more
 // of it, and `effort` says how much thinking to do first.
-export type LlmOptions = { maxTokens?: number, effort?: 'low' | 'medium' | 'high' }
+// `patience` is how many seconds of a rate limit this call will sit out before giving up.
+export type LlmOptions = { maxTokens?: number, effort?: 'low' | 'medium' | 'high', patience?: number }
 
 export class LlmUnavailableError extends Error {
-  constructor(message: string) {
+  // Set when the provider was only busy: how many seconds it said to wait. A caller that can
+  // wait may try again after that. Unset when the provider is down, or full for the day.
+  retryAfter?: number
+
+  constructor(message: string, retryAfter?: number) {
     super(message)
     this.name = 'LlmUnavailableError'
+    this.retryAfter = retryAfter
   }
 }
 
@@ -34,9 +40,11 @@ class ProviderError extends Error {
 }
 
 // The free tier counts tokens by the minute, so two players at once can be told to wait. A
-// short wait is sat out and the call made once more. A longer one is not worth holding the
-// player for: the game carries on from its written lines.
+// short wait is sat out and the call made once more. A longer one is not worth holding a
+// reply for: the game carries on from its written lines, or the caller waits and asks again.
 const RATE_WAIT_MAX_SECONDS = 12
+// A wait longer than this is not a busy minute but a spent day: nothing to wait for.
+const BUSY_MAX_SECONDS = 90
 
 const TIMEOUT_MS = 20000
 const MAX_OUTPUT_TOKENS = 1024
@@ -90,6 +98,13 @@ async function callGroq(system: string, messages: LlmMessage[], apiKey: string, 
   })
   if (!response.ok) {
     const wait = Number(response.headers.get('retry-after'))
+    if (response.status === 429) {
+      // Which allowance ran out, to watch the budget: "tokens per minute", "requests per day".
+      // Only those words are logged. The rest of the message names the account.
+      const told = await response.text().catch(() => '')
+      const which = told.match(/(tokens|requests) per (minute|day)/i)
+      console.warn(`[llm] Groq limit reached: ${which ? which[0].toLowerCase() : 'not said'}`)
+    }
     throw new ProviderError('Groq', response.status, Number.isFinite(wait) && wait > 0 ? wait : undefined)
   }
   const data = await response.json()
@@ -129,7 +144,7 @@ export async function generateReply(system: string, messages: LlmMessage[], opti
         // again at once only makes it worse.
         if (!(error instanceof ProviderError)) throw error
         const wait = error.status === 429 ? error.retryAfter : undefined
-        if (error.status < 500 && !(wait && wait <= RATE_WAIT_MAX_SECONDS)) throw error
+        if (error.status < 500 && !(wait && wait <= (options.patience ?? RATE_WAIT_MAX_SECONDS))) throw error
         if (wait) await new Promise((resolve) => setTimeout(resolve, wait * 1000 + 250))
         console.warn('[llm] Groq failed once, trying again:', error.message)
         return { text: await callGroq(system, messages, groqKey, options), provider: 'groq' }
@@ -137,7 +152,10 @@ export async function generateReply(system: string, messages: LlmMessage[], opti
     } catch (error) {
       // Log the status only. Never log keys, prompts, or player answers.
       console.warn('[llm] Groq failed:', error instanceof Error ? error.message : 'unknown error')
-      if (!geminiKey || !shouldFallBack(error)) throw new LlmUnavailableError('Groq failed and no fallback applied')
+      if (!geminiKey || !shouldFallBack(error)) {
+        const wait = error instanceof ProviderError && error.status === 429 ? (error.retryAfter ?? 20) : undefined
+        throw new LlmUnavailableError('Groq failed and no fallback applied', wait && wait <= BUSY_MAX_SECONDS ? wait : undefined)
+      }
     }
   }
 

@@ -59,12 +59,20 @@ const claimsOf = (progress: Progress) =>
 
 // Three paths from the AI: the list, `care` when the player's words showed distress, or
 // nothing when it could not be reached or its answer was not three whole paths.
+// How many times the paths are asked for when the AI service says it is busy, and the least
+// and most seconds to wait between tries. Together they cover the service's one-minute count.
+const PATHS_TRIES = 5
+const PATHS_WAIT_SECONDS = { least: 4, most: 40 }
+
+type PathsAnswer = { list: PathIdea[], care: boolean, busy?: { wait: number, groups: string[] } }
+
 async function askPaths(
   progress: Progress,
   payNow: number | null,
   schooling: Schooling | null,
   field: string,
-): Promise<{ list: PathIdea[], care: boolean }> {
+  groups: string[],
+): Promise<PathsAnswer> {
   try {
     const response = await fetch('/api/todah', {
       method: 'POST',
@@ -75,8 +83,16 @@ async function askPaths(
         ...(payNow ? { payNow } : {}),
         ...(schooling ? { schooling } : {}),
         ...(field ? { field } : {}),
+        ...(groups.length > 0 ? { groups } : {}),
       }),
     })
+    if (response.status === 429) {
+      // Busy, not broken: the server says how long to wait and what it had already worked out.
+      const told = await response.json().catch(() => ({}))
+      if (told.error !== 'busy') return { list: [], care: false }
+      const wait = Math.min(Math.max(Number(told.retryAfter) || PATHS_WAIT_SECONDS.least, PATHS_WAIT_SECONDS.least), PATHS_WAIT_SECONDS.most)
+      return { list: [], care: false, busy: { wait, groups: Array.isArray(told.groups) ? told.groups.map(String) : [] } }
+    }
     if (!response.ok) return { list: [], care: false }
     const data = await response.json()
     return { list: Array.isArray(data.paths) ? (data.paths as PathIdea[]) : [], care: data.care === true }
@@ -113,7 +129,7 @@ export default function CrossroadsScreen() {
   const [notice, setNotice] = useState('')
   const requestedFor = useRef('')
   // The three paths: asked for only when the player taps for them.
-  const [pathsState, setPathsState] = useState<'idle' | 'asking' | 'failed' | 'care'>('idle')
+  const [pathsState, setPathsState] = useState<'idle' | 'asking' | 'waiting' | 'failed' | 'care'>('idle')
   // What the player makes now, as typed. Until they type, the box shows what was saved.
   const [payDraft, setPayDraft] = useState<string | null>(null)
   const thoughtsFor = useRef('')
@@ -161,7 +177,17 @@ export default function CrossroadsScreen() {
     const schooling = progress.schooling
     const field = schooling ? progress.schoolingField.trim() : ''
     saveProgress({ payNow, schoolingField: field })
-    const answer = await askPaths(progress, payNow, schooling, field)
+    // When the AI service is busy the game waits as long as it was told to and asks again.
+    let answer: PathsAnswer = { list: [], care: false }
+    let groups: string[] = []
+    for (let attempt = 0; attempt < PATHS_TRIES; attempt += 1) {
+      answer = await askPaths(progress, payNow, schooling, field, groups)
+      if (!answer.busy) break
+      if (answer.busy.groups.length > 0) groups = answer.busy.groups
+      setPathsState('waiting')
+      const wait = answer.busy.wait
+      await new Promise((resolve) => window.setTimeout(resolve, (wait + 1) * 1000))
+    }
     if (answer.care) {
       setPathsState('care')
       return
@@ -314,8 +340,8 @@ export default function CrossroadsScreen() {
                 ) : aiOn && pathsState !== 'failed' ? (
                   <>
                     <p>{lion(lines.crossroads.pathsIntro)}</p>
-                    {pathsState === 'asking' ? (
-                      <p role="status">{lion(lines.crossroads.pathsThinking)}</p>
+                    {pathsState === 'asking' || pathsState === 'waiting' ? (
+                      <p role="status">{lion(pathsState === 'waiting' ? lines.crossroads.pathsBusy : lines.crossroads.pathsThinking)}</p>
                     ) : (
                       <>
                         <p className={styles.quick}>{lines.crossroads.quickHeading}</p>

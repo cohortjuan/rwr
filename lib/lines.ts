@@ -747,6 +747,9 @@ export const lines = {
     // Typical is not required. Rule that must survive edits: never say they cannot do it.
     pathsMore: 'This typically takes more schooling than you have finished. Experience can count too: check what employers near you ask for.',
     pathsThinking: 'Todah is reading the trail ahead...',
+    // The AI service is shared and counts its use by the minute. When it is full, the game
+    // waits and asks again by itself.
+    pathsBusy: 'The trail is busy just now, so this is taking a little longer. Todah is still looking. Stay on this screen.',
     pathsKinds: { near: 'THE PATH YOU ARE ON', next: 'THE PATH NEXT DOOR', wild: 'THE BIGGER LEAP' },
     pathsGoal: 'A goal to walk toward:',
     // The figures on a path are the Bureau of Labor Statistics' own, for the whole country.

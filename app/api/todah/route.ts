@@ -116,6 +116,10 @@ function readText(value: unknown, max: number): string {
   return typeof value === 'string' ? scrub(value).trim().slice(0, max) : ''
 }
 
+// How many seconds of a rate limit a call for the three paths will sit out. Longer than a
+// reply in a talk gets, because there is no written line that can stand in for the paths.
+const PATHS_PATIENCE = 20
+
 // The model's answers about the three paths come back as JSON. `readForm` finds the object in
 // a reply, whatever was written around it.
 const pathKinds: PathIdea['kind'][] = ['near', 'next', 'wild']
@@ -346,6 +350,11 @@ export async function POST(request: Request) {
   // then chooses among the occupations in them. A reply that is not three whole paths is
   // asked for once more.
   //
+  // The AI service counts tokens by the minute, and these calls are the largest in the game.
+  // When it says to wait, the answer is "busy" with how long, and the groups already chosen,
+  // so the player's browser can wait and ask again without the first step being redone. If
+  // only the second try at the paths is turned away, the first answer is kept.
+  //
   // If the player said what schooling they have finished, occupations that typically take
   // more are marked in the list and the nearest path may not be one of them. The model sees
   // the marks and what they studied, never the level. A set whose nearest path is marked is
@@ -356,26 +365,37 @@ export async function POST(request: Request) {
     const field = readText(body.field, FIELD_MAX)
     const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}${field ? `\nThey have studied or trained in: "${field}"` : ''}`
     const pool = poolFor(payNow)
+    // Groups chosen on an earlier try that was told to wait. Only codes in the pool count.
+    const inPool = new Set(pool.map(groupOf))
+    let groups = (Array.isArray(body.groups) ? body.groups : []).map((code) => String(code)).filter((code) => inPool.has(code)).slice(0, GROUPS_MOST)
+    let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
+    let provider = ''
     try {
       let offered = pool
       if (pool.length > POOL_WHOLE) {
-        const picked = await generateReply(pathGroupsPrompt(groupLines(pool), GROUPS_MOST), [{ role: 'user', text: circlesText }], {
-          maxTokens: 1500,
-          effort: 'low',
-        })
-        const chosen = readGroups(picked.text, pool)
-        if (chosen.care) return sent({ paths: [], care: true, provider: picked.provider })
-        if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
-        offered = pool.filter((occupation) => chosen.groups.includes(groupOf(occupation)))
+        if (groups.length === 0) {
+          const picked = await generateReply(pathGroupsPrompt(groupLines(pool), GROUPS_MOST), [{ role: 'user', text: circlesText }], {
+            maxTokens: 1500,
+            effort: 'low',
+            patience: PATHS_PATIENCE,
+          })
+          const chosen = readGroups(picked.text, pool)
+          if (chosen.care) return sent({ paths: [], care: true, provider: picked.provider })
+          if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
+          groups = chosen.groups
+        }
+        offered = pool.filter((occupation) => groups.includes(groupOf(occupation)))
       }
       const system = pathsPrompt(occupationLines(offered, schooling), schooling ? MORE_MARK : null)
-      let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
-      let provider = ''
       // What was wrong with the first answer, said to the model when it is asked again.
       let again = ''
       for (let attempt = 0; attempt < 2; attempt += 1) {
         // Medium thinking: on low it reached for the nearest job title, not the step up.
-        const result = await generateReply(system, [{ role: 'user', text: circlesText + again }], { maxTokens: 3000, effort: 'medium' })
+        const result = await generateReply(system, [{ role: 'user', text: circlesText + again }], {
+          maxTokens: 3000,
+          effort: 'medium',
+          patience: PATHS_PATIENCE,
+        })
         const read = readPaths(result.text, offered, payNow, schooling)
         provider = result.provider
         if (read.paths.length === 0 && !read.care) {
@@ -390,6 +410,11 @@ export async function POST(request: Request) {
       return sent({ ...answer, provider })
     } catch (error) {
       if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+      // A whole answer in hand is better than none: only its second try was turned away.
+      if (answer.paths.length > 0) return sent({ ...answer, provider })
+      if (error instanceof LlmUnavailableError && error.retryAfter) {
+        return Response.json({ error: 'busy', retryAfter: Math.ceil(error.retryAfter), groups }, { status: 429 })
+      }
       return Response.json({ error: 'unavailable' }, { status: 503 })
     }
   }
