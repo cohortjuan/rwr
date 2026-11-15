@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cancelRecovery, setNewPassword, useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { saveProgress, useProgress } from '@/lib/progress'
+import { useModal } from '@/lib/useModal'
 import styles from './AccountWatch.module.css'
 
 // Account jobs that belong to every screen, so this sits in the layout:
@@ -12,19 +13,13 @@ import styles from './AccountWatch.module.css'
 export default function AccountWatch() {
   const account = useAccount()
   const progress = useProgress()
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [saved, setSaved] = useState(false)
   const open = account.recovering || saved
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const dialogRef = useModal(open)
 
   // Dev tools stay with the dev account: logged out, or on any other account, they switch off.
   const strayDevTools = account.checked && !account.dev && progress.dev !== null

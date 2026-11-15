@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import LionAvatar from '@/components/LionAvatar'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { lines } from '@/lib/lines'
-import { pridePower, todahForm, useProgress, type KeptLion, type TodahForm } from '@/lib/progress'
+import { pridePower, todahForm, useProgress, type KeptLion } from '@/lib/progress'
+import { useModal } from '@/lib/useModal'
 import styles from './LionBoxes.module.css'
 
 type Props = {
@@ -14,23 +14,11 @@ type Props = {
   onClose: () => void
 }
 
-const formLabel: Record<TodahForm, string> = {
-  cub: lines.upgrades.formCub,
-  nomad: lines.upgrades.formNomad,
-  leader: lines.upgrades.formLeader,
-}
-
 // The lions set aside from earlier games. Picking one puts it back in play.
 export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const current = useProgress()
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const dialogRef = useModal(open)
 
   return (
     <dialog ref={dialogRef} className={styles.box} aria-labelledby="lions-heading" onClose={onClose}>
@@ -47,14 +35,12 @@ export default function LionsBox({ open, lions, onPlay, onClose }: Props) {
             <li key={lion.id} className={styles.lion}>
               <LionAvatar
                 className={styles.lionFace}
-                wearing={wornIds(lion.progress, others)}
-                mane={maneSize(lion.progress)}
-                aura={auraSize(lion.progress)}
+                {...lionLook(lion.progress)}
               />
               <div className={styles.lionText}>
                 <p className={styles.lionName}>{lion.progress.lionName.toUpperCase()}</p>
                 <p className={styles.lionDetail}>
-                  {lines.lions.summary(formLabel[todahForm(lion.progress, others)], power.level, power.max)}
+                  {lines.lions.summary(lines.upgrades.forms[todahForm(lion.progress)], power.level, power.max)}
                 </p>
                 {lion.progress.goalText && (
                   <p className={styles.lionDetail}>

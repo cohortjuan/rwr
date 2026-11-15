@@ -31,7 +31,7 @@ import {
 } from '@/lib/accessories'
 import { useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
-import { saveProgress, useKeptLions, useLionText, useProgress, type LionSex } from '@/lib/progress'
+import { saveProgress, useLionText, useOtherLions, useProgress, type LionSex } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import styles from './WardrobeScreen.module.css'
@@ -50,7 +50,7 @@ export default function WardrobeScreen() {
   const progress = useProgress()
   const lion = useLionText()
   const { sound } = useSettings()
-  const keptLions = useKeptLions()
+  const others = useOtherLions()
   // Guests can look, but only a player with an account can own or wear accessories.
   const account = useAccount()
   const signedIn = Boolean(account.email)
@@ -65,10 +65,9 @@ export default function WardrobeScreen() {
 
   if (!hydrated) return <main className="screen" />
 
-  const others = keptLions.map((kept) => kept.progress)
   const purse = sparks(progress)
   // Every piece that is on, counting those waiting under a transformation.
-  const owned = putOnIds(progress, others)
+  const owned = putOnIds(progress)
   // A guest owns nothing, so what they see on the lion is whatever they are trying on.
   const wearing = signedIn
     ? owned
@@ -227,7 +226,7 @@ export default function WardrobeScreen() {
               {accessories
                 .filter((item) => item.category === category && fits(item, sex))
                 .map((item) => {
-                  const mine = signedIn && owns(progress, item, others)
+                  const mine = signedIn && owns(progress, item)
                   const worn = isWorn(item)
                   const block = mine ? null : buyBlock(progress, item, others)
                   const colour = item.variants?.find((option) => option.id === progress.tones[item.id]) ?? item.variants?.[0]

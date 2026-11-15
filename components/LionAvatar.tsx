@@ -19,9 +19,9 @@ import styles from './LionAvatar.module.css'
 type Props = {
   // Tokens for the accessories being worn (see wornIds in lib/accessories.ts).
   wearing: string[]
-  // The mane's size, 0 to 3, from the Mane upgrade's level (see maneSize).
+  // The mane's size, 0 to 3, from how far the player has come (see maneSize and lib/growth.ts).
   mane?: number
-  // A lioness's aura, 0 to 3, from the same upgrade (see auraSize): a glow in place of a mane.
+  // A lioness's aura, 0 to 3, grown the same way (see auraSize): a glow in place of a mane.
   aura?: number
   mood?: 'neutral' | 'happy'
   // The mouth flaps while a line types out.

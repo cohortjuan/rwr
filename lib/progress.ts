@@ -1,8 +1,9 @@
 'use client'
 
 import type { Schooling } from '@/lib/schooling'
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { circles, compassTotal, stepsDone, trailSteps } from '@/lib/compass'
+import { growth, NOMAD_GROWTH } from '@/lib/growth'
 import type { EntryChoice } from '@/lib/lines'
 import { DEFAULT_LION_NAME, withLionName } from '@/lib/names'
 import { saveSettings, SETTINGS_KEY } from '@/lib/settings'
@@ -404,6 +405,12 @@ export function useKeptLions(): KeptLion[] {
   return useSyncExternalStore(subscribe, getLions, () => noLions)
 }
 
+// The games of the player's other lions, for what counts across every lion (Den, gifts worn).
+export function useOtherLions(): Progress[] {
+  const lions = useKeptLions()
+  return useMemo(() => lions.map((lion) => lion.progress), [lions])
+}
+
 // Rewrites a canned line so it uses the name of the lion in play.
 export function useLionText(): (text: string) => string {
   const { lionName } = useProgress()
@@ -509,13 +516,13 @@ export function hasSavedGame(progress: Progress): boolean {
   return progress.playerName.trim().length > 0
 }
 
-// Todah's form follows what the player has built, never how much they have chatted.
-// Nomad: onboarding done and at least two upgrade slots started.
+// Todah's form follows how far the player has come, never how much they have chatted.
+// Nomad: the lion has grown halfway (see lib/growth.ts): Quest 1 and all four levels walked,
+// and the MANE upgrade at level 2.
 // Pride Leader: only after the player confirms their main goal is reached.
-export function todahForm(progress: Progress, others: Progress[] = []): TodahForm {
+export function todahForm(progress: Progress): TodahForm {
   if (progress.dev?.form) return progress.dev.form
   if (progress.goalAchievedAt) return 'leader'
-  const started = slots.filter((slot) => slotLevel(slot, slotContent(progress, slot, others)) > 0).length
-  if (progress.onboardingDone && started >= 2) return 'nomad'
+  if (growth(progress) >= NOMAD_GROWTH) return 'nomad'
   return 'cub'
 }

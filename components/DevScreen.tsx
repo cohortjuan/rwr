@@ -3,13 +3,12 @@
 import Link from 'next/link'
 import BackLink from '@/components/BackLink'
 import LionAvatar from '@/components/LionAvatar'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { useAccount } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import {
   saveProgress,
   todahForm,
-  useKeptLions,
   useLionText,
   useProgress,
   type DevOverrides,
@@ -24,11 +23,6 @@ type ScreenPath = keyof typeof lines.dev.screens
 const noOverrides: DevOverrides = { unlockAll: false, mane: null, form: null }
 const maneSizes = [0, 1, 2, 3]
 const forms: TodahForm[] = ['cub', 'nomad', 'leader']
-const formLabel: Record<TodahForm, string> = {
-  cub: lines.upgrades.formCub,
-  nomad: lines.upgrades.formNomad,
-  leader: lines.upgrades.formLeader,
-}
 const screens = Object.keys(lines.dev.screens) as ScreenPath[]
 
 // Dev tools, for a dev account only: see any stage of the lion and open any screen without
@@ -39,7 +33,6 @@ export default function DevScreen() {
   const progress = useProgress()
   const lion = useLionText()
   const { sound } = useSettings()
-  const keptLions = useKeptLions()
 
   if (!hydrated) return <main className="screen" />
 
@@ -55,7 +48,6 @@ export default function DevScreen() {
     )
   }
 
-  const others = keptLions.map((kept) => kept.progress)
   const dev = progress.dev ?? noOverrides
   const achieved = Boolean(progress.goalAchievedAt)
 
@@ -85,12 +77,10 @@ export default function DevScreen() {
           <div className={styles.look}>
             <LionAvatar
               className={styles.preview}
-              wearing={wornIds(progress, others)}
-              mane={maneSize(progress)}
-              aura={auraSize(progress)}
+              {...lionLook(progress)}
               blink
             />
-            <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[todahForm(progress, others)]))}</p>
+            <p className={styles.formName}>{lion(lines.upgrades.todahLabel(lines.upgrades.forms[todahForm(progress)]))}</p>
           </div>
 
           <div className={styles.controls}>
@@ -140,7 +130,7 @@ export default function DevScreen() {
                   aria-pressed={dev.form === form}
                   onClick={() => set({ form })}
                 >
-                  {formLabel[form].toUpperCase()}
+                  {lines.upgrades.forms[form].toUpperCase()}
                 </button>
               ))}
             </div>
