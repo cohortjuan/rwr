@@ -1,10 +1,11 @@
+import { circles } from '@/lib/compass'
 import { checkLimit } from '@/lib/limit'
 import { generateReply, LlmUnavailableError, type LlmMessage } from '@/lib/llm'
 import type { EntryChoice } from '@/lib/lines'
 import { LEVEL_ANSWERS, levels, liveLevels, type LiveLevel, type Phase } from '@/lib/levels'
 import { factsFor, groupLines, groupOf, GROUPS_MOST, MORE_MARK, occupationLines, poolFor, POOL_WHOLE, type Occupation } from '@/lib/occupations'
 import { readPayNow } from '@/lib/pay'
-import type { PathIdea } from '@/lib/progress'
+import type { Circle, PathIdea } from '@/lib/progress'
 import { FIELD_MAX, readSchooling, type Schooling } from '@/lib/schooling'
 import { buildSystemPrompt, COMPLETE_TOKENS, levelBriefs, pathGroupsPrompt, pathsPrompt, type TodahMode } from '@/lib/prompts'
 import { scrub } from '@/lib/scrub'
@@ -22,7 +23,6 @@ const ONBOARDING_ANSWERS = 3
 const CLAIM_MAX = 160
 
 const modes: TodahMode[] = ['onboarding', 'interview', 'summary', 'crossroads', 'paths', 'goal', 'road', 'checkin', 'letter', 'help']
-const circleOrder = ['heart', 'craft', 'cause', 'coin']
 const entryChoices: EntryChoice[] = ['starting', 'changing', 'stuck', 'curious']
 
 type IncomingMessage = { role: 'user' | 'todah', text: string }
@@ -53,7 +53,7 @@ function stripCompleteToken(text: string): { reply: string, complete: boolean } 
 // The level a circle belongs to, or undefined when that level's interview is not built yet.
 function phaseOf(circle: unknown): Phase | undefined {
   if (!liveLevels.includes(circle as LiveLevel)) return undefined
-  return levels[circleOrder.indexOf(circle as string)]?.name
+  return levels[circles.indexOf(circle as Circle)]?.name
 }
 
 // The summary comes back as JSON. Anything that is not exactly what was asked for is dropped,
@@ -82,7 +82,7 @@ function claimRows(value: unknown): Map<string, string> {
   const rows = new Map<string, string>()
   if (typeof value !== 'object' || value === null) return rows
   const claims = value as Record<string, unknown>
-  for (const [index, circle] of circleOrder.entries()) {
+  for (const [index, circle] of circles.entries()) {
     const entry = claims[circle] as { claim?: unknown, evidence?: unknown } | undefined
     if (!entry || typeof entry.claim !== 'string') continue
     const claim = scrub(entry.claim).trim().slice(0, 300)
@@ -191,7 +191,7 @@ function readRoad(text: string): { plan: string, steps: { circle: string, text: 
         const entry = (typeof step === 'object' && step !== null ? step : {}) as Record<string, unknown>
         return { circle: String(entry.circle ?? ''), text: readText(entry.text, 200) }
       })
-      .filter((step) => circleOrder.includes(step.circle) && step.text)
+      .filter((step) => circles.includes(step.circle as Circle) && step.text)
       .slice(0, 3)
     // `care` means the player's words showed distress, and the game should stop and say so.
     if (fields.care === true) return { ...empty, care: true }
@@ -267,241 +267,220 @@ function isSameOrigin(request: Request): boolean {
   }
 }
 
-export async function POST(request: Request) {
-  if (!isSameOrigin(request)) return Response.json({ error: 'forbidden' }, { status: 403 })
+// What every mode works from, read and checked once in POST before any AI reply is spent.
+type Ask = {
+  mode: TodahMode
+  body: Record<string, unknown>
+  incoming: IncomingMessage[]
+  // The level the request is about, when it is about one that is built.
+  phase: Phase | undefined
+  // How many answers the player has given in this talk.
+  answers: number
+  // One line per circle with a claim (see claimRows). Full for the modes that need it.
+  claims: Map<string, string>
+  goal: string
+  obstacle: string
+  step: string
+  report: string
+  // Answers the browser with `data`, and with the cookie that counts this AI reply.
+  sent: (data: Record<string, unknown>) => Response
+}
 
-  let body: Record<string, unknown>
-  try {
-    body = await request.json()
-  } catch {
-    return Response.json({ error: 'bad_request' }, { status: 400 })
-  }
+const badRequest = () => Response.json({ error: 'bad_request' }, { status: 400 })
 
-  const mode = body.mode as TodahMode
-  if (!modes.includes(mode)) return Response.json({ error: 'bad_request' }, { status: 400 })
+// The answer when the AI service is down or turned the call away. Only a surprise is logged,
+// and never with the player's words.
+function unavailable(error: unknown): Response {
+  if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
+  return Response.json({ error: 'unavailable' }, { status: 503 })
+}
 
-  const incoming = Array.isArray(body.messages) ? body.messages : []
-  if (!incoming.every(isIncomingMessage)) return Response.json({ error: 'bad_request' }, { status: 400 })
-  if (incoming.length >= SESSION_MESSAGE_CAP) return Response.json({ error: 'cap' }, { status: 429 })
+// The modes that need a claim in every circle, so a half-walked trail never reaches the AI.
+const needsAllClaims: TodahMode[] = ['crossroads', 'paths', 'goal', 'road']
 
-  const phase = phaseOf(body.circle)
-  const answers = incoming.filter((message) => message.role === 'user').length
+// What a request must carry for its mode. True when something is missing.
+function missing(ask: Omit<Ask, 'sent'>): boolean {
+  const { mode, phase, answers, claims, goal, obstacle, step, report, body } = ask
   // A level's interview and its summary both need a level that is built.
-  if ((mode === 'interview' || mode === 'summary') && !phase) {
-    return Response.json({ error: 'bad_request' }, { status: 400 })
-  }
-  if (mode === 'summary' && answers === 0) return Response.json({ error: 'bad_request' }, { status: 400 })
-  // The Crossroads and the road need a claim in every circle, so a half-walked trail never
-  // reaches the AI.
-  const crossroads = mode === 'crossroads' || mode === 'paths' || mode === 'goal' || mode === 'road' ? claimRows(body.claims) : null
-  if (crossroads && crossroads.size < circleOrder.length) return Response.json({ error: 'bad_request' }, { status: 400 })
-  const goal = readText(body.goal, 200)
-  const obstacle = readText(body.obstacle, 300)
-  const step = readText(body.step, 200)
-  const report = readText(body.note, MAX_TEXT_LENGTH)
-  if (mode === 'road' && (!goal || !obstacle)) return Response.json({ error: 'bad_request' }, { status: 400 })
-  if (mode === 'goal' && !goal) return Response.json({ error: 'bad_request' }, { status: 400 })
-  if (mode === 'letter' && !goal) return Response.json({ error: 'bad_request' }, { status: 400 })
-  if (mode === 'checkin' && (!step || !report || !circleOrder.includes(String(body.circle)))) {
-    return Response.json({ error: 'bad_request' }, { status: 400 })
-  }
+  if ((mode === 'interview' || mode === 'summary') && !phase) return true
+  if (mode === 'summary' && answers === 0) return true
+  if (needsAllClaims.includes(mode) && claims.size < circles.length) return true
+  if (mode === 'road' && (!goal || !obstacle)) return true
+  if ((mode === 'goal' || mode === 'letter') && !goal) return true
+  if (mode === 'checkin' && (!step || !report || !circles.includes(body.circle as Circle))) return true
+  return false
+}
 
-  // Everything above is free. From here an AI reply is spent, so the visitor's share is checked.
-  const limit = checkLimit(request)
-  if (!limit.ok) return Response.json({ error: limit.reason }, { status: 429 })
-  const sent = (data: Record<string, unknown>) => Response.json(data, { headers: { 'Set-Cookie': limit.cookie } })
+const fourCircles = (claims: Map<string, string>) => `The four circles:\n${[...claims.values()].join('\n')}`
 
-  // The letter is one message written from everything the player said along the way.
-  if (mode === 'letter') {
-    const trail = readTrail(body)
-    try {
-      // The longest thing Todah writes, so it gets more room than a reply does. The model is
-      // told to think only a little first: asked to think harder, it has spent the whole
-      // allowance on thinking and written nothing. Thinking lightly, it sometimes runs long or
-      // quotes whole sentences, so a note that does not fit is written once more and the
-      // better of the two is kept.
-      let note = ''
-      let provider = ''
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        const result = await generateReply(
-          buildSystemPrompt({ mode, entryChoice: null }),
-          [{ role: 'user', text: `What they said along the way:\n${trail}` }],
-          { maxTokens: 1500, effort: 'low' },
-        )
-        const written = keepRealQuotes(stripCompleteToken(result.text).reply, trail).slice(0, 1200)
-        provider = result.provider
-        if (!note || written.length < note.length) note = written
-        if (noteFits(written)) {
-          note = written
-          break
-        }
-      }
-      return sent({ reply: note, provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
+// One reply from Todah to one message, for the modes that are not a talk.
+async function oneReply(ask: Ask, text: string): Promise<Response> {
+  try {
+    const result = await generateReply(buildSystemPrompt({ mode: ask.mode, entryChoice: null }), [{ role: 'user', text }])
+    return ask.sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
+  } catch (error) {
+    return unavailable(error)
   }
+}
 
-  // The three paths. The game's own list of occupations is cut to those that pay a living and,
-  // if the player said what they make now, about that much or more. The model chooses from
-  // what is left, so it cannot name work that does not exist or that would pay them less, and
-  // it is never told the amount. A long list is narrowed first: the model picks a few groups,
-  // then chooses among the occupations in them. A reply that is not three whole paths is
-  // asked for once more.
-  //
-  // The AI service counts tokens by the minute, and these calls are the largest in the game.
-  // When it says to wait, the answer is "busy" with how long, and the groups already chosen,
-  // so the player's browser can wait and ask again without the first step being redone. If
-  // only the second try at the paths is turned away, the first answer is kept.
-  //
-  // If the player said what schooling they have finished, occupations that typically take
-  // more are marked in the list and the nearest path may not be one of them. The model sees
-  // the marks and what they studied, never the level. A set whose nearest path is marked is
-  // asked for once more, and kept if the second try is no better: the card then says so.
-  if (mode === 'paths' && crossroads) {
-    const payNow = readPayNow(body.payNow)
-    const schooling = readSchooling(body.schooling)
-    const field = readText(body.field, FIELD_MAX)
-    const circlesText = `The four circles:\n${[...crossroads.values()].join('\n')}${field ? `\nThey have studied or trained in: "${field}"` : ''}`
-    const pool = poolFor(payNow)
-    // Groups chosen on an earlier try that was told to wait. Only codes in the pool count.
-    const inPool = new Set(pool.map(groupOf))
-    let groups = (Array.isArray(body.groups) ? body.groups : []).map((code) => String(code)).filter((code) => inPool.has(code)).slice(0, GROUPS_MOST)
-    let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
+// Todah's note: one message written from everything the player said along the way.
+async function letter(ask: Ask): Promise<Response> {
+  const trail = readTrail(ask.body)
+  try {
+    // The longest thing Todah writes, so it gets more room than a reply does. The model is
+    // told to think only a little first: asked to think harder, it has spent the whole
+    // allowance on thinking and written nothing. Thinking lightly, it sometimes runs long or
+    // quotes whole sentences, so a note that does not fit is written once more and the
+    // better of the two is kept.
+    let note = ''
     let provider = ''
-    try {
-      let offered = pool
-      if (pool.length > POOL_WHOLE) {
-        if (groups.length === 0) {
-          const picked = await generateReply(pathGroupsPrompt(groupLines(pool), GROUPS_MOST), [{ role: 'user', text: circlesText }], {
-            maxTokens: 1500,
-            effort: 'low',
-            patience: PATHS_PATIENCE,
-          })
-          const chosen = readGroups(picked.text, pool)
-          if (chosen.care) return sent({ paths: [], care: true, provider: picked.provider })
-          if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
-          groups = chosen.groups
-        }
-        offered = pool.filter((occupation) => groups.includes(groupOf(occupation)))
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const result = await generateReply(
+        buildSystemPrompt({ mode: ask.mode, entryChoice: null }),
+        [{ role: 'user', text: `What they said along the way:\n${trail}` }],
+        { maxTokens: 1500, effort: 'low' },
+      )
+      const written = keepRealQuotes(stripCompleteToken(result.text).reply, trail).slice(0, 1200)
+      provider = result.provider
+      if (!note || written.length < note.length) note = written
+      if (noteFits(written)) {
+        note = written
+        break
       }
-      const system = pathsPrompt(occupationLines(offered, schooling), schooling ? MORE_MARK : null)
-      // What was wrong with the first answer, said to the model when it is asked again.
-      let again = ''
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        // Medium thinking: on low it reached for the nearest job title, not the step up.
-        const result = await generateReply(system, [{ role: 'user', text: circlesText + again }], {
-          maxTokens: 3000,
-          effort: 'medium',
+    }
+    return ask.sent({ reply: note, provider })
+  } catch (error) {
+    return unavailable(error)
+  }
+}
+
+// The three paths. The game's own list of occupations is cut to those that pay a living and,
+// if the player said what they make now, about that much or more. The model chooses from
+// what is left, so it cannot name work that does not exist or that would pay them less, and
+// it is never told the amount. A long list is narrowed first: the model picks a few groups,
+// then chooses among the occupations in them. A reply that is not three whole paths is
+// asked for once more.
+//
+// The AI service counts tokens by the minute, and these calls are the largest in the game.
+// When it says to wait, the answer is "busy" with how long, and the groups already chosen,
+// so the player's browser can wait and ask again without the first step being redone. If
+// only the second try at the paths is turned away, the first answer is kept.
+//
+// If the player said what schooling they have finished, occupations that typically take
+// more are marked in the list and the nearest path may not be one of them. The model sees
+// the marks and what they studied, never the level. A set whose nearest path is marked is
+// asked for once more, and kept if the second try is no better: the card then says so.
+async function paths(ask: Ask): Promise<Response> {
+  const { body, claims, sent } = ask
+  const payNow = readPayNow(body.payNow)
+  const schooling = readSchooling(body.schooling)
+  const field = readText(body.field, FIELD_MAX)
+  const circlesText = `${fourCircles(claims)}${field ? `\nThey have studied or trained in: "${field}"` : ''}`
+  const pool = poolFor(payNow)
+  // Groups chosen on an earlier try that was told to wait. Only codes in the pool count.
+  const inPool = new Set(pool.map(groupOf))
+  let groups = (Array.isArray(body.groups) ? body.groups : []).map((code) => String(code)).filter((code) => inPool.has(code)).slice(0, GROUPS_MOST)
+  let answer: ReturnType<typeof readPaths> = { paths: [], care: false }
+  let provider = ''
+  try {
+    let offered = pool
+    if (pool.length > POOL_WHOLE) {
+      if (groups.length === 0) {
+        const picked = await generateReply(pathGroupsPrompt(groupLines(pool), GROUPS_MOST), [{ role: 'user', text: circlesText }], {
+          maxTokens: 1500,
+          effort: 'low',
           patience: PATHS_PATIENCE,
         })
-        const read = readPaths(result.text, offered, payNow, schooling)
-        provider = result.provider
-        if (read.paths.length === 0 && !read.care) {
-          again = '\nAn earlier answer was not three different occupations from the list, one of each kind. Copy each code exactly.'
-          continue
-        }
-        answer = read
-        // The nearest path comes first. Done unless it reaches past their schooling.
-        if (read.care || !read.paths[0].more) break
-        again = `\nAn earlier answer chose ${read.paths[0].code} ${read.paths[0].name} for "near". Its line ends with ${MORE_MARK}, so it is not allowed there. Choose a "near" whose line has no ${MORE_MARK}.`
+        const chosen = readGroups(picked.text, pool)
+        if (chosen.care) return sent({ paths: [], care: true, provider: picked.provider })
+        if (chosen.groups.length === 0) return sent({ paths: [], care: false, provider: picked.provider })
+        groups = chosen.groups
       }
-      return sent({ ...answer, provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      // A whole answer in hand is better than none: only its second try was turned away.
-      if (answer.paths.length > 0) return sent({ ...answer, provider })
-      if (error instanceof LlmUnavailableError && error.retryAfter) {
-        return Response.json({ error: 'busy', retryAfter: Math.ceil(error.retryAfter), groups }, { status: 429 })
+      offered = pool.filter((occupation) => groups.includes(groupOf(occupation)))
+    }
+    const system = pathsPrompt(occupationLines(offered, schooling), schooling ? MORE_MARK : null)
+    // What was wrong with the first answer, said to the model when it is asked again.
+    let again = ''
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      // Medium thinking: on low it reached for the nearest job title, not the step up.
+      const result = await generateReply(system, [{ role: 'user', text: circlesText + again }], {
+        maxTokens: 3000,
+        effort: 'medium',
+        patience: PATHS_PATIENCE,
+      })
+      const read = readPaths(result.text, offered, payNow, schooling)
+      provider = result.provider
+      if (read.paths.length === 0 && !read.care) {
+        again = '\nAn earlier answer was not three different occupations from the list, one of each kind. Copy each code exactly.'
+        continue
       }
-      return Response.json({ error: 'unavailable' }, { status: 503 })
+      answer = read
+      // The nearest path comes first. Done unless it reaches past their schooling.
+      if (read.care || !read.paths[0].more) break
+      again = `\nAn earlier answer chose ${read.paths[0].code} ${read.paths[0].name} for "near". Its line ends with ${MORE_MARK}, so it is not allowed there. Choose a "near" whose line has no ${MORE_MARK}.`
     }
-  }
-
-  // Todah's thoughts on the goal are one message about it and the four claims.
-  if (mode === 'goal' && crossroads) {
-    try {
-      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
-        { role: 'user', text: `Their main goal: "${goal}"\nThe four circles:\n${[...crossroads.values()].join('\n')}` },
-      ])
-      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
+    return sent({ ...answer, provider })
+  } catch (error) {
+    // A whole answer in hand is better than none: only its second try was turned away.
+    if (answer.paths.length > 0) return sent({ ...answer, provider })
+    if (error instanceof LlmUnavailableError && error.retryAfter) {
+      return Response.json({ error: 'busy', retryAfter: Math.ceil(error.retryAfter), groups }, { status: 429 })
     }
+    return unavailable(error)
   }
+}
 
-  // The road is a form filled in from the goal, the obstacle, and the four claims.
-  if (mode === 'road' && crossroads) {
-    try {
-      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
-        {
-          role: 'user',
-          text: `Goal: "${goal}"\nObstacle they expect: "${obstacle}"\nThe four circles:\n${[...crossroads.values()].join('\n')}`,
-        },
-      ])
-      return sent({ ...readRoad(result.text), provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
+// The road is a form filled in from the goal, the obstacle, and the four claims.
+async function road(ask: Ask): Promise<Response> {
+  try {
+    const result = await generateReply(buildSystemPrompt({ mode: ask.mode, entryChoice: null }), [
+      { role: 'user', text: `Goal: "${ask.goal}"\nObstacle they expect: "${ask.obstacle}"\n${fourCircles(ask.claims)}` },
+    ])
+    return ask.sent({ ...readRoad(result.text), provider: result.provider })
+  } catch (error) {
+    return unavailable(error)
   }
+}
 
-  // A check-in is one reply to how an experiment went.
-  if (mode === 'checkin') {
-    const level = levels[circleOrder.indexOf(String(body.circle))]
-    try {
-      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
-        {
-          role: 'user',
-          text: `The experiment: "${step}"\nIt was testing: ${level.name} (${level.circle})\nTheir goal: "${goal || 'not said'}"\nWhat they say happened: "${report}"`,
-        },
-      ])
-      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
-  }
+// A check-in is one reply to how an experiment went.
+function checkin(ask: Ask): Promise<Response> {
+  const level = levels[circles.indexOf(ask.body.circle as Circle)]
+  return oneReply(
+    ask,
+    `The experiment: "${ask.step}"\nIt was testing: ${level.name} (${level.circle})\nTheir goal: "${ask.goal || 'not said'}"\nWhat they say happened: "${ask.report}"`,
+  )
+}
 
-  // The Crossroads is one message about the four claims, with no chat behind it.
-  if (crossroads) {
-    try {
-      const result = await generateReply(buildSystemPrompt({ mode, entryChoice: null }), [
-        { role: 'user', text: `The four circles:\n${[...crossroads.values()].join('\n')}` },
-      ])
-      return sent({ reply: stripCompleteToken(result.text).reply, provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
-  }
-
-  const system = buildSystemPrompt({
+// The system prompt for a talk (Quest 1, a level, help) and for a level's summary.
+function talkPrompt(ask: Ask): string {
+  const { mode, body, phase, answers } = ask
+  return buildSystemPrompt({
     mode,
     entryChoice: entryChoices.includes(body.entryChoice as EntryChoice) ? (body.entryChoice as EntryChoice) : null,
     phase,
     answers,
     memory: mode === 'interview' ? readMemory(body, body.circle) : undefined,
   })
+}
 
-  // The summary reads the whole talk as one piece of text, so the AI fills in a form about it
-  // instead of carrying the conversation on.
-  if (mode === 'summary' && phase) {
-    const transcript = (incoming as IncomingMessage[])
-      .map((message) => (message.role === 'user' ? `Player: ${scrub(message.text)}` : `Guide: ${message.text}`))
-      .join('\n')
-    try {
-      const result = await generateReply(system, [{ role: 'user', text: `The interview:\n${transcript}` }])
-      return sent({ ...readSummary(result.text, phase), provider: result.provider })
-    } catch (error) {
-      if (!(error instanceof LlmUnavailableError)) console.error('[api/todah] unexpected error')
-      return Response.json({ error: 'unavailable' }, { status: 503 })
-    }
+// The summary reads the whole talk as one piece of text, so the AI fills in a form about it
+// instead of carrying the conversation on.
+async function summary(ask: Ask): Promise<Response> {
+  const transcript = ask.incoming
+    .map((message) => (message.role === 'user' ? `Player: ${scrub(message.text)}` : `Guide: ${message.text}`))
+    .join('\n')
+  try {
+    const result = await generateReply(talkPrompt(ask), [{ role: 'user', text: `The interview:\n${transcript}` }])
+    return ask.sent({ ...readSummary(result.text, ask.phase as Phase), provider: result.provider })
+  } catch (error) {
+    return unavailable(error)
   }
+}
 
-  const messages: LlmMessage[] = (incoming as IncomingMessage[]).map((message) => ({
+// A talk: Quest 1, a level's interview, or help. Todah answers the latest message.
+async function talk(ask: Ask): Promise<Response> {
+  const { mode, answers } = ask
+  const messages: LlmMessage[] = ask.incoming.map((message) => ({
     role: message.role === 'todah' ? 'assistant' : 'user',
     text: message.role === 'user' ? scrub(message.text) : message.text,
   }))
@@ -509,17 +488,69 @@ export async function POST(request: Request) {
   if (messages.length === 0 || messages[0].role !== 'user') {
     messages.unshift({ role: 'user', text: '(The player is ready. Begin.)' })
   }
-
   try {
-    const result = await generateReply(system, messages)
+    const result = await generateReply(talkPrompt(ask), messages)
     const { reply, complete } = stripCompleteToken(result.text)
     // A level always runs its full length, so the map gets every kind of evidence asked about.
     const done =
       mode === 'interview' ? answers >= LEVEL_ANSWERS : complete || (mode === 'onboarding' && answers >= ONBOARDING_ANSWERS)
-    return sent({ reply, complete: done, provider: result.provider })
+    return ask.sent({ reply, complete: done, provider: result.provider })
   } catch (error) {
-    if (error instanceof LlmUnavailableError) return Response.json({ error: 'unavailable' }, { status: 503 })
-    console.error('[api/todah] unexpected error')
-    return Response.json({ error: 'unavailable' }, { status: 503 })
+    return unavailable(error)
   }
+}
+
+// Which function answers each mode.
+const handlers: Record<TodahMode, (ask: Ask) => Promise<Response>> = {
+  onboarding: talk,
+  interview: talk,
+  help: talk,
+  summary,
+  // The Crossroads is one message about the four claims, with no chat behind it.
+  crossroads: (ask) => oneReply(ask, fourCircles(ask.claims)),
+  paths,
+  // Todah's thoughts on the goal are one message about it and the four claims.
+  goal: (ask) => oneReply(ask, `Their main goal: "${ask.goal}"\n${fourCircles(ask.claims)}`),
+  road,
+  checkin,
+  letter,
+}
+
+export async function POST(request: Request) {
+  if (!isSameOrigin(request)) return Response.json({ error: 'forbidden' }, { status: 403 })
+
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return badRequest()
+  }
+
+  const mode = body.mode as TodahMode
+  if (!modes.includes(mode)) return badRequest()
+
+  const incoming = Array.isArray(body.messages) ? body.messages : []
+  if (!incoming.every(isIncomingMessage)) return badRequest()
+  if (incoming.length >= SESSION_MESSAGE_CAP) return Response.json({ error: 'cap' }, { status: 429 })
+
+  const ask = {
+    mode,
+    body,
+    incoming,
+    phase: phaseOf(body.circle),
+    answers: incoming.filter((message) => message.role === 'user').length,
+    claims: needsAllClaims.includes(mode) ? claimRows(body.claims) : new Map<string, string>(),
+    goal: readText(body.goal, 200),
+    obstacle: readText(body.obstacle, 300),
+    step: readText(body.step, 200),
+    report: readText(body.note, MAX_TEXT_LENGTH),
+  }
+  if (missing(ask)) return badRequest()
+
+  // Everything above is free. From here an AI reply is spent, so the visitor's share is checked.
+  const limit = checkLimit(request)
+  if (!limit.ok) return Response.json({ error: limit.reason }, { status: 429 })
+  const sent = (data: Record<string, unknown>) => Response.json(data, { headers: { 'Set-Cookie': limit.cookie } })
+
+  return handlers[mode]({ ...ask, sent })
 }
