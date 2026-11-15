@@ -310,6 +310,8 @@ To be completed before submission. Running notes:
 
 - Architecture and database diagrams: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Database schema: [supabase/migrations/0001_init.sql](supabase/migrations/0001_init.sql)
+- UI design, the screen flow: every screen and how a player moves between them, in FigJam:
+  [RWR screen flow](https://www.figma.com/board/Gm4q6Rp6x6JMGAt3ADhM9g)
 - UI reference mockups: [docs/reference](docs/reference)
 - Build log: [blog/index.html](blog/index.html), published at https://cohortjuan.github.io/rwr/
   by [.github/workflows/blog.yml](.github/workflows/blog.yml)
