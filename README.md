@@ -27,7 +27,8 @@ you instead of helping you check whether you really want what you say you want.
 
 Todah, a lion cub, guides the player through short quests. He asks one question at a time,
 reflects back what he hears, and gently looks for evidence. The player's resume is built as an
-RPG equipment screen: each part of the lion grows as the matching resume section is filled in.
+RPG equipment screen: each part of the lion grows as the matching resume section is filled in,
+and his mane also waits on the journey itself, so it grows as the player walks the trail.
 Todah does not roar until the player says their own goal is reached. He is a guide, not a
 prophet: nothing in the game promises a job or an outcome.
 
