@@ -64,7 +64,7 @@ export const slots: Slot[] = [
       { rule: 'Add a second sentence on where you are headed.', met: (content) => sentences(content) >= 2 },
       { rule: 'Add one proof with a number in it, like "cut wait times by 30%".', met: hasResult },
     ],
-    growth: 'The mane grows through three sizes.',
+    growth: 'The mane grows through three sizes as your journey goes on.',
     suggestions: [
       '[Current role] moving toward [target role], with a track record of [one strength].',
       'I help [who] do [what] by [how]. Now looking for [kind of work].',

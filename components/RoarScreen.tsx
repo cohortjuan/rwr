@@ -5,14 +5,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
 import SealedLetter from '@/components/SealedLetter'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { circles } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
-import { capsuleDue, countedCheers, saveProgress, useKeptLions, useLionText, useProgress } from '@/lib/progress'
+import { capsuleDue, countedCheers, saveProgress, useLionText, useProgress } from '@/lib/progress'
 import { setRoaring } from '@/lib/roarSound'
 import { LOW_VOLUME, useHydrated, useReducedMotion, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
+import { useModal } from '@/lib/useModal'
 import styles from './RoarScreen.module.css'
 
 const ROAR_SOUND = '/audio/roar-reward.mp3'
@@ -46,11 +47,9 @@ const clip = (text: string) => {
 export default function RoarScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
-  const keptLions = useKeptLions()
   const lion = useLionText()
   const { sound, quiet } = useSettings()
   const reducedMotion = useReducedMotion()
-  const confirmRef = useRef<HTMLDialogElement>(null)
   const roarRef = useRef<HTMLAudioElement>(null)
   const [goalDraft, setGoalDraft] = useState('')
   const [editing, setEditing] = useState(false)
@@ -72,12 +71,7 @@ export default function RoarScreen() {
   const hasGoal = progress.goalText.trim().length > 0
   const achieved = Boolean(progress.goalAchievedAt)
 
-  useEffect(() => {
-    const dialog = confirmRef.current
-    if (!dialog) return
-    if (confirming && !dialog.open) dialog.showModal()
-    if (!confirming && dialog.open) dialog.close()
-  }, [confirming])
+  const confirmRef = useModal(confirming)
 
   useEffect(() => {
     const dialog = creditsRef.current
@@ -271,12 +265,7 @@ export default function RoarScreen() {
   const creditLion = (className: string) => (
     <LionAvatar
       className={className}
-      wearing={wornIds(
-        progress,
-        keptLions.map((kept) => kept.progress),
-      )}
-      mane={maneSize(progress)}
-      aura={auraSize(progress)}
+      {...lionLook(progress)}
       mood="happy"
     />
   )

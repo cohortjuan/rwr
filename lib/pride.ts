@@ -37,13 +37,13 @@ export function buildCard(progress: Progress, now: number, others: Progress[] = 
     id: progress.cardId,
     name: progress.playerName.trim().slice(0, NAME_MAX) || lines.pride.noName,
     lion: progress.lionName,
-    form: todahForm(progress, others),
+    form: todahForm(progress),
     power: power.level,
     max: power.max,
     goal: showGoal ? progress.goalText.trim().slice(0, GOAL_MAX) : '',
     reached: showGoal && Boolean(progress.goalAchievedAt),
     at: new Date(now).toISOString(),
-    wear: wornIds(progress, others),
+    wear: wornIds(progress),
     mane: maneSize(progress),
   }
 }

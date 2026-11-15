@@ -93,7 +93,7 @@ prophet: nothing in the game promises a job or an outcome.
 - The roar (`/roar`): when the player says the goal is reached, they press and hold to let
   Todah roar (a plain press works too). The music cuts so the roar is the only sound, the sun
   comes up, and Todah becomes Pride Leader: grown, with his full mane (or her full aura) from
-  then on, whatever the Mane upgrade's level. Then come credits made of the player's own trail,
+  then on, however far the mane had grown. Then come credits made of the player's own trail,
   which ROLL THE CREDITS plays on the whole screen
 - Todah's note (`/letter`): the final gift, once the player says their goal is reached. A
   handwritten note left on a wooden desk, signed with an inked paw print, with a snapshot of
@@ -126,8 +126,10 @@ prophet: nothing in the game promises a job or an outcome.
   replaces the lion while it is on: every other piece is put away on every screen and comes
   back when it is taken off. A lioness keeps her aura round it. A few pieces are gifts for progress, and the jeweled crown
   comes only with the roar. Guests can try any piece on. Owning one needs an account
-- The mane grows in three sizes with the Mane upgrade, starting with a crest on top at level 1.
-  Mane colors unlock at that point, and buying one changes only the color (the lock on his
+- The mane grows in three sizes as the player walks the trail: each size needs the Mane upgrade
+  at that level and a stretch of the journey (Quest 1, then all four levels, then a goal and two
+  road experiments), so it cannot be maxed in the first minute. Todah becomes a Nomad at size 2.
+  It starts with a crest on top at size 1. Mane colors unlock at that point, and buying one changes only the color (the lock on his
   forehead included), never the size
 - Fur and mane come in matching sets built on color theory: every coat has a mane of the same
   name, a deeper and stronger step from the coat's own color, the way the natural mane sits

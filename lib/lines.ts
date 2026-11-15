@@ -296,9 +296,8 @@ export const lines = {
       cheer: 'Send a cheer to a friend.',
       roar: 'Reach your main goal and let Todah roar.',
     },
-    formCub: 'CUB',
-    formNomad: 'NOMAD',
-    formLeader: 'PRIDE LEADER',
+    // Todah's three forms, by the id lib/progress.ts gives them (TodahForm).
+    forms: { cub: 'CUB', nomad: 'NOMAD', leader: 'PRIDE LEADER' },
     leaderLocked: 'PRIDE LEADER: LOCKED',
     leaderLockedBody:
       'Todah roars only when you say your main goal is reached. No one else gets to decide that.',
@@ -312,6 +311,17 @@ export const lines = {
     denHint: 'To explore another path, choose NEW GAME on the title screen. This lion is kept under MY LIONS.',
     denClose: 'CLOSE',
     checkLevel: (n: number) => `LEVEL ${n}`,
+    // How the mane (or a lioness's aura) grows: each size needs a stretch of the journey and
+    // the MANE upgrade at that level (see lib/growth.ts). `upgrade` is MANE, or AURA on her.
+    growthHeading: (lioness: boolean) => (lioness ? 'HOW HER AURA GROWS' : 'HOW HIS MANE GROWS'),
+    growthSize: (n: number) => `SIZE ${n}`,
+    growthNow: (n: number, max: number) => `Size ${n}/${max}.`,
+    growthGate: (gate: 'quest' | 'levels' | 'road', upgrade: string, level: number, experiments: number) =>
+      ({
+        quest: `Finish Quest 1, and reach ${upgrade} level ${level}.`,
+        levels: `Walk all four levels (Heart, Craft, Cause and Coin), and reach ${upgrade} level ${level}.`,
+        road: `Set your main goal, do ${experiments} experiments on your road, and reach ${upgrade} level ${level}.`,
+      })[gate],
     checkMet: 'done',
     checkOpen: 'not yet',
     trailHeading: 'From your trail, in your own words:',
@@ -326,8 +336,9 @@ export const lines = {
     // upgrade with the same levels.
     lioness: {
       name: 'AURA',
-      growth: 'Her aura glows brighter through three levels.',
+      growth: 'Her aura glows brighter through three sizes as your journey goes on.',
       tipStart: 'Tap AURA to begin. One sentence about who you are at work earns the first level.',
+      tipNomad: 'Todah grows from Cub to Nomad halfway along the trail: once all four levels are walked and AURA is at level 2.',
     },
     tipLabel: 'TIP',
     tipGotIt: 'GOT IT',
@@ -335,7 +346,7 @@ export const lines = {
     tips: {
       start: 'Tap MANE to begin. One sentence about who you are at work earns the first level.',
       quest: 'Todah stays a cub until Quest 1 is finished. You can pick it up from the title screen.',
-      nomad: 'Start two parts and Todah grows from Cub to Nomad.',
+      nomad: 'Todah grows from Cub to Nomad halfway along the trail: once all four levels are walked and MANE is at level 2.',
       levels: 'Every part has three levels. Open one to see what the next level needs.',
       phrase: 'Stuck on wording? Open a part and tap ASK TODAH TO PHRASE THIS for starting points you can edit.',
       unpaid: 'Unpaid and volunteer work counts under PAWS. So does caring for family.',
@@ -379,7 +390,7 @@ export const lines = {
     },
     notes: {
       fur: 'Fur changes the coat only. The mane keeps its own color, so to match a coat, pick the mane of the same name.',
-      mane: 'A color changes only the color. The mane itself grows as the MANE upgrade levels up, starting with a crest on top at level 1. Every coat has a mane of the same name that completes its set.',
+      mane: 'A color changes only the color. The mane itself grows as your journey goes on, starting with a crest on top (open MANE on the upgrades screen to see what each size needs). Every coat has a mane of the same name that completes its set.',
       essentials: 'Only a lioness carries these. They stand on the floor by her paws, and up to three can be out at once: the first at her left, the second at her right, a third in the middle. Put out a fourth and the first is put away.',
       bag: 'Bags are for a lioness.',
       hat: 'The newer pieces all come in the same reds, blues, greens and blacks, so a cap can match your scarf, your jacket, or nothing at all.',
@@ -466,7 +477,7 @@ export const lines = {
     waiting: 'ON, WAITING',
     short: (n: number) => `${n} more sparks needed`,
     needsPower: (n: number) => `Unlocks at Pride Power ${n}`,
-    needsMane: (n: number) => `Unlocks when the MANE upgrade reaches level ${n}`,
+    needsMane: (n: number) => `Unlocks when his mane reaches size ${n}. Open MANE on the upgrades screen to see what it needs.`,
     gifts: {
       quest: 'A gift for finishing Quest 1',
       nomad: 'A gift when Todah becomes a Nomad',
@@ -499,7 +510,7 @@ export const lines = {
   lookbook: {
     heading: 'LOOKBOOK',
     intro: 'Every piece in the wardrobe, in every color it comes in. One from each group can be worn at a time.',
-    maneLevel: (n: number) => `Mane level ${n}`,
+    maneLevel: (n: number) => `Mane size ${n}`,
     only: { male: 'LION ONLY', female: 'LIONESS ONLY' },
     setsHeading: 'MATCHING SETS',
     setsIntro: 'Every coat has a mane of the same name. They are two pieces, found under FUR and MANE COLOR, and any coat can be worn with any mane.',

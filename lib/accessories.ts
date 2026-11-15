@@ -8,7 +8,7 @@ import {
   type LionSex,
   type Progress,
 } from '@/lib/progress'
-import { slotLevel, slots } from '@/lib/upgrades'
+import { growth } from '@/lib/growth'
 
 // The wardrobe: accessories the lion can wear, one from each category at a time.
 //
@@ -18,7 +18,7 @@ import { slotLevel, slots } from '@/lib/upgrades'
 // and a player who also does their trail steps can dress the lion head to foot. A few pieces are gifts for progress instead.
 //
 // Buying never changes how grown the lion looks. A mane colour changes only the mane's
-// colour: its size comes from the Mane upgrade's level (see maneSize).
+// colour: its size comes from how far the player has come (see lib/growth.ts).
 //
 // Fur and mane are separate groups that come in sets: every fur has a mane of the same name.
 // The golden cub's mane is his coat's colour turned a step round the colour wheel, deepened
@@ -144,7 +144,7 @@ export function pieceImage(item: Accessory, variant?: Variant): string {
   return `/wardrobe/${item.id}${colour ? `--${colour.id}` : ''}.png`
 }
 
-// A mane colour can be bought once he has his first hair on top to colour (Mane level 1).
+// A mane colour can be bought once he has his first hair on top to colour (mane size 1).
 const mane = (id: string, price: number, colours: readonly [string, string]): Accessory => ({
   id: `mane-${id}`,
   category: 'mane',
@@ -383,27 +383,24 @@ export function partnerMane(fur: Accessory): Accessory | undefined {
   return byId.get(fur.id === defaults.fur ? (defaults.mane ?? '') : `mane-${fur.id}`)
 }
 
-// The first upgrade's level, 0 to 3 (dev tools aside). On a lion it is the size of his mane.
-// A lioness has no mane: on her the same upgrade is called AURA, and it shows as a glow.
-const maneSlot = slots.find((slot) => slot.id === 'mane')
-
-// The roar grows him up. Once the player has said their goal is reached, a lion has his full
-// mane and a lioness her full aura, whatever the upgrade's own level. It is a gift, not a
-// piece: nothing was bought and there is nothing to take off.
-export const MANE_FULL = maneSlot?.checks.length ?? 3
-
-function firstUpgradeLevel(progress: Progress): number {
-  if (typeof progress.dev?.mane === 'number') return progress.dev.mane
-  if (progress.goalAchievedAt) return MANE_FULL
-  return maneSlot ? slotLevel(maneSlot, progress.upgrades.mane ?? '') : 0
+// How grown the lion looks, 0 to 3 (see lib/growth.ts). On a lion it is the size of his
+// mane. A lioness has no mane: on her the same growth shows as a glow, her aura. Dev tools
+// can show any size.
+function shownGrowth(progress: Progress): number {
+  return typeof progress.dev?.mane === 'number' ? progress.dev.mane : growth(progress)
 }
 
 export function maneSize(progress: Progress): number {
-  return progress.lionSex === 'female' ? 0 : firstUpgradeLevel(progress)
+  return progress.lionSex === 'female' ? 0 : shownGrowth(progress)
 }
 
 export function auraSize(progress: Progress): number {
-  return progress.lionSex === 'female' ? firstUpgradeLevel(progress) : 0
+  return progress.lionSex === 'female' ? shownGrowth(progress) : 0
+}
+
+// Everything LionAvatar needs to draw this lion as it is: what it wears and how grown it is.
+export function lionLook(progress: Progress): { wearing: string[], mane: number, aura: number } {
+  return { wearing: wornIds(progress), mane: maneSize(progress), aura: auraSize(progress) }
 }
 
 // Sparks earned and spent in this game. The balance never shows below zero.
@@ -424,16 +421,16 @@ export function sparks(progress: Progress): {
   return { cheers, interviews, levels, steps, earned, balance: Math.max(0, earned - spent) }
 }
 
-function giftEarned(item: Accessory, progress: Progress, others: Progress[]): boolean {
+function giftEarned(item: Accessory, progress: Progress): boolean {
   if (item.gift === 'quest') return progress.onboardingDone
-  if (item.gift === 'nomad') return todahForm(progress, others) !== 'cub'
+  if (item.gift === 'nomad') return todahForm(progress) !== 'cub'
   if (item.gift === 'leader') return Boolean(progress.goalAchievedAt)
   return false
 }
 
-export function owns(progress: Progress, item: Accessory, others: Progress[] = []): boolean {
+export function owns(progress: Progress, item: Accessory): boolean {
   if (progress.dev?.unlockAll) return true
-  if (item.gift) return giftEarned(item, progress, others)
+  if (item.gift) return giftEarned(item, progress)
   return item.price === 0 || progress.bought.includes(item.id)
 }
 
@@ -521,10 +518,10 @@ export function floorSpots(items: Accessory[]): Map<string, { shift: number, tuc
 // Tokens for every piece the lion has on, limited to pieces it owns, in its chosen colours.
 // This includes pieces that wait under a transformation. The wardrobe needs them, to say
 // which pieces are on. Everything that draws the lion wants `wornIds`.
-export function putOnIds(progress: Progress, others: Progress[] = []): string[] {
+export function putOnIds(progress: Progress): string[] {
   return categories
     .flatMap((category) => wornInGroup(progress.wearing, category).map((id) => byId.get(id)))
-    .filter((item): item is Accessory => item !== undefined && fits(item, progress.lionSex) && owns(progress, item, others))
+    .filter((item): item is Accessory => item !== undefined && fits(item, progress.lionSex) && owns(progress, item))
     .map((item) => wornToken(item, progress.tones[item.id]))
 }
 
@@ -537,6 +534,6 @@ export function shownTokens(tokens: string[]): string[] {
 
 // Tokens for what the lion is seen wearing: everything it has on, or only the transformation
 // while one is on. The other pieces stay put on and come back when it is taken off.
-export function wornIds(progress: Progress, others: Progress[] = []): string[] {
-  return shownTokens(putOnIds(progress, others))
+export function wornIds(progress: Progress): string[] {
+  return shownTokens(putOnIds(progress))
 }

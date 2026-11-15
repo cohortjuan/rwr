@@ -5,7 +5,7 @@
 // narrow crest on top, like a mohawk. Size 2 widens it and adds ruffs beside the jaw and a
 // small one on the chest. Size 3 is the full mane: it frames the whole face, leaves only the
 // ears showing, rises in points on top, and falls over the chest. The size follows the Mane
-// upgrade's level. M is the mane colour and D its shade.
+// upgrade's level and the journey (see lib/growth.ts). M is the mane colour and D its shade.
 //
 // Every size includes the lock of hair on his forehead as a filled shape, joined to the hair
 // on top, so the whole of it takes the mane's colour together.

@@ -171,9 +171,15 @@ flowchart LR
   three paths, and one each for the Crossroads, the goal, the road and Todah's note), plus one per
   experiment reported.
 - **Grown after the roar** (`lib/accessories.ts`): once `goalAchievedAt` is set, `maneSize`
-  and `auraSize` return the largest size whatever the Mane upgrade's level, so every screen
+  and `auraSize` return the largest size whatever else is true, so every screen
   and the shared pride card show the full mane or aura. Nothing is bought and nothing can be
   taken off: it is read, not stored.
+- **Growing up** (`lib/growth.ts`): the mane's size (a lioness's aura) is the lower of two
+  numbers, the MANE upgrade's level and how far along the trail the player is. Size 1 needs
+  Quest 1 finished, size 2 all four levels walked, and size 3 a main goal and two road
+  experiments done. So a strong headline typed in the first minute shows as a crest, not a
+  full mane. Todah becomes a Nomad at size 2. The MANE sheet lists what each size needs and
+  follows the draft as it is typed. Nothing is stored: it is read from the saved game.
 - **The roar** (`/roar`, `components/RoarScreen.tsx`, `lib/roarSound.ts`): the goal is
   confirmed by pressing and holding for 1.5 seconds, with a plain press beside it for anyone
   who cannot hold. A small store says when the roar starts and ends, and `MusicPlayer` cuts
@@ -200,7 +206,7 @@ flowchart LR
   can own or wear them, and the crown is a gift for the roar alone. `LionAvatar` draws the seated sprite and the
   accessories on one 51 by 64 grid, so they line up at any size. Fur colors are CSS filters
   over the sprite. The mane is its own layer (`lib/maneArt.ts`, generated to fit the sprite's
-  outline) in four sizes: its size follows the Mane upgrade's level and its color is the one
+  outline) in four sizes: its size follows `growth` in `lib/growth.ts` and its color is the one
   thing a purchase changes. Each accessory has color options, passed around as `id~colour`
   tokens, so a friend's card shows the same outfit.
 - **Matching sets** (`lib/colour.ts`, `setMane` in `lib/accessories.ts`): every fur has a mane
@@ -209,7 +215,7 @@ flowchart LR
   the mane is the coat's color a step round the wheel, deeper and stronger. It also matches
   the tail tip the filter has already tinted on the sprite. Fur and mane are bought
   separately, so a new fur alone does not match until its mane is bought too. Three manes
-  (white, purple, teal) belong to no set. The mane layer is drawn only from Mane level 1 up.
+  (white, purple, teal) belong to no set. The mane layer is drawn only from size 1 up.
 - **Picture pieces**: accessories marked `image` in `lib/accessories.ts` are PNGs in
   `public/wardrobe`, one per color (`<id>--<colour>.png`), the size of the lion's stage with
   only the piece on it. `LionAvatar` draws them as SVG images in `drawOrder` (a costume

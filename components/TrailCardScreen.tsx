@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { circles, circleScore, EVIDENCE_MAX } from '@/lib/compass'
 import { levels } from '@/lib/levels'
 import { lines } from '@/lib/lines'
-import { useKeptLions, useProgress, type Circle } from '@/lib/progress'
+import { useProgress, type Circle } from '@/lib/progress'
 import { useHydrated } from '@/lib/settings'
 import quest from './OnboardingQuest.module.css'
 import styles from './TrailCardScreen.module.css'
@@ -36,7 +36,6 @@ function Marked({ text }: { text: string }) {
 export default function TrailCardScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
-  const keptLions = useKeptLions()
 
   if (!hydrated) return <main className="screen" />
 
@@ -74,12 +73,7 @@ export default function TrailCardScreen() {
                 <div className={styles.portrait}>
                   <LionAvatar
                     className={styles.lion}
-                    wearing={wornIds(
-                      progress,
-                      keptLions.map((kept) => kept.progress),
-                    )}
-                    mane={maneSize(progress)}
-                    aura={auraSize(progress)}
+                    {...lionLook(progress)}
                     mood="happy"
                   />
                 </div>

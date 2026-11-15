@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import LionAvatar from '@/components/LionAvatar'
 import MicButton from '@/components/MicButton'
 import { lines } from '@/lib/lines'
-import { auraSize, maneSize, sparks, wornIds } from '@/lib/accessories'
+import { lionLook, sparks } from '@/lib/accessories'
 import { circles, compassTotal } from '@/lib/compass'
+import { growth, growthGates, GROWTH_MAX, ROAD_EXPERIMENTS } from '@/lib/growth'
 import {
   capsuleDue,
   isPath,
@@ -16,8 +17,8 @@ import {
   saveProgress,
   slotContent,
   todahForm,
-  useKeptLions,
   useLionText,
+  useOtherLions,
   useProgress,
   type Progress,
   type TodahForm,
@@ -25,13 +26,10 @@ import {
 import { saveSettings, useHydrated, useSettings } from '@/lib/settings'
 import { playSfx, preloadSfx } from '@/lib/sfx'
 import { MAX_LEVEL, slotLevel, slots, type Slot, type SlotId } from '@/lib/upgrades'
+import { useModal } from '@/lib/useModal'
 import styles from './UpgradesScreen.module.css'
 
-const formLabel: Record<TodahForm, string> = {
-  cub: lines.upgrades.formCub,
-  nomad: lines.upgrades.formNomad,
-  leader: lines.upgrades.formLeader,
-}
+const maneSlot = slots.find((slot) => slot.id === 'mane') ?? slots[0]
 
 type TipId = keyof typeof lines.upgrades.tips
 
@@ -56,6 +54,16 @@ function pickTip(progress: Progress, form: TodahForm, totalLevel: number, totalM
   return order.find((id) => fits[id] && !progress.tipsSeen.includes(id)) ?? null
 }
 
+// The level bar and its words, as shown at the top of a slot's sheet.
+function SlotLevel({ level }: { level: number }) {
+  return (
+    <p className={styles.preview}>
+      <LevelBar level={level} />
+      <span>{lines.upgrades.level(level, MAX_LEVEL)}</span>
+    </p>
+  )
+}
+
 function LevelBar({ level }: { level: number }) {
   return (
     <span className={styles.bar} aria-hidden="true">
@@ -66,16 +74,42 @@ function LevelBar({ level }: { level: number }) {
   )
 }
 
+// A slot's rules, one per level, each marked done once its level is reached. `label` names
+// the level, and `rule` says what it needs.
+function CheckList({ items }: { items: { key: string, label: string, rule: string, met: boolean }[] }) {
+  return (
+    <ol className={styles.checks}>
+      {items.map((item) => (
+        <li key={item.key} className={item.met ? styles.checkMet : styles.check}>
+          <span className={styles.checkLevel}>{item.label}</span>
+          <span>
+            {item.rule}
+            <span className="sr-only"> ({item.met ? lines.upgrades.checkMet : lines.upgrades.checkOpen})</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+const checkItems = (slot: Slot, level: number) =>
+  slot.checks.map((check, index) => ({
+    key: check.rule,
+    label: lines.upgrades.checkLevel(index + 1),
+    rule: check.rule,
+    met: level > index,
+  }))
+
 // The resume builder as an RPG equipment screen. Four slots are live, three are coming soon.
 export default function UpgradesScreen() {
   const hydrated = useHydrated()
   const progress = useProgress()
   const { sound, tips } = useSettings()
   const lion = useLionText()
-  const sheetRef = useRef<HTMLDialogElement>(null)
   // One tip per visit: after GOT IT, the next one waits for the next time this screen opens.
   const [tipsQuiet, setTipsQuiet] = useState(false)
   const [openId, setOpenId] = useState<SlotId | null>(null)
+  const sheetRef = useModal(openId !== null)
   const [draft, setDraft] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [leveledUp, setLeveledUp] = useState<SlotId | null>(null)
@@ -88,8 +122,7 @@ export default function UpgradesScreen() {
   const lioness = progress.lionSex === 'female'
   const slotName = (slot: Slot) => (slot.id === 'mane' && lioness ? lines.upgrades.lioness.name : slot.name)
   // Den counts paths across every lion, so the other lions' games are needed too.
-  const keptLions = useKeptLions()
-  const others = keptLions.map((kept) => kept.progress)
+  const others = useOtherLions()
   const parts = powerParts(progress, others)
   const totalLevel = parts.reduce((sum, part) => sum + part.level, 0)
   const totalMax = parts.reduce((sum, part) => sum + part.max, 0)
@@ -99,8 +132,25 @@ export default function UpgradesScreen() {
     ...circles.map((circle) => progress.compass[circle].claim.trim()),
     ...progress.onboardingChat.filter((message) => message.role === 'user').map((message) => message.text),
   ].filter(Boolean)
-  const form = todahForm(progress, others)
+  const form = todahForm(progress)
+  const tallyLevel = openSlot?.tally ? slotLevel(openSlot, slotContent(progress, openSlot, others)) : 0
+  const grown = growth(progress)
+  // What each size of the mane (or aura) needs: a stretch of the journey and a MANE level.
+  // While the sheet is open it follows the draft, so the player sees a size come within reach.
+  const growthItems = (headline: string) => {
+    const reached = growth({ ...progress, upgrades: { ...progress.upgrades, mane: headline } })
+    return growthGates.map((gate, index) => ({
+      key: gate.id,
+      label: lines.upgrades.growthSize(index + 1),
+      rule: lines.upgrades.growthGate(gate.id, slotName(maneSlot), index + 1, ROAD_EXPERIMENTS),
+      met: reached > index,
+    }))
+  }
   const tipId = tips && !tipsQuiet ? pickTip(progress, form, totalLevel, totalMax) : null
+
+  // A lioness reads AURA where a tip says MANE.
+  const tipText = (id: TipId) =>
+    lioness && id === 'start' ? lines.upgrades.lioness.tipStart : lioness && id === 'nomad' ? lines.upgrades.lioness.tipNomad : lines.upgrades.tips[id]
 
   function dismissTip(id: TipId) {
     playSfx('select', sound)
@@ -111,13 +161,6 @@ export default function UpgradesScreen() {
   useEffect(() => {
     preloadSfx()
   }, [])
-
-  useEffect(() => {
-    const sheet = sheetRef.current
-    if (!sheet) return
-    if (openId && !sheet.open) sheet.showModal()
-    if (!openId && sheet.open) sheet.close()
-  }, [openId])
 
   function open(slot: Slot) {
     if (slot.locked) return
@@ -170,7 +213,7 @@ export default function UpgradesScreen() {
             <p className={styles.tipLabel} aria-hidden="true">
               {lines.upgrades.tipLabel}
             </p>
-            <p className={styles.tipText}>{lion(tipId === 'start' && lioness ? lines.upgrades.lioness.tipStart : lines.upgrades.tips[tipId])}</p>
+            <p className={styles.tipText}>{lion(tipText(tipId))}</p>
             <div className={styles.tipButtons}>
               <button type="button" className="btn" onClick={() => dismissTip(tipId)}>
                 {lines.upgrades.tipGotIt}
@@ -187,9 +230,7 @@ export default function UpgradesScreen() {
             <div className={styles.dressing}>
               <LionAvatar
                 className={styles.portrait}
-                wearing={wornIds(progress, others)}
-                mane={maneSize(progress)}
-                aura={auraSize(progress)}
+                {...lionLook(progress)}
                 mood={leveledUp ? 'happy' : 'neutral'}
                 blink
               />
@@ -199,7 +240,7 @@ export default function UpgradesScreen() {
               </Link>
             </div>
             <div>
-              <p className={styles.formName}>{lion(lines.upgrades.todahLabel(formLabel[form]))}</p>
+              <p className={styles.formName}>{lion(lines.upgrades.todahLabel(lines.upgrades.forms[form]))}</p>
               {progress.goalAchievedAt && (
                 <p className={styles.grown}>{progress.lionSex === 'female' ? lines.upgrades.grownLioness : lines.upgrades.grown}</p>
               )}
@@ -242,7 +283,7 @@ export default function UpgradesScreen() {
 
           <section className={`panel ${styles.leader}`}>
             <h2 className={styles.leaderTitle}>
-              {form === 'leader' ? lines.upgrades.formLeader : lines.upgrades.leaderLocked}
+              {form === 'leader' ? lines.upgrades.forms.leader : lines.upgrades.leaderLocked}
             </h2>
             <p className={styles.leaderBody}>{lion(lines.upgrades.leaderLockedBody)}</p>
             <Link className="btn" href="/roar">
@@ -277,7 +318,10 @@ export default function UpgradesScreen() {
                     </span>
                   </>
                 )}
-                <span className={styles.slotGrowth}>{slot.id === 'mane' && lioness ? lines.upgrades.lioness.growth : slot.growth}</span>
+                <span className={styles.slotGrowth}>
+                  {slot.id === 'mane' && lioness ? lines.upgrades.lioness.growth : slot.growth}
+                  {slot.id === 'mane' && ` ${lines.upgrades.growthNow(grown, GROWTH_MAX)}`}
+                </span>
                 {leveledUp === slot.id && <span className={styles.levelUp}>{lines.upgrades.levelUp}</span>}
               </>
             )
@@ -322,26 +366,8 @@ export default function UpgradesScreen() {
               {slotName(openSlot)}
             </h2>
             <p className={styles.slotTerm}>{openSlot.resumeTerm}</p>
-            <p className={styles.preview}>
-              <LevelBar level={slotLevel(openSlot, slotContent(progress, openSlot, others))} />
-              <span>
-                {lines.upgrades.level(slotLevel(openSlot, slotContent(progress, openSlot, others)), MAX_LEVEL)}
-              </span>
-            </p>
-            <ol className={styles.checks}>
-              {openSlot.checks.map((check, index) => {
-                const met = slotLevel(openSlot, slotContent(progress, openSlot, others)) > index
-                return (
-                  <li key={check.rule} className={met ? styles.checkMet : styles.check}>
-                    <span className={styles.checkLevel}>{lines.upgrades.checkLevel(index + 1)}</span>
-                    <span>
-                      {check.rule}
-                      <span className="sr-only"> ({met ? lines.upgrades.checkMet : lines.upgrades.checkOpen})</span>
-                    </span>
-                  </li>
-                )
-              })}
-            </ol>
+            <SlotLevel level={tallyLevel} />
+            <CheckList items={checkItems(openSlot, tallyLevel)} />
 
             <div className={styles.suggestions}>
               <p className={styles.suggestionsHeading}>{lines.upgrades.denHeading}</p>
@@ -394,24 +420,16 @@ export default function UpgradesScreen() {
               <MicButton value={draft} onChange={setDraft} maxLength={2000} />
             </div>
 
-            <p className={styles.preview}>
-              <LevelBar level={slotLevel(openSlot, draft)} />
-              <span>{lines.upgrades.level(slotLevel(openSlot, draft), MAX_LEVEL)}</span>
-            </p>
-            <ol className={styles.checks}>
-              {openSlot.checks.map((check, index) => {
-                const met = slotLevel(openSlot, draft) > index
-                return (
-                  <li key={check.rule} className={met ? styles.checkMet : styles.check}>
-                    <span className={styles.checkLevel}>{lines.upgrades.checkLevel(index + 1)}</span>
-                    <span>
-                      {check.rule}
-                      <span className="sr-only"> ({met ? lines.upgrades.checkMet : lines.upgrades.checkOpen})</span>
-                    </span>
-                  </li>
-                )
-              })}
-            </ol>
+            <SlotLevel level={slotLevel(openSlot, draft)} />
+            <CheckList items={checkItems(openSlot, slotLevel(openSlot, draft))} />
+
+            {/* The mane's size waits on the journey too, so its sheet says what each size needs. */}
+            {openSlot.id === 'mane' && (
+              <>
+                <p className={styles.suggestionsHeading}>{lines.upgrades.growthHeading(lioness)}</p>
+                <CheckList items={growthItems(draft)} />
+              </>
+            )}
 
             {showSuggestions && (
               <div className={styles.suggestions}>

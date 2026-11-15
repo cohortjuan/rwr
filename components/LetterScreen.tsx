@@ -5,11 +5,11 @@ import Link from 'next/link'
 import DialogBox from '@/components/DialogBox'
 import LionAvatar from '@/components/LionAvatar'
 import PawPrint from '@/components/PawPrint'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { circles, circleScore } from '@/lib/compass'
 import { renderLetter } from '@/lib/letterImage'
 import { lines } from '@/lib/lines'
-import { saveProgress, useKeptLions, useLionText, useProgress, type Progress } from '@/lib/progress'
+import { saveProgress, useLionText, useProgress, type Progress } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import { NAME_TOKEN } from '@/lib/tokens'
@@ -85,7 +85,6 @@ export default function LetterScreen() {
   const progress = useProgress()
   const lion = useLionText()
   const { sound } = useSettings()
-  const keptLions = useKeptLions()
   const [writing, setWriting] = useState(false)
   const [status, setStatus] = useState('')
   // The note drawn as a picture: what is shown, and what is saved or sent. `failed` means it
@@ -95,9 +94,8 @@ export default function LetterScreen() {
 
   const name = progress.playerName || 'traveler'
   const letter = progress.letter
-  const others = keptLions.map((kept) => kept.progress)
-  const wearing = wornIds(progress, others)
-  const mane = maneSize(progress)
+  const look = lionLook(progress)
+  const { wearing, mane } = look
   const paragraphs = letter
     ? letter.text
         .split(NAME_TOKEN)
@@ -268,7 +266,7 @@ export default function LetterScreen() {
                     </p>
                   </div>
                   <div className={styles.photo}>
-                    <LionAvatar className={styles.lion} wearing={wearing} mane={mane} aura={auraSize(progress)} mood="happy" />
+                    <LionAvatar className={styles.lion} {...look} mood="happy" />
                   </div>
                 </div>
               </article>

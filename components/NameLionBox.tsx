@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { lines } from '@/lib/lines'
 import { DEFAULT_LION_NAME, isNameAllowed, LION_NAME_MAX } from '@/lib/names'
 import type { LionSex } from '@/lib/progress'
+import { useModal } from '@/lib/useModal'
 import styles from './LionBoxes.module.css'
 
 type Props = {
@@ -20,17 +21,11 @@ const sexes: LionSex[] = ['male', 'female']
 // Asked when a new game starts: keep the lion's usual name or give the new lion one, and choose
 // a lion or a lioness. The same box changes either one later, from the wardrobe.
 export default function NameLionBox({ open, onName, onCancel, current }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const [draft, setDraft] = useState(current?.name ?? '')
   const [sex, setSex] = useState<LionSex>(current?.sex ?? 'male')
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const dialogRef = useModal(open)
 
   function reset() {
     setDraft(current?.name ?? '')

@@ -22,24 +22,17 @@ import {
   connections,
   saveProgress,
   slotContent,
-  useKeptLions,
   useLionText,
+  useOtherLions,
   useProgress,
   type OutreachKind,
   type PrideCard,
   type Progress,
-  type TodahForm,
 } from '@/lib/progress'
 import { useHydrated, useSettings } from '@/lib/settings'
 import { playSfx } from '@/lib/sfx'
 import { MAX_LEVEL, PRIDE_LEVELS, slotLevel, slots } from '@/lib/upgrades'
 import styles from './PrideScreen.module.css'
-
-const formLabel: Record<TodahForm, string> = {
-  cub: lines.upgrades.formCub,
-  nomad: lines.upgrades.formNomad,
-  leader: lines.upgrades.formLeader,
-}
 
 const prideSlot = slots.find((slot) => slot.id === 'pride')
 const cheerIds = Object.keys(lines.pride.cheers) as CheerId[]
@@ -57,7 +50,7 @@ function CardFace({ card, children }: { card: PrideCard, children?: React.ReactN
     <div className={styles.face}>
       <LionAvatar className={styles.faceLion} wearing={card.wear ?? []} mane={card.mane ?? 0} />
       <p className={styles.faceName}>{lines.pride.cardWith(card.name, card.lion)}</p>
-      <p className={styles.faceForm}>{formLabel[card.form]}</p>
+      <p className={styles.faceForm}>{lines.upgrades.forms[card.form]}</p>
       <p className={styles.facePower}>{lines.pride.power(card.power, card.max)}</p>
       <div className={styles.bar} aria-hidden="true">
         <div className={styles.barFill} style={{ width: `${(card.power / card.max) * 100}%` }} />
@@ -79,7 +72,7 @@ export default function PrideScreen() {
   const progress = useProgress()
   const lion = useLionText()
   const { sound } = useSettings()
-  const keptLions = useKeptLions()
+  const others = useOtherLions()
   const [logKind, setLogKind] = useState<OutreachKind>('linkedin')
   const [logNote, setLogNote] = useState('')
   // The card or cheer in the link this page was opened with, until the player has dealt with it.
@@ -132,11 +125,7 @@ export default function PrideScreen() {
   const level = prideLevel(progress)
   const made = connections(progress)
   const nextAt = PRIDE_LEVELS[level]
-  const myCard = buildCard(
-    progress,
-    openedAt,
-    keptLions.map((lion) => lion.progress),
-  )
+  const myCard = buildCard(progress, openedAt, others)
   const myLink = progress.cardId ? cardLink(window.location.origin, myCard) : ''
   const canShare = typeof navigator.share === 'function'
   const removing = progress.pride.find((friend) => friend.id === removingId)

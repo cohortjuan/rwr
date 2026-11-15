@@ -10,7 +10,7 @@ import NameLionBox from '@/components/NameLionBox'
 import { Birds, Horizon, Stars } from '@/components/Savannah'
 import TvStatic from '@/components/TvStatic'
 import { useAccountEmail } from '@/lib/account'
-import { auraSize, maneSize, wornIds } from '@/lib/accessories'
+import { lionLook } from '@/lib/accessories'
 import { MUSIC_TRACK, SEATED_SPRITE } from '@/lib/assets'
 import { useAudioGate } from '@/lib/audioGate'
 import { lines } from '@/lib/lines'
@@ -160,12 +160,7 @@ export default function TitleScreen() {
             aria-hidden={!seated}
           >
             <LionAvatar
-              wearing={wornIds(
-                progress,
-                keptLions.map((kept) => kept.progress),
-              )}
-              mane={maneSize(progress)}
-              aura={auraSize(progress)}
+              {...lionLook(progress)}
               blink
             />
           </div>

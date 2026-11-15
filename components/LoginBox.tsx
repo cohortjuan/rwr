@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { requestPasswordReset } from '@/lib/account'
 import { lines } from '@/lib/lines'
 import { getSupabase } from '@/lib/supabase'
+import { useModal } from '@/lib/useModal'
 import styles from './LoginBox.module.css'
 
 // 'reset' is the forgotten-password form. It is reached from the log in tab, not from a tab of its own.
@@ -21,7 +22,6 @@ type Props = {
 // Floating retro dialog: log in, sign up, reset a forgotten password, or play as guest.
 // A native <dialog> gives us the focus trap and Esc-to-close.
 export default function LoginBox({ open, onClose, onEnter, guest = true }: Props) {
-  const dialogRef = useRef<HTMLDialogElement>(null)
   const [tab, setTab] = useState<Tab>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,12 +29,7 @@ export default function LoginBox({ open, onClose, onEnter, guest = true }: Props
   const [message, setMessage] = useState('')
   const supabase = getSupabase()
 
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const dialogRef = useModal(open)
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
