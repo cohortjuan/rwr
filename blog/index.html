@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RWR Trail Log</title>
 <meta name="description" content="How RWR, a 16-bit career adventure, was built for the 2026 Good Soil Fall Code Jam. A trail of short stops you can walk in order or click around, with a look under the hood at each one.">
+<meta name="theme-color" content="#1b1740">
+<link rel="canonical" href="https://cohortjuan.github.io/rwr/">
+<link rel="icon" type="image/png" href="img/cub.png">
+<!-- How the log looks when its link is shared. Social sites need the picture's full address. -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="RWR">
+<meta property="og:title" content="RWR Trail Log">
+<meta property="og:description" content="How a 16-bit career adventure got built for the 2026 Good Soil Fall Code Jam, one stop at a time.">
+<meta property="og:url" content="https://cohortjuan.github.io/rwr/">
+<meta property="og:image" content="https://cohortjuan.github.io/rwr/img/title.jpg">
+<meta property="og:image:alt" content="The RWR title screen: a lion cub sitting in front of a rising sun under the words RWR, 16-bit career adventure.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -584,6 +596,7 @@
       <figcaption id="shot-cap"></figcaption>
     </figure>
     <div class="text" id="text"></div>
+    <noscript><p>The trail log needs JavaScript to walk its stops. The same story is in the <a href="https://github.com/cohortjuan/rwr#readme">README</a>, and the game is at <a href="https://rwr-sigma.vercel.app">rwr-sigma.vercel.app</a>.</p></noscript>
     <figure class="shot" id="more" hidden>
       <img id="more-img" alt="" width="738" height="575" loading="lazy">
       <figcaption id="more-cap"></figcaption>
@@ -634,7 +647,7 @@ const parts = [
           'Career quizzes hand you a label and leave. I wanted something that walks with you. So RWR is a 16-bit game where a lion cub named Todah asks about real moments from your life and helps you turn them into one goal of your own.',
         ],
         hood: [
-          'Next.js 16 (App Router) with React 19 and TypeScript, styled with plain CSS modules. No UI library and no game engine. After four days: about 13,000 lines of TypeScript, 5,000 of CSS and 1,700 of Python for the art tools, across more than 110 commits.',
+          'Next.js 16 (App Router) with React 19 and TypeScript, styled with plain CSS modules. No UI library and no game engine. The first four days came to about 13,000 lines of TypeScript and 110 commits. By mid-November: about 14,000 lines of TypeScript, 5,300 of CSS and 1,900 of Python for the art tools, across more than 160 commits.',
           'The intro is a 4-frame sprite strip stepped with CSS `steps(4, jump-none)`. The walk lasts exactly six turns of the cycle, so it ends on its last frame by itself, then cross-fades into the seated cub over 0.15s.',
           'The seated cub is on the page from the first frame at `opacity: 0`, so every picture he needs is loaded before the fade. The earlier version swapped pictures at the turnaround and stuttered on a first visit.',
         ],
@@ -691,7 +704,7 @@ const parts = [
           'A friend who tried it said the interview felt long. So one question in each level is now a quick round with nothing to type, just a tap. 👆 And every level ends at a resting point, so nobody feels they owe four levels in one sitting.',
         ],
         hood: [
-          'One server route, `/api/todah`, is the only place the app talks to a language model (`openai/gpt-oss-120b` on Groq). It has a mode for each job: interview, summary, crossroads, paths, goal, road, check-in and letter.',
+          'One server route, `/api/todah`, is the only place the app talks to a language model (`openai/gpt-oss-120b` on Groq). It has a mode for each job: onboarding, interview, summary, crossroads, paths, goal, road, check-in, letter and help.',
           'The server counts the player\'s answers and tells the model "this is follow-up 2 of 3" on every turn, so a level always ends when it should.',
           'One more call turns the talk into JSON: a one-sentence claim and three yes-or-no answers about evidence. Anything that is not exactly that shape is dropped, and the player gets an empty form to fill in.',
           'Every prompt carries the same guardrails: no promised outcomes, no diagnosis, and a pause with care if the player sounds hopeless. A made-up hopeless player was part of testing.',
@@ -731,6 +744,7 @@ const parts = [
         cap: 'The wardrobe. Every piece is drawn on your own lion before you choose it.',
         text: [
           'A goal gets a plan for the obstacle you expect, and three small experiments to try in the real world. Friends join your pride by link or QR code and send cheers. 📣',
+          'You can also ask someone who knows you what they would come to you for. Their answer rides back to you in a link, the same way a cheer does.',
           'Cheers and progress earn sparks ✨, and sparks dress your lion, or your lioness: each has pieces of their own. The wardrobe is the fun part, and it is also a reason to come back and take the next step.',
         ],
         hood: [
@@ -738,6 +752,30 @@ const parts = [
           'Each wardrobe piece is a transparent PNG on the same 89 x 111 grid as the lion, drawn in an SVG laid over the sprite and sorted by a fixed draw order. There are 100 of them.',
           'Fur colors are CSS filters on the sprite. A small function, `applyFilter`, repeats the browser\'s filter math on a single color, which is how each fur gets a mane that matches it.',
           'Up to three things can stand on the floor. The middle one is tucked behind the front paws by drawing it first and then drawing the paws again on top, cut out of the sprite with nested SVG viewports.',
+        ],
+      },
+      {
+        icon: '⬆️',
+        title: 'A mane you have to earn',
+        says: 'My mane grows when you walk the trail, not when you type fast. I checked.',
+        img: 'mane-sizes.jpg',
+        alt: 'The same lion cub four times, left to right: no mane, a small crest on top, a short mane round his face, and a full mane.',
+        cap: 'The four sizes of the mane, from a cub with a tuft to a full mane.',
+        text: [
+          'Your resume is hidden in the lion. On the upgrades screen each part of Todah stands for one part of a resume: MANE is your headline, CLAWS your hard skills, PAWS your work experience, TRACKS your schooling, INSTINCTS your soft skills, DEN the paths you have explored, and PRIDE your network.',
+          'Each part has three levels, earned by what it says and not by how long it is. The MANE asks for one full sentence about who you are at work, then a second on where you are headed, then one proof with a number in it.',
+          'In an earlier version that was all the mane needed, so a good headline typed in the first minute gave him the full mane. It looked great and meant nothing. Now each size also needs a stretch of the trail behind it: Quest 1 for the first, all four levels for the second, and a main goal with two experiments on your road for the third. Todah becomes a Nomad at the second size, and a lioness grows her aura in the same three steps.',
+        ],
+        more: {
+          img: 'mane-sheet.jpg',
+          alt: 'The MANE sheet: a headline in a text box, its three levels with two done, and a list titled how his mane grows, with sizes 1 and 2 done and size 3 still to come.',
+          cap: 'Open the MANE and it says what each size still needs.',
+        },
+        hood: [
+          'The size is `Math.min(headlineLevel, journeyStage)` in `lib/growth.ts`: the MANE upgrade\'s level, and how many stretches of the journey are behind the player, counted in order. The roar sets it to full whatever else is true.',
+          'Nothing about it is stored. It is worked out from the saved game every time it is shown, so it cannot fall out of step with the trail.',
+          'Buying a mane color never changes the size. Colors unlock at size 1, once there is a crest on top to color.',
+          'It was checked in a real browser with eight made-up saved games, from a strong headline with nothing walked (no mane) to a reached goal with no headline at all (full mane). Each one showed the size and the form it should.',
         ],
       },
       {
@@ -769,8 +807,9 @@ const parts = [
         alt: 'The last screen of the credits: the player\'s lion, the words the end and the beginning, and a credit to the maker.',
         cap: 'The last screen of the credits.',
         text: [
-          'When the goal is reached, you press and hold to let Todah roar. The sun comes up and he becomes a Pride Leader: grown, with his full mane from then on. 👑',
+          'When the goal is reached, you press and hold to let Todah roar. The sun comes up and he becomes a Pride Leader, with his full mane from then on, however far it had grown before. 👑',
           'Then the credits roll, and every line in them is something you said or did on the way: how it began, your four circles, what stood in the way, who cheered you on.',
+          'He also leaves you a note, made from what you told him along the way. You can save it as a picture or send it to someone.',
         ],
         hood: [
           'The full-screen credits are moved by the game itself with `requestAnimationFrame`, not by a CSS animation. That lets the scroll wheel ease the speed up and down: `pace += (wanted - pace) * Math.min(1, seconds * 6)`.',
@@ -911,13 +950,13 @@ const parts = [
         title: 'Things that broke',
         says: 'My mane once sat beside my head. We do not speak of it.',
         text: [
-          'The first live AI call failed, because the model I had picked had been retired. Redrawing Todah left his mane sitting beside his tuft of hair. The credits once opened at their end, because the browser jumped to a link at the very bottom.',
+          'The first live AI call failed, because the model I had picked had been retired. Redrawing Todah left his mane sitting beside his tuft of hair. A good headline once gave him his full mane a minute into the game. The credits once opened at their end, because the browser jumped to a link at the very bottom.',
           'Each of those was found by using the game the way a player would, not by reading the code.',
         ],
         hood: [
           'The retired model returned a 404. The model name is now a setting with a default, so the next retirement is a one-line change and not a new build of the logic.',
           'The model thinks before it writes, and the thinking comes out of the same token allowance. Asked to think hard, it spent the whole allowance thinking and wrote nothing, twice. Every call now says how much room it gets and how hard to think first.',
-          'The mane and the credits bugs are told under their own stops: "From a drawing to the game" and "The roar".',
+          'The mane, the headline and the credits bugs are told under their own stops: "From a drawing to the game", "A mane you have to earn" and "The roar".',
           'A box inside a box: in React, a `<dialog>`\'s close event is also heard by any dialog it sits inside. Answering the mic\'s yes-or-no question shut the whole upgrade sheet behind it, until the inner box stopped the event with `stopPropagation()`.',
         ],
       },
@@ -932,6 +971,7 @@ const parts = [
         hood: [
           'A full playthrough uses about 25 AI replies, against a limit of 60 a day per browser. Every AI feature has a written fallback, so running out is a quieter game, not a broken one.',
           'The free AI service also counts by the minute, and the three paths are its biggest request. When it says to wait, the server answers "busy" with the number of seconds, and the Crossroads waits and asks again by itself. I chose waiting over a second AI provider: slower, but nobody\'s answers go anywhere new.',
+          'The service also counts each model\'s allowance on its own, by the minute and by the day. When the main model\'s allowance is used up, the server tries a smaller one on the same account, `openai/gpt-oss-20b`, with the same data terms. Only when both are full does the game fall back to written lines.',
           'A final play-through found the ABOUT and SETTINGS buttons floating over whatever was in the bottom corner. Settings is now a gear beside the moon, in the row every screen already keeps clear.',
           'Playing it on a phone showed that the way back sat at the foot of long pages. Now a back arrow and a home button sit in the corner of every screen. The arrow follows the game\'s own trail of screens, kept in `sessionStorage`. It steps through the browser\'s history only when the Navigation API confirms the entry one step back is that same screen, so it can never lead out of the game.',
         ],
@@ -945,7 +985,7 @@ const parts = [
         cap: 'The picture a player earns with the roar.',
         text: [
           'This is version 1 of RWR: the whole trail, from the title screen to the roar, with paths built on real job data.',
-          'Before the deadline on November 27: testing on real phones, a short demo video, and saving the trail card as a picture.',
+          'Still to come: a short demo video, saving the trail card as a picture, a resume you can download from the upgrades screen, and keeping an account\'s game in the database so it follows you to another device.',
           'You can play RWR right now. It is free and it needs no account.',
         ],
         hood: [
