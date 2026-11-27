@@ -386,7 +386,13 @@
     margin: 0 0 18px;
   }
 
-  .shot img {
+  .shot img[hidden],
+  .shot video[hidden] {
+    display: none;
+  }
+
+  .shot img,
+  .shot video {
     display: block;
     width: 100%;
     height: auto;
@@ -593,6 +599,7 @@
     </div>
     <figure class="shot" id="shot" hidden>
       <img id="shot-img" alt="" width="738" height="575">
+      <video id="shot-video" controls playsinline preload="none" width="1280" height="720" hidden></video>
       <figcaption id="shot-cap"></figcaption>
     </figure>
     <div class="text" id="text"></div>
@@ -627,6 +634,7 @@
 //   icon   an emoji for the stop
 //   says   what Todah says there
 //   img, alt, cap   an optional picture, its description and its caption
+//   video  an optional video in blog/video/, shown in the picture's place with img as its poster
 //   more   an optional second picture, { img, alt, cap }, shown under the text
 //   text   paragraphs. One that starts with "> " is shown as a quote
 //   hood   optional notes for developers. Words in `backticks` are shown as code
@@ -839,6 +847,22 @@ const parts = [
         ],
       },
       {
+        icon: '🗝️',
+        title: 'Accounts without your answers',
+        says: 'I keep a spot for you at the den. It stays empty until you say otherwise.',
+        text: [
+          'You can play RWR as a guest, or make an account to keep your place in the wardrobe. Accounts run on Supabase: sign up, log in, and get a reset link by email if you forget your password. You can also delete your account yourself from the Privacy page.',
+          'The database was planned on day one: a profile, the levels, the claims, the road, the upgrades and the goal, each locked so a player can only ever see their own rows. Then privacy changed the plan, and the answers stayed in the browser. An account stores your email, and nothing you told Todah.',
+          'On submission day the database got one more piece. Every new account now gets its own profile row the moment it is made, and the accounts that already existed got theirs too, without anything being changed or lost. That row holds no answers. It is the spot an account\'s game could go one day, if a player chooses to save it there.',
+        ],
+        hood: [
+          'Supabase Auth handles sign-up, login and password resets. `lib/account.ts` keeps one watcher on the session for every screen, and a reset link opens the new-password box on whatever page it lands.',
+          'Every table has row level security with one rule, `(select auth.uid()) = user_id`, for reading and writing alike. There is no transcript table.',
+          'A trigger on `auth.users` runs `handle_new_user()`: a `security definer` function with an empty `search_path` that inserts only the new id, `on conflict (id) do nothing`. No player role can call it. The same migration filled in a profile for each existing account, adding rows only.',
+          '`delete_own_account()` removes the caller\'s own user and nothing else, and `on delete cascade` takes their rows with it, so the app needs no admin key.',
+        ],
+      },
+      {
         icon: '📜',
         title: 'Giving credit where it is due',
         says: 'I am a lion, not a philosopher. Credit goes to the people who drew the circles.',
@@ -985,12 +1009,38 @@ const parts = [
         cap: 'The picture a player earns with the roar.',
         text: [
           'This is version 1 of RWR: the whole trail, from the title screen to the roar, with paths built on real job data.',
-          'Still to come: a short demo video, saving the trail card as a picture, a resume you can download from the upgrades screen, and keeping an account\'s game in the database so it follows you to another device.',
+          'Still to come: saving the trail card as a picture, a resume you can download from the upgrades screen, and, if a player chooses it, keeping an account\'s game in the database so it follows them to another device. The profile row is already waiting.',
           'You can play RWR right now. It is free and it needs no account.',
         ],
         hood: [
           'RWR needs a browser from 2022 or later. On a Mac still running Safari 13, every pop-up box was drawn open in the page and the layout fell apart, because the game is built on the `<dialog>` element and `dvh` units, which Safari gained in 15.4. Such a browser now gets a plain notice saying what to do, written in old-style JavaScript so it runs where the game\'s own code may not.',
           'This log is one HTML file with no framework and no build step. Every stop is an entry in one array at the bottom of the file, and the address keeps the stop number after the `#`, so a link can point at any stop.',
+        ],
+      },
+    ],
+  },
+  {
+    icon: '🎬',
+    name: 'PART 6: SUBMISSION DAY',
+    stops: [
+      {
+        icon: '🌙',
+        title: 'Submission day',
+        says: 'Night mode is on. Miguel, this one is for you.',
+        video: 'rwr-demo.mp4',
+        img: 'demo-still.jpg',
+        alt: 'The RWR demo video: Todah walks in at sunset, the sky turns to night, and the video walks the whole trail to the roar.',
+        cap: 'The demo video: 2:50 through the whole trail, recorded from the live game.',
+        text: [
+          'Today is November 27, 2026, and RWR is in. The jam opened on October 4 with one theme, Season of Change. Eight weeks later there is a lion cub who asks about real moments, a trail map built on evidence, real job data at the Crossroads, and a roar that only the player can call.',
+          'The video above walks the whole trail. It opens at sunset, then switches to night mode and stays there, because I have it on good authority that one of the judges, Miguel, cannot stand light mode.',
+          'I hope you enjoy playing it as much as I enjoyed building it. If Todah helps even one person take one small, real step toward work they care about, he has earned his roar.',
+          'Thank you to Color Coded Labs, where I learned to build for the web, and to Miguel, for taking the time to judge this. And thank you to everyone who walks the trail.',
+          '> Play RWR free at rwr-sigma.vercel.app. No account needed.',
+        ],
+        hood: [
+          'The demo was recorded from the production build with Playwright. Each shot opens a fresh browser with a saved game for a made-up player, Sam, seeded into `localStorage`, and a gold ring marks every tap, since the recording has no pointer.',
+          'It was cut with ffmpeg: crossfades between shots, the game\'s own music, roar and level-up sound, and captions in the game\'s font, burned in from an ASS subtitle file.',
         ],
       },
     ],
@@ -1076,10 +1126,25 @@ function go(index, byHand) {
   $('bubble').textContent = stop.says
 
   const shot = $('shot')
+  const image = $('shot-img')
+  const video = $('shot-video')
+  if (stop.video) {
+    // A stop with a video shows it in the picture's place, with the picture as its poster.
+    video.poster = `img/${stop.img}`
+    if (video.getAttribute('src') !== `video/${stop.video}`) video.src = `video/${stop.video}`
+    video.setAttribute('aria-label', stop.alt || '')
+    image.hidden = true
+    video.hidden = false
+  } else {
+    video.pause()
+    video.hidden = true
+    image.hidden = false
+  }
   if (stop.img) {
-    const image = $('shot-img')
-    image.src = `img/${stop.img}`
-    image.alt = stop.alt || ''
+    if (!stop.video) {
+      image.src = `img/${stop.img}`
+      image.alt = stop.alt || ''
+    }
     $('shot-cap').textContent = stop.cap || ''
     shot.hidden = false
   } else {
