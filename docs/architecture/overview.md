@@ -337,11 +337,11 @@ erDiagram
   auth_users ||--o| goals : sets
 ```
 
-- **A profile for every account**: a trigger on `auth.users` (`0005_auto_create_profile_on_signup.sql`)
+- **A profile for every account**: a trigger on `auth.users` (`20261127053431_auto_create_profile_on_signup.sql`)
   adds the new account's row to `profiles` as it is created. The trigger's function runs with
   elevated rights, inserts only that new id, and cannot be called by any player role. The same
   migration filled in a profile for each account made before it, adding rows only.
-- **Deleting an account**: `delete_own_account()` (`0003_delete_own_account.sql`) lets a
+- **Deleting an account**: `delete_own_account()` (`20261006030033_delete_own_account.sql`) lets a
   signed-in player remove their own user, and only their own, with no admin key in the app.
   Every table references `auth.users` with `on delete cascade`, so their rows go with it.
 
