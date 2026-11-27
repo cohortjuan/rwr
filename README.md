@@ -11,12 +11,14 @@ the change RWR helps people navigate.
 
 **Play it:** https://rwr-sigma.vercel.app
 
+**Watch it:** a 2:50 demo video, recorded from the live game: https://cohortjuan.github.io/rwr/video/rwr-demo.mp4
+
 **How it was built:** the RWR Trail Log, a short build log with a look under the hood at each
 stop: https://cohortjuan.github.io/rwr/
 
-Status: **version 1**. Playable from the title screen to the roar, with the three paths picked
-from real occupations and shown with public pay, training and outlook figures. Built for the
-jam (deadline November 27, 2026). See "What works today" and "Not built yet" below.
+Status: **version 1**, submitted to the jam on November 27, 2026. Playable from the title screen
+to the roar, with the three paths picked from real occupations and shown with public pay,
+training and outlook figures. See "What works today" and "Not built yet" below.
 
 ## Problem
 
@@ -167,7 +169,9 @@ prophet: nothing in the game promises a job or an outcome.
   the diagram, puts PURPOSE in its middle, and does not claim to teach ikigai. Both also say
   what the AI does: it asks, the player decides
 - Accounts: log in, sign up, and a "Forgot password?" link that emails a reset link. A signed-in
-  player can also change their password from the Privacy page
+  player can also change their password from the Privacy page. Each new account gets its own
+  profile row in the database the moment it is made, by a Postgres trigger, and a player can
+  delete their own account
 - Privacy page (`/privacy`): where every kind of answer goes, AI consent, the save-on-device
   switch, and delete my data
 - Dev tools (`/dev`): for an account marked as a dev account, switches to unlock every
@@ -181,7 +185,8 @@ prophet: nothing in the game promises a job or an outcome.
 - Talk to Todah (a free chat outside the levels)
 - PDF export of the resume built on the upgrades screen
 - Saving account progress to the database: a game is kept in the browser for guests and
-  accounts alike
+  accounts alike. The tables, row level security and a profile row for every account are in
+  place. Turning it on would be the player's choice, and the Privacy page would say so first
 
 ## Technologies
 
@@ -248,7 +253,8 @@ Some answers in RWR are personal, so the game is built to collect as little as p
 - Your name never leaves your device. Email addresses, links, and phone numbers are removed
   from answers before they are sent to the AI provider.
 - The server does not log or store what you type, and there is no transcript table in the
-  database. An account stores only your email (with Supabase Auth).
+  database. An account stores only your email (with Supabase Auth) and an empty profile row
+  tied to it, which holds none of your answers.
 - My Pride needs no account and no database. Your pride card (first name, lion, Pride Power,
   and your main goal if you leave that on) travels inside the link or QR code you share, in the
   part of the link that browsers never send to a server. Anyone you give the link to can read
@@ -271,7 +277,7 @@ Some answers in RWR are personal, so the game is built to collect as little as p
 
 ## How AI was used
 
-To be completed before submission. Running notes:
+RWR was built by Juan with AI tools. This is who did what:
 
 - Concept and design were worked out by Juan in conversation with Claude (Anthropic).
 - The code was written with Claude Code, directed, play-tested and reviewed by Juan. Juan made
@@ -290,6 +296,8 @@ To be completed before submission. Running notes:
   has a scripted fallback except his thoughts on the goal, which are simply left out. The
   player decides what any of it means.
 - Turning a spoken answer into text is done by the browser, and is not part of RWR's own AI.
+- The demo video was recorded from the real game and edited by scripts written with Claude
+  Code. Its script was drafted with Claude, and Juan chose what it says and shows.
 - The build log (https://cohortjuan.github.io/rwr/) tells who did what, and what was turned
   down.
 
@@ -309,7 +317,12 @@ To be completed before submission. Running notes:
 ## Design and architecture
 
 - Architecture and database diagrams: [docs/architecture/overview.md](docs/architecture/overview.md)
-- Database schema: [supabase/migrations/0001_init.sql](supabase/migrations/0001_init.sql)
+- Database schema: [supabase/migrations](supabase/migrations): the tables and row level
+  security in [0001_init.sql](supabase/migrations/0001_init.sql), and the trigger that gives
+  every new account its profile row in
+  [0005_auto_create_profile_on_signup.sql](supabase/migrations/0005_auto_create_profile_on_signup.sql)
+- UI design, the screen flow: every screen and how a player moves between them, in FigJam:
+  [RWR screen flow](https://www.figma.com/board/Gm4q6Rp6x6JMGAt3ADhM9g)
 - UI reference mockups: [docs/reference](docs/reference)
 - Build log: [blog/index.html](blog/index.html), published at https://cohortjuan.github.io/rwr/
   by [.github/workflows/blog.yml](.github/workflows/blog.yml)
@@ -343,4 +356,8 @@ To be completed before submission. Running notes:
 
 ## Demo video
 
-To be added.
+[![The demo video: Todah sits under the moon on the RWR title screen, in night mode](blog/img/demo-poster.jpg)](https://cohortjuan.github.io/rwr/video/rwr-demo.mp4)
+
+A 2:50 walk through the whole trail, recorded from the live game: https://cohortjuan.github.io/rwr/video/rwr-demo.mp4
+
+It is also the last stop of the [trail log](https://cohortjuan.github.io/rwr/).
