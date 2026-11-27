@@ -318,9 +318,9 @@ RWR was built by Juan with AI tools. This is who did what:
 
 - Architecture and database diagrams: [docs/architecture/overview.md](docs/architecture/overview.md)
 - Database schema: [supabase/migrations](supabase/migrations): the tables and row level
-  security in [0001_init.sql](supabase/migrations/0001_init.sql), and the trigger that gives
+  security in [20261006005807_init.sql](supabase/migrations/20261006005807_init.sql), and the trigger that gives
   every new account its profile row in
-  [0005_auto_create_profile_on_signup.sql](supabase/migrations/0005_auto_create_profile_on_signup.sql)
+  [20261127053431_auto_create_profile_on_signup.sql](supabase/migrations/20261127053431_auto_create_profile_on_signup.sql)
 - UI design, the screen flow: every screen and how a player moves between them, in FigJam:
   [RWR screen flow](https://www.figma.com/board/Gm4q6Rp6x6JMGAt3ADhM9g)
 - UI reference mockups: [docs/reference](docs/reference)
