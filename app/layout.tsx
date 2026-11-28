@@ -35,10 +35,39 @@ const hand = Kalam({
   variable: '--font-hand',
 })
 
+// The live address. Link previews (LinkedIn, texts, Discord) need full URLs for the page and picture.
+const siteUrl = 'https://rwr-sigma.vercel.app'
+
+const siteDescription =
+  'A retro 16-bit game that helps you explore what you love, what you are good at, what the world needs, and what you can be paid for.'
+
+// The picture a shared link shows: the Pride Leader over the city, with the RWR title.
+const shareImage = {
+  url: `${siteUrl}/images/pride-leader.jpg`,
+  width: 1260,
+  height: 618,
+  alt: 'RWR: a pixel-art lion roaring over a city skyline at sunset, under the title RWR Pride Leader',
+}
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'RWR: 16-bit Career Adventure',
-  description:
-    'A retro 16-bit game that helps you explore what you love, what you are good at, what the world needs, and what you can be paid for.',
+  description: siteDescription,
+  openGraph: {
+    title: 'RWR: 16-bit Career Adventure',
+    description: siteDescription,
+    url: siteUrl,
+    siteName: 'RWR',
+    images: [shareImage],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RWR: 16-bit Career Adventure',
+    description: siteDescription,
+    images: [shareImage],
+  },
 }
 
 // Runs before the page paints, so a saved night mode or motion choice applies from the very
